@@ -1,18 +1,8 @@
 /**********************************************************************
- * SIM108.cpp - firmware for the SIM108 switch input module.
+ * NOP100.cpp - firmware for an NMEA 2000 module that does nothing.
  * Copyright (c) 2021-22 Paul Reeve <preeve@pdjr.eu>
  *
  * Target platform: Teensy 4.0
- * 
- * SIM108 is an 8-channel NMEA switch input module built around a
- * Teensy 3.2/4.0 microcontroller.
- * 
- * This firmware recovers the state of sensor channel inputs, assembles
- * a switchbank Binary Status Report and transmits this over NMEA using 
- * PGN127501. Feedback on module operation is presented by modulating
- * channel state and transmission indicator LEDs.
- * 
- * Switch inputs are debounced in software.
  */
 
 #include <Arduino.h>
@@ -83,21 +73,8 @@
 #define GPIO_OUTPUT_PINS { GPIO_SIPO_CLOCK, GPIO_SIPO_DATA, GPIO_SIPO_LATCH, GPIO_PISO_CLOCK, GPIO_PISO_LATCH, GPIO_POWER_LED, GPIO_TRANSMIT_LED }
 
 #define DEFAULT_SOURCE_ADDRESS 22         // Seed value for source address claim
-#define INSTANCE_UNDEFINED 255            // Flag value
-#define TRANSMIT_LED_UPDATE_INTERVAL 50   // Frequency at which to update the transmit LED.
-
-#define GPIO_SWITCH_INPUT1 GPIO_D23
-#define GPIO_SWITCH_INPUT2 GPIO_D22
-#define GPIO_SWITCH_INPUT3 GPIO_D21
-#define GPIO_SWITCH_INPUT4 GPIO_D20
-#define GPIO_SWITCH_INPUT5 GPIO_D19
-#define GPIO_SWITCH_INPUT6 GPIO_D18
-#define GPIO_SWITCH_INPUT7 GPIO_D17
-#define GPIO_SWITCH_INPUT8 GPIO_D16
-
 #define DEFAULT_INSTANCE_ADDRESS 255
-#define SWITCH_PROCESS_INTERVAL 100       // Process switch inputs every n ms
-#define PGN127501_TRANSMIT_INTERVAL 4000UL
+#define TRANSMIT_LED_UPDATE_INTERVAL 50   // Frequency at which to update the transmit LED.
 
 #include "module-deviceinfo.defs"
 #include "module-productinfo.defs"
@@ -110,17 +87,12 @@ void flashTransmitLedMaybe();
 void processPrgButtonPress();
 uint8_t getTransmitLedStatus();
 
-void processSwitchInputsMaybe();
-void transmitSwitchbankStatusMaybe(bool force = false);
-void transmitPGN127501();
-uint8_t getStatusDisplayStatus();
-
 /**********************************************************************
  * List of PGNs transmitted by this program.
  * 
  * PGN 127501 Binary Status Report.
  */
-const unsigned long TransmitMessages[] PROGMEM={ 127501L, 0 };
+const unsigned long TransmitMessages[] PROGMEM={ 0 };
 
 /**********************************************************************
  * NMEA2000Handlers -  vector mapping each PGN handled by this module
@@ -155,25 +127,6 @@ IC74HC165 DIL_SWITCH (GPIO_PISO_CLOCK, GPIO_PISO_DATA, GPIO_PISO_LATCH);
 unsigned char MODULE_INSTANCE = INSTANCE_UNDEFINED;
 
 /**********************************************************************
- * LED_STATUS_DISPLAY - interface to the IC74HC595 IC that operates the
- * (up to) 16 status display LEDs.
- */ 
- IC74HC595 LED_STATUS_DISPLAY (GPIO_SIPO_CLOCK, GPIO_SIPO_DATA, GPIO_SIPO_LATCH);
-
-/**********************************************************************
- * SWITCH_INPUTS - array of debounced GPIO inputs which connect the
- * module's external switch inputs.
- */
-Button SWITCH_INPUTS[] = { Button(GPIO_SWITCH_INPUT1), Button(GPIO_SWITCH_INPUT2), Button(GPIO_SWITCH_INPUT3), Button(GPIO_SWITCH_INPUT4), Button(GPIO_SWITCH_INPUT5), Button(GPIO_SWITCH_INPUT6), Button(GPIO_SWITCH_INPUT7), Button(GPIO_SWITCH_INPUT8) };
-
-/**********************************************************************
- * SWITCHBANK_STATUS - working storage for holding the most recently
- * read state of the Teensy switch inputs in the format used by the
- * NMEA2000 library.
- */
-tN2kBinaryStatus SWITCHBANK_STATUS;
-
-/**********************************************************************
  * MAIN PROGRAM - setup()
  */
 void setup() {
@@ -187,10 +140,6 @@ void setup() {
   for (unsigned int i = 0 ; i < ELEMENTCOUNT(opins); i++) pinMode(opins[i], OUTPUT);
   PRG_BUTTON.begin();
   DIL_SWITCH.begin();
-
-  // Initialise all application GPIO pins.
-  for (unsigned int i = 0; i < ELEMENTCOUNT(SWITCH_INPUTS); i++) SWITCH_INPUTS[i].begin();
-  LED_STATUS_DISPLAY.begin();
 
   // We assume that a new host system has its EEPROM initialised to all
   // 0xFF. We test by reading a byte that in a configured system should
@@ -216,12 +165,6 @@ void setup() {
   LED_STATUS_DISPLAY.writeByte(0xff); delay(100);
   LED_STATUS_DISPLAY.writeByte(MODULE_INSTANCE); delay(1000);
   LED_STATUS_DISPLAY.writeByte(0x00);
-
-  // Arrange for automatic update of the status LEDs.
-  LED_STATUS_DISPLAY.configureUpdate(TRANSMIT_LED_UPDATE_INTERVAL, getStatusDisplayStatus);
-
-  // Clear the switchbank status buffer
-  N2kResetBinaryStatus(SWITCHBANK_STATUS);
 
   // Initialise and start N2K services.
   NMEA2000.SetProductInformation(PRODUCT_SERIAL_CODE, PRODUCT_CODE, PRODUCT_TYPE, PRODUCT_FIRMWARE_VERSION, PRODUCT_VERSION);
@@ -261,86 +204,7 @@ void loop() {
   // If the PRG button has been operated, then update module instance.
   if (PRG_BUTTON.released()) processPrgButtonPress();
 
-  // Process any switch state changes and transmit switchbank status
-  // updates as required.
-
-  processSwitchInputsMaybe();
-  transmitSwitchbankStatusMaybe();
   flashTransmitLedMaybe();
-  
-  // Update the states of connected LEDs
-  LED_STATUS_DISPLAY.updateMaybe();
-}
-
-/**********************************************************************
- * processSwitchInputsMaybe() should be called directly from loop().
- * The function checks switch states every SWITCH_PROCESS_INTERVAL and
- * updates SWITCHBANK_STATUS with any changes. If a change is made,
- * then a call is made to transmit the update over NMEA.
- */
-void processSwitchInputsMaybe() {
-  static unsigned long deadline = 0UL;
-  unsigned long now = millis();
-  bool updated = false;
-  tN2kOnOff switchStatus = N2kOnOff_Unavailable;
-
-  if (now > deadline) {
-    for (unsigned int i = 0; i < ELEMENTCOUNT(SWITCH_INPUTS); i++) {
-      if (SWITCH_INPUTS[i].toggled()) {
-        switchStatus = (SWITCH_INPUTS[i].read() == Button::PRESSED)?N2kOnOff_On:N2kOnOff_Off;
-        if (switchStatus != N2kGetStatusOnBinaryStatus(SWITCHBANK_STATUS, (i + 1))) {
-          N2kSetStatusBinaryOnStatus(SWITCHBANK_STATUS, switchStatus, (i + 1));
-          updated = true;
-        }
-      }
-    }
-    if (updated) transmitSwitchbankStatusMaybe(true);
-    deadline = (now + SWITCH_PROCESS_INTERVAL);
-  }
-}
-  
-/**********************************************************************
- * transmitSwitchbankStatusMaybe() should be called directly from
- * loop(). The function proceeds to transmit a switchbank binary status
- * message if PGN127501_TRANSMIT_INTERVAL has elapsed or <force> is true.
- */
-void transmitSwitchbankStatusMaybe(bool force) {
-  static unsigned long deadline = 0UL;
-  unsigned long now = millis();
-
-  if ((now > deadline) || force) {
-    transmitPGN127501();
-    digitalWrite(GPIO_POWER_LED, 1);
-    TRANSMIT_LED_STATE = 1;
-    deadline = (now + PGN127501_TRANSMIT_INTERVAL);
-  }
-}
-
-
-/**********************************************************************
- * Assemble and transmit a PGN 127501 Binary Status Update message
- * reflecting the current switchbank state.
- */
-void transmitPGN127501() {
-  static tN2kMsg N2kMsg;
-
-  if (MODULE_INSTANCE < 253) {
-    SetN2kPGN127501(N2kMsg, MODULE_INSTANCE, SWITCHBANK_STATUS);
-    NMEA2000.SendMsg(N2kMsg);
-  }
-}  
-
-/**********************************************************************
- * Returns a byte with each bit set to reflect the state of a switch
- * bank channel: channel 1 -> bit 0, channel 2 -> bit 1 and so on.
- * Thinks - may need to reverse the bit order?
- */
-uint8_t getStatusDisplayStatus() {
-  unsigned char retval = 0;
-  for (int i = 0; i < 8; i++) {
-    retval = (retval | (((N2kGetStatusOnBinaryStatus(SWITCHBANK_STATUS, (i + 1)) == N2kOnOff_On)?1:0) << i));
-  }
-  return(retval);
 }
 
 void flashTransmitLedMaybe() {
