@@ -1,0 +1,25 @@
+/**********************************************************************
+ * DEVICE INFORMATION
+ * 
+ * Because of NMEA's closed standard, most of this is fiction. Maybe it
+ * can be made better with more research. In particular, even recent
+ * releases of the NMEA function and class lists found using Google
+ * don't discuss anchor systems, so the proper values for CLASS and
+ * FUNCTION in this application are not known.  At the moment they are
+ * set to 25 (network device) and 130 (PC gateway).
+ * 
+ * INDUSTRY_GROUP we can be confident about (4 says maritime). However,
+ * MANUFACTURER_CODE is only allocated to subscribed NMEA members and,
+ * unsurprisingly, an anonymous code has not been assigned: 2046 is
+ * currently unused, so we adopt that.  
+ * 
+ * MANUFACTURER_CODE and UNIQUE_NUMBER together must make a unique
+ * value on any N2K bus and an easy way to achieve this is just to
+ * bump the unique number for every software build and this is done
+ * automatically by the build system.
+ */
+#define DEVICE_CLASS 75
+#define DEVICE_FUNCTION 130
+#define DEVICE_INDUSTRY_GROUP 4
+#define DEVICE_MANUFACTURER_CODE 2046
+#define DEVICE_UNIQUE_NUMBER 849
