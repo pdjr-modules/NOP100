@@ -124,7 +124,7 @@ IC74HC165 DIL_SWITCH (GPIO_PISO_CLOCK, GPIO_PISO_DATA, GPIO_PISO_LATCH);
  * The user selected value is recovered from hardware and assigned
  * during module initialisation and reconfiguration.
  */
-unsigned char MODULE_INSTANCE = INSTANCE_UNDEFINED;
+unsigned char MODULE_INSTANCE = DEFAULT_INSTANCE_ADDRESS;
 
 /**********************************************************************
  * MAIN PROGRAM - setup()
@@ -159,12 +159,6 @@ void setup() {
 
   // If this module requires a instance numberRecover module instance number.
   MODULE_INSTANCE = EEPROM.read(INSTANCE_ADDRESS_EEPROM_ADDRESS);
-
-  // Run a startup sequence in the LED display: all LEDs on to confirm
-  // function, then a display of the module instance number.
-  LED_STATUS_DISPLAY.writeByte(0xff); delay(100);
-  LED_STATUS_DISPLAY.writeByte(MODULE_INSTANCE); delay(1000);
-  LED_STATUS_DISPLAY.writeByte(0x00);
 
   // Initialise and start N2K services.
   NMEA2000.SetProductInformation(PRODUCT_SERIAL_CODE, PRODUCT_CODE, PRODUCT_TYPE, PRODUCT_FIRMWARE_VERSION, PRODUCT_VERSION);
@@ -228,6 +222,5 @@ void messageHandler(const tN2kMsg &N2kMsg) {
 void processPrgButtonPress() {
   EEPROM.write(INSTANCE_ADDRESS_EEPROM_ADDRESS, DIL_SWITCH.readByte());
   MODULE_INSTANCE = EEPROM.read(INSTANCE_ADDRESS_EEPROM_ADDRESS);
-  LED_STATUS_DISPLAY.writeByte(MODULE_INSTANCE); delay(1000);
 }
 
