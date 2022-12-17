@@ -111,7 +111,7 @@ tNMEA2000Handler NMEA2000Handlers[] = { {0L, 0} };
  * PRG_BUTTON - debounced GPIO_PRG.
  */
 Button PRG_BUTTON(GPIO_PRG);
-StateMachine::tJumpVector jumpVectors[] = { { 0, updateModuleInstance }, { 0, 0 }};
+StateMachine::tJump jumpVectors[] = { { 0, updateModuleInstance }, { 0, 0 }};
 StateMachine STATE_MACHINE(0, jumpVectors);
 
 /**********************************************************************
@@ -239,9 +239,21 @@ void messageHandler(const tN2kMsg &N2kMsg) {
   }
 }
 
+
 /**********************************************************************
- * Called each time the PRG button is pressed. The default behaviour is
- * to save the value of DIL_SWITCH to EEPROM as the new module instance
+ * getStatusLedsStatus - returns a value that should be used to update
+ * the status LEDs.
+ */
+uint8_t getStatusLedsStatus() {
+  return(0);
+}
+
+/**********************************************************************
+ * STATE MACHINE CALLBACK FUNCTIONS
+**********************************************************************/
+
+/**********************************************************************
+ * Save the value of DIL_SWITCH to EEPROM as the new module instance
  * number and to begin operation with this updated value. The status
  * LEDs are briefly flashed to indicate the new number.
  */
@@ -249,13 +261,5 @@ int updateModuleInstance(unsigned char value) {
   EEPROM.write(INSTANCE_ADDRESS_EEPROM_ADDRESS, value);
   MODULE_INSTANCE = EEPROM.read(INSTANCE_ADDRESS_EEPROM_ADDRESS);
   STATUS_LEDS.writeByte(MODULE_INSTANCE); delay(1000);
-  return(0);
-}
-
-/**********************************************************************
- * getStatusLedsStatus - returns a value that should be used to update
- * the status LEDs.
- */
-uint8_t getStatusLedsStatus() {
   return(0);
 }
