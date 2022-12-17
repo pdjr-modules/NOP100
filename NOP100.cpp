@@ -217,9 +217,10 @@ void loop() {
   NMEA2000.ParseMessages();
   if (NMEA2000.ReadResetAddressChanged()) EEPROM.update(SOURCE_ADDRESS_EEPROM_ADDRESS, NMEA2000.GetN2kSource());
 
+  
   // If the PRG button has been operated, then call the button handler.
   if (PRG_BUTTON.toggled()) prgButtonHandler(PRG_BUTTON.read());
-
+  // Maybe operate thhe transmit LED.
   flashTransmitLedMaybe();
 }
 
@@ -283,8 +284,10 @@ uint8_t getStatusLedsStatus() {
  * LEDs are briefly flashed to indicate the new number.
  */
 int updateModuleInstance(int value) {
-  EEPROM.write(INSTANCE_ADDRESS_EEPROM_ADDRESS, value);
-  MODULE_INSTANCE = EEPROM.read(INSTANCE_ADDRESS_EEPROM_ADDRESS);
-  STATUS_LEDS.writeByte(MODULE_INSTANCE); delay(1000);
+  if (!(value & 0x0100)) {
+    EEPROM.write(INSTANCE_ADDRESS_EEPROM_ADDRESS, value);
+    MODULE_INSTANCE = EEPROM.read(INSTANCE_ADDRESS_EEPROM_ADDRESS);
+    STATUS_LEDS.writeByte(MODULE_INSTANCE); delay(1000);
+  }
   return(0);
 }
