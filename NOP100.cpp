@@ -92,7 +92,7 @@ void messageHandler(const tN2kMsg&);
 void flashTransmitLedMaybe();
 void processPrgButtonPress();
 uint8_t getStatusLedsStatus();
-int updateModuleInstance(unsigned char value);
+int updateModuleInstance(int value);
 void prgButtonHandler(bool released);
 
 /**********************************************************************
@@ -282,7 +282,7 @@ uint8_t getStatusLedsStatus() {
  * number and to begin operation with this updated value. The status
  * LEDs are briefly flashed to indicate the new number.
  */
-int updateModuleInstance(unsigned char value) {
+int updateModuleInstance(int value) {
   EEPROM.write(INSTANCE_ADDRESS_EEPROM_ADDRESS, value);
   MODULE_INSTANCE = EEPROM.read(INSTANCE_ADDRESS_EEPROM_ADDRESS);
   STATUS_LEDS.writeByte(MODULE_INSTANCE); delay(1000);
