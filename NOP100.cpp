@@ -14,10 +14,10 @@
 #include <IC74HC165.h>
 #include <IC74HC595.h>
 #include <ProcessQueue.h>
+#include <StateMachine.h>
 #include <arraymacros.h>
 
 #include "NMEA200-defaults.h"
-#include "StateMachine.h"
 
 /**********************************************************************
  * SERIAL DEBUG
