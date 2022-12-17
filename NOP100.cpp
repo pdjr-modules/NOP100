@@ -80,6 +80,7 @@
 
 #define TRANSMIT_LED_UPDATE_INTERVAL 50   // Frequency at which to update the transmit LED.
 #define STATUS_LEDS_UPDATE_INTERVAL 100
+#define LONG_BUTTON_PRESS_INTERVAL 1000UL
 
 #include "module-deviceinfo.defs"
 #include "module-productinfo.defs"
@@ -92,6 +93,7 @@ void flashTransmitLedMaybe();
 void processPrgButtonPress();
 uint8_t getStatusLedsStatus();
 int updateModuleInstance(unsigned char value);
+void prgButtonHandler(bool released);
 
 /**********************************************************************
  * List of PGNs transmitted by this program.
@@ -215,8 +217,8 @@ void loop() {
   NMEA2000.ParseMessages();
   if (NMEA2000.ReadResetAddressChanged()) EEPROM.update(SOURCE_ADDRESS_EEPROM_ADDRESS, NMEA2000.GetN2kSource());
 
-  // If the PRG button has been operated, then update module instance.
-  if (PRG_BUTTON.released()) STATE_MACHINE.process(DIL_SWITCH.readByte());
+  // If the PRG button has been operated, then call the button handler.
+  if (PRG_BUTTON.toggled()) prgButtonHandler(PRG_BUTTON.released());
 
   flashTransmitLedMaybe();
 }
@@ -239,6 +241,25 @@ void messageHandler(const tN2kMsg &N2kMsg) {
   }
 }
 
+/**********************************************************************
+ * Called each time the PRG button changes state with released set to
+ * true if the button has been released. The function determines if a
+ * long button press has occurred by timing the interval between a 
+ * press and release. On a button release a call
+ * is made to the state machine's process() method with the value of
+ * the DIL switch as argument. I 
+ */
+void prgButtonHandler(bool released) {
+  static unsigned long deadline = 0UL;
+  unsigned long now = millis();
+
+  if (released) {
+    STATE_MACHINE.process(DIL_SWITCH.readByte() + ((deadline) && (now > deadline))?255:0);
+    deadline = 0UL;
+  } else {
+    deadline = (now + LONG_BUTTON_PRESS_INTERVAL);
+  }
+}
 
 /**********************************************************************
  * getStatusLedsStatus - returns a value that should be used to update
