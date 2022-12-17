@@ -218,7 +218,7 @@ void loop() {
   if (NMEA2000.ReadResetAddressChanged()) EEPROM.update(SOURCE_ADDRESS_EEPROM_ADDRESS, NMEA2000.GetN2kSource());
 
   // If the PRG button has been operated, then call the button handler.
-  if (PRG_BUTTON.toggled()) prgButtonHandler(PRG_BUTTON.released());
+  if (PRG_BUTTON.toggled()) prgButtonHandler(PRG_BUTTON.read());
 
   flashTransmitLedMaybe();
 }
@@ -242,18 +242,22 @@ void messageHandler(const tN2kMsg &N2kMsg) {
 }
 
 /**********************************************************************
- * Called each time the PRG button changes state with released set to
- * true if the button has been released. The function determines if a
- * long button press has occurred by timing the interval between a 
- * press and release. On a button release a call
- * is made to the state machine's process() method with the value of
- * the DIL switch as argument. I 
+ * prgButtonHandler - handle a change of state on the PRG button which
+ * now has the state indicated by <released> where true says
+ * released. The handler detects short and long button presses.
+ * 
+ * If the causal event was a button press, then a timer is started so
+ * that the duration of the press can be measured. When the button is
+ * released, the value of DIL_SWITCH is read and, if the causal button
+ * press was long the value is incremented by 256. A call is then made
+ * to the state machine's process() method with the value of the DIL
+ * switch as argument. I 
  */
 void prgButtonHandler(bool released) {
   static unsigned long deadline = 0UL;
   unsigned long now = millis();
 
-  if (released) {
+  if (!released) {
     STATE_MACHINE.process(DIL_SWITCH.readByte() + ((deadline) && (now > deadline))?255:0);
     deadline = 0UL;
   } else {
