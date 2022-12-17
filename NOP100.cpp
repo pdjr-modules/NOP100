@@ -16,6 +16,9 @@
 #include <ProcessQueue.h>
 #include <arraymacros.h>
 
+#include "NMEA200-defaults.h"
+#include "StateMachine.h"
+
 /**********************************************************************
  * SERIAL DEBUG
  * 
@@ -72,9 +75,11 @@
 #define GPIO_D23 23
 #define GPIO_OUTPUT_PINS { GPIO_SIPO_CLOCK, GPIO_SIPO_DATA, GPIO_SIPO_LATCH, GPIO_PISO_CLOCK, GPIO_PISO_LATCH, GPIO_POWER_LED, GPIO_TRANSMIT_LED }
 
-#define DEFAULT_SOURCE_ADDRESS 22         // Seed value for source address claim
-#define DEFAULT_INSTANCE_ADDRESS 255
+#define DEFAULT_SOURCE_ADDRESS NMEA2000_SOURCE_ADDRESS_SEED
+#define DEFAULT_INSTANCE_ADDRESS NMEA2000_INSTANCE_UNDEFINED
+
 #define TRANSMIT_LED_UPDATE_INTERVAL 50   // Frequency at which to update the transmit LED.
+#define STATUS_LEDS_UPDATE_INTERVAL 100
 
 #include "module-deviceinfo.defs"
 #include "module-productinfo.defs"
@@ -85,7 +90,8 @@
 void messageHandler(const tN2kMsg&);
 void flashTransmitLedMaybe();
 void processPrgButtonPress();
-uint8_t getTransmitLedStatus();
+uint8_t getStatusLedsStatus();
+int updateModuleInstance(unsigned char value);
 
 /**********************************************************************
  * List of PGNs transmitted by this program.
@@ -99,12 +105,14 @@ const unsigned long TransmitMessages[] PROGMEM={ 0 };
  * onto a function which will process any received messages.
  */
 typedef struct { unsigned long PGN; void (*Handler)(const tN2kMsg &N2kMsg); } tNMEA2000Handler;
-tNMEA2000Handler NMEA2000Handlers[]={ {0L, 0} };
+tNMEA2000Handler NMEA2000Handlers[] = { {0L, 0} };
 
 /**********************************************************************
  * PRG_BUTTON - debounced GPIO_PRG.
  */
 Button PRG_BUTTON(GPIO_PRG);
+StateMachine::tJumpVector jumpVectors[] = { { 0, updateModuleInstance }, { 0, 0 }};
+StateMachine STATE_MACHINE(0, jumpVectors);
 
 /**********************************************************************
  * TRANSMIT_LED_STATE - holds the state that should be assigned to the
@@ -112,6 +120,11 @@ Button PRG_BUTTON(GPIO_PRG);
  * will be reset to 0 after each update). 
  */
 int TRANSMIT_LED_STATE = 0;
+
+/**********************************************************************
+ * STATUS_LEDS -
+ */
+IC74HC595 STATUS_LEDS (GPIO_SIPO_CLOCK, GPIO_SIPO_DATA, GPIO_SIPO_LATCH);
 
 /**********************************************************************
  * DIL_SWITCH - interface to the IC74HC165 IC that connects the eight
@@ -160,6 +173,13 @@ void setup() {
   // If this module requires a instance numberRecover module instance number.
   MODULE_INSTANCE = EEPROM.read(INSTANCE_ADDRESS_EEPROM_ADDRESS);
 
+  // Run a startup sequence in the LED display: all LEDs on to confirm
+  // function, then a display of the module instance number.
+  STATUS_LEDS.writeByte(0xff); delay(100);
+  STATUS_LEDS.writeByte(MODULE_INSTANCE); delay(1000);
+  STATUS_LEDS.writeByte(0x00);
+  STATUS_LEDS.configureUpdate(STATUS_LEDS_UPDATE_INTERVAL, getStatusLedsStatus);
+
   // Initialise and start N2K services.
   NMEA2000.SetProductInformation(PRODUCT_SERIAL_CODE, PRODUCT_CODE, PRODUCT_TYPE, PRODUCT_FIRMWARE_VERSION, PRODUCT_VERSION);
   NMEA2000.SetDeviceInformation(DEVICE_UNIQUE_NUMBER, DEVICE_FUNCTION, DEVICE_CLASS, DEVICE_MANUFACTURER_CODE);
@@ -196,7 +216,7 @@ void loop() {
   if (NMEA2000.ReadResetAddressChanged()) EEPROM.update(SOURCE_ADDRESS_EEPROM_ADDRESS, NMEA2000.GetN2kSource());
 
   // If the PRG button has been operated, then update module instance.
-  if (PRG_BUTTON.released()) processPrgButtonPress();
+  if (PRG_BUTTON.released()) STATE_MACHINE.process(DIL_SWITCH.readByte());
 
   flashTransmitLedMaybe();
 }
@@ -219,8 +239,23 @@ void messageHandler(const tN2kMsg &N2kMsg) {
   }
 }
 
-void processPrgButtonPress() {
-  EEPROM.write(INSTANCE_ADDRESS_EEPROM_ADDRESS, DIL_SWITCH.readByte());
+/**********************************************************************
+ * Called each time the PRG button is pressed. The default behaviour is
+ * to save the value of DIL_SWITCH to EEPROM as the new module instance
+ * number and to begin operation with this updated value. The status
+ * LEDs are briefly flashed to indicate the new number.
+ */
+int updateModuleInstance(unsigned char value) {
+  EEPROM.write(INSTANCE_ADDRESS_EEPROM_ADDRESS, value);
   MODULE_INSTANCE = EEPROM.read(INSTANCE_ADDRESS_EEPROM_ADDRESS);
+  STATUS_LEDS.writeByte(MODULE_INSTANCE); delay(1000);
+  return(0);
 }
 
+/**********************************************************************
+ * getStatusLedsStatus - returns a value that should be used to update
+ * the status LEDs.
+ */
+uint8_t getStatusLedsStatus() {
+  return(0);
+}
