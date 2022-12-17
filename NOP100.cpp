@@ -218,10 +218,16 @@ void loop() {
   if (NMEA2000.ReadResetAddressChanged()) EEPROM.update(SOURCE_ADDRESS_EEPROM_ADDRESS, NMEA2000.GetN2kSource());
 
   
+
+
+
+
   // If the PRG button has been operated, then call the button handler.
   if (PRG_BUTTON.toggled()) prgButtonHandler(PRG_BUTTON.read());
-  // Maybe operate thhe transmit LED.
+  
+  // Maybe update the transmit and status LEDs.
   flashTransmitLedMaybe();
+  STATUS_LEDS.updateMaybe();
 }
 
 void flashTransmitLedMaybe() {
@@ -279,15 +285,17 @@ uint8_t getStatusLedsStatus() {
 **********************************************************************/
 
 /**********************************************************************
- * Save the value of DIL_SWITCH to EEPROM as the new module instance
- * number and to begin operation with this updated value. The status
- * LEDs are briefly flashed to indicate the new number.
+ * updateModuleInstance - called from the state machine. If the call
+ * was triggered by a short button press the save the passed value
+ * to EEPROM as the new module instance number and begin operation with
+ * this update. On either a long or a short press the status LEDs are
+ * briefly flashed to indicate the new instance number.
  */
 int updateModuleInstance(int value) {
   if (!(value & 0x0100)) {
     EEPROM.write(INSTANCE_ADDRESS_EEPROM_ADDRESS, value);
     MODULE_INSTANCE = EEPROM.read(INSTANCE_ADDRESS_EEPROM_ADDRESS);
-    STATUS_LEDS.writeByte(MODULE_INSTANCE); delay(1000);
   }
+  STATUS_LEDS.writeByte(MODULE_INSTANCE); delay(1000);
   return(0);
 }
