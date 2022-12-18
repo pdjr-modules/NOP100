@@ -82,7 +82,7 @@
 #define STATUS_LEDS_UPDATE_INTERVAL 100
 #define LONG_BUTTON_PRESS_INTERVAL 1000UL
 
-#include "module.h"
+#include "module-definitions.inc"
 
 /**********************************************************************
  * Declarations of local functions.
@@ -140,6 +140,8 @@ IC74HC165 DIL_SWITCH (GPIO_PISO_CLOCK, GPIO_PISO_DATA, GPIO_PISO_LATCH);
  */
 unsigned char MODULE_INSTANCE = DEFAULT_INSTANCE_ADDRESS;
 
+#include "module-declarations.inc"
+
 /**********************************************************************
  * MAIN PROGRAM - setup()
  */
@@ -181,7 +183,7 @@ void setup() {
   STATUS_LEDS.writeByte(0x00);
   STATUS_LEDS.configureUpdate(STATUS_LEDS_UPDATE_INTERVAL, getStatusLedsStatus);
 
-  #include "module-setup.cpp"
+  #include "module-setup.inc"
 
   // Initialise and start N2K services.
   NMEA2000.SetProductInformation(PRODUCT_SERIAL_CODE, PRODUCT_CODE, PRODUCT_TYPE, PRODUCT_FIRMWARE_VERSION, PRODUCT_VERSION);
@@ -218,7 +220,7 @@ void loop() {
   NMEA2000.ParseMessages();
   if (NMEA2000.ReadResetAddressChanged()) EEPROM.update(SOURCE_ADDRESS_EEPROM_ADDRESS, NMEA2000.GetN2kSource());
 
-  #include "module-loop.cpp"
+  #include "module-loop.inc"
 
   // If the PRG button has been operated, then call the button handler.
   if (PRG_BUTTON.toggled()) prgButtonHandler(PRG_BUTTON.read());
@@ -287,19 +289,3 @@ uint8_t getStatusLedsStatus() {
 /**********************************************************************
  * STATE MACHINE CALLBACK FUNCTIONS
 **********************************************************************/
-
-/**********************************************************************
- * updateModuleInstance - called from the state machine. If the call
- * was triggered by a short button press the save the passed value
- * to EEPROM as the new module instance number and begin operation with
- * this update. On either a long or a short press the status LEDs are
- * briefly flashed to indicate the new instance number.
- */
-int updateModuleInstance(int value) {
-  if (!(value & 0x0100)) {
-    EEPROM.write(INSTANCE_ADDRESS_EEPROM_ADDRESS, value);
-    MODULE_INSTANCE = EEPROM.read(INSTANCE_ADDRESS_EEPROM_ADDRESS);
-  }
-  STATUS_LEDS.writeByte(MODULE_INSTANCE); delay(1000);
-  return(0);
-}
