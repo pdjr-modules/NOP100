@@ -112,7 +112,7 @@ tNMEA2000Handler NMEA2000Handlers[] = NMEA_PGN_HANDLERS;
  * PRG_BUTTON - debounced GPIO_PRG.
  */
 Button PRG_BUTTON(GPIO_PRG);
-StateMachine::tJump jumpVectors[] = { { 0, updateModuleInstance }, { 0, 0 }};
+StateMachine::tJump jumpVectors[] PRG_JUMP_VECTOR;
 StateMachine STATE_MACHINE(0, jumpVectors);
 
 /**********************************************************************
@@ -274,6 +274,7 @@ void prgButtonHandler(bool released) {
   }
 }
 
+#ifndef GET_STATUS_LEDS_STATUS
 /**********************************************************************
  * getStatusLedsStatus - returns a value that should be used to update
  * the status LEDs.
@@ -281,6 +282,7 @@ void prgButtonHandler(bool released) {
 uint8_t getStatusLedsStatus() {
   return(0);
 }
+#endif
 
 /**********************************************************************
  * STATE MACHINE CALLBACK FUNCTIONS

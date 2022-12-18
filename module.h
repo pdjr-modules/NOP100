@@ -42,3 +42,4 @@
 
 #define NMEA_TRANSMIT_MESSAGE_PGNS { 0 }
 #define NMEA_PGN_HANDLERS  { { 0L, 0 } }
+#define PRG_JUMP_VECTOR { { 0, 0 } }
