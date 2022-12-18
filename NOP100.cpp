@@ -264,7 +264,7 @@ void prgButtonHandler(bool released) {
   static unsigned long deadline = 0UL;
   unsigned long now = millis();
 
-  if (!released) {
+  if (released) {
     STATE_MACHINE.process(DIL_SWITCH.readByte() + ((deadline) && (now > deadline))?255:0);
     deadline = 0UL;
   } else {
