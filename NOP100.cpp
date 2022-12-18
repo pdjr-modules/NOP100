@@ -84,9 +84,6 @@
 
 #include "module.h"
 
-#include "module-deviceinfo.defs"
-#include "module-productinfo.defs"
-
 /**********************************************************************
  * Declarations of local functions.
  */
@@ -102,14 +99,14 @@ void prgButtonHandler(bool released);
  * 
  * PGN 127501 Binary Status Report.
  */
-const unsigned long TransmitMessages[] PROGMEM={ 0 };
+const unsigned long TransmitMessages[] = NMEA_TRANSMIT_MESSAGE_PGNS;
 
 /**********************************************************************
  * NMEA2000Handlers -  vector mapping each PGN handled by this module
  * onto a function which will process any received messages.
  */
 typedef struct { unsigned long PGN; void (*Handler)(const tN2kMsg &N2kMsg); } tNMEA2000Handler;
-tNMEA2000Handler NMEA2000Handlers[] = { {0L, 0} };
+tNMEA2000Handler NMEA2000Handlers[] = NMEA_PGN_HANDLERS;
 
 /**********************************************************************
  * PRG_BUTTON - debounced GPIO_PRG.
@@ -142,8 +139,6 @@ IC74HC165 DIL_SWITCH (GPIO_PISO_CLOCK, GPIO_PISO_DATA, GPIO_PISO_LATCH);
  * during module initialisation and reconfiguration.
  */
 unsigned char MODULE_INSTANCE = DEFAULT_INSTANCE_ADDRESS;
-
-#include "module-declarations.cpp"
 
 /**********************************************************************
  * MAIN PROGRAM - setup()

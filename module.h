@@ -23,3 +23,22 @@
 #define DEVICE_INDUSTRY_GROUP 4
 #define DEVICE_MANUFACTURER_CODE 2046
 #define DEVICE_UNIQUE_NUMBER 849
+
+
+/**********************************************************************
+ * product-information.defs
+ * 
+ * This poorly structured set of values is what NMEA expects a product
+ * description to be shoe-horned into.
+ */
+#define PRODUCT_CERTIFICATION_LEVEL 1
+#define PRODUCT_CODE 002
+#define PRODUCT_FIRMWARE_VERSION "1.1.0 (Jun 2022)"
+#define PRODUCT_LEN 1
+#define PRODUCT_N2K_VERSION 2101
+#define PRODUCT_SERIAL_CODE "002-849" // PRODUCT_CODE + DEVICE_UNIQUE_NUMBER
+#define PRODUCT_TYPE "SIM108"
+#define PRODUCT_VERSION "1.0 (Mar 2022)"
+
+#define NMEA_TRANSMIT_MESSAGE_PGNS { 0 }
+#define NMEA_PGN_HANDLERS  { { 0L, 0 } }
