@@ -17,8 +17,6 @@
 #include <StateMachine.h>
 #include <arraymacros.h>
 
-#include "NMEA200-defaults.h"
-
 /**********************************************************************
  * SERIAL DEBUG
  * 
@@ -75,6 +73,8 @@
 #define GPIO_D23 23
 #define GPIO_OUTPUT_PINS { GPIO_SIPO_CLOCK, GPIO_SIPO_DATA, GPIO_SIPO_LATCH, GPIO_PISO_CLOCK, GPIO_PISO_LATCH, GPIO_POWER_LED, GPIO_TRANSMIT_LED }
 
+#define NMEA2000_SOURCE_ADDRESS_SEED 22     // Arbitrary seed value
+#define NMEA2000_INSTANCE_UNDEFINED 255     // NMEA defines 255 as "undefined"
 #define DEFAULT_SOURCE_ADDRESS NMEA2000_SOURCE_ADDRESS_SEED
 #define DEFAULT_INSTANCE_ADDRESS NMEA2000_INSTANCE_UNDEFINED
 
