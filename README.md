@@ -38,7 +38,7 @@ minimum of code.
    $> ln -s ../../myapp src
    $> cd ../..
    ```
-   At this point you should be able to open the firmware-factory 
+   At this juncture you should be able to open the firmware-factory 
    project in your preferred build environment (I use Code) and
    compile a firmware which does nothing.
 5. Edit the ```.inc``` files downloaded at (3) to tailor and
