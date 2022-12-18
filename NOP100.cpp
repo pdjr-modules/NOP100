@@ -230,6 +230,10 @@ void loop() {
   STATUS_LEDS.updateMaybe();
 }
 
+/**********************************************************************
+ * flashTransmitLedMaybe - set the transmit LED GPIO pin to the value
+ * of TRANSMIT_LED_STATE. 
+ */
 void flashTransmitLedMaybe() {
   static unsigned long deadline = 0UL;
   unsigned long now = millis();
