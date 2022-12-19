@@ -26,9 +26,13 @@ minimum of code.
    ```
    $> mkdir myapp
    $> cd myapp
-   $> ln -s ../NOP100/NOP100.cpp myapp.cpp
+   $> cp ../NOP100/NOP100.cpp myapp.cpp
    $> cp ../NOP100/*.inc .
    $> cd ..
+   ```
+   You can now delete the NOP100 project.
+   ```
+   rm -rf NOP100
    ```
 4. Set up the build environment so that it points to your new
    project.
@@ -40,8 +44,9 @@ minimum of code.
    ```
    At this juncture you should be able to open the firmware-factory 
    project in your preferred build environment (I use Code) and
-   compile a firmware which does nothing.
+   compile a firmware for your application which does nothing. Well,
+   not very much.
 5. Edit the ```.inc``` files downloaded at (3) to tailor and
    extend the module firmware to the requirements of your
-   application.  DO NOT MODIFY app.cpp.
+   application.  DO NOT MODIFY myapp.cpp.
 
