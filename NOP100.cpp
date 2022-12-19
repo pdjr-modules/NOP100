@@ -97,7 +97,6 @@ void messageHandler(const tN2kMsg&);
 void flashTransmitLedMaybe();
 void processPrgButtonPress();
 uint8_t getStatusLedsStatus();
-int updateModuleInstance(int value);
 void prgButtonHandler(bool released);
 
 /**********************************************************************
@@ -168,6 +167,7 @@ void setup() {
   for (unsigned int i = 0 ; i < ELEMENTCOUNT(opins); i++) pinMode(opins[i], OUTPUT);
   PRG_BUTTON.begin();
   DIL_SWITCH.begin();
+  STATUS_LEDS.begin();
 
   // We assume that a new host system has its EEPROM initialised to all
   // 0xFF. We test by reading a byte that in a configured system should
