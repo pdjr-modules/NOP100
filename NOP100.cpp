@@ -303,7 +303,9 @@ void prgButtonHandler(bool released) {
 #ifndef GET_STATUS_LEDS_STATUS
 /**********************************************************************
  * getStatusLedsStatus - returns a value that should be used to update
- * the status LEDs.
+ * the status LEDs. An application using NOP100 will need to override
+ * this function and must define GET_STATUS_LEDS_STATUS to prevent
+ * redefinition issues.
  */
 uint8_t getStatusLedsStatus() {
   return(0);
