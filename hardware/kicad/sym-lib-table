@@ -1,3 +1,4 @@
 (sym_lib_table
   (lib (name NMEA2000-COMMON-rescue)(type Legacy)(uri ${KIPRJMOD}/NMEA2000-COMMON-rescue.lib)(options "")(descr ""))
+  (lib (name pdjr)(type Legacy)(uri /home/preeve/Documents/GitHub/pdjr-kicad-libraries/pdjr/library/pdjr.lib)(options "")(descr ""))
 )

@@ -216,14 +216,14 @@ F 3 "~" H 5200 2250 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L NMEA2000-COMMON-rescue:74HC595-74xx U4
+L pdjr:74HC595 U4
 U 1 1 6338D277
-P 8450 4150
-F 0 "U4" H 8500 4700 50  0000 C CNN
-F 1 "74HCT595" H 8650 3700 50  0000 C CNN
-F 2 "Package_SO:SO-16_3.9x9.9mm_P1.27mm" H 8450 4150 50  0001 C CNN
-F 3 "http://www.ti.com/lit/ds/symlink/sn74hc595.pdf" H 8450 4150 50  0001 C CNN
-	1    8450 4150
+P 8450 4000
+F 0 "U4" H 8750 4400 50  0000 C CNN
+F 1 "74HCT595" H 8750 3400 50  0000 C CNN
+F 2 "Package_SO:SO-16_3.9x9.9mm_P1.27mm" H 8450 4000 50  0001 C CNN
+F 3 "http://www.ti.com/lit/ds/symlink/sn74hc595.pdf" H 8450 4000 50  0001 C CNN
+	1    8450 4000
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -262,7 +262,7 @@ Wire Wire Line
 	10300 4250 10400 4250
 Text Label 7550 3750 2    50   ~ 0
 SIPO_DATA
-Text Label 7550 4000 2    50   ~ 0
+Text Label 7550 3900 2    50   ~ 0
 SIPO_CLOCK
 Text Label 7550 4200 2    50   ~ 0
 SIPO_LATCH
@@ -280,9 +280,7 @@ F 3 "" H 7550 4750 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 Wire Wire Line
-	8050 3900 7650 3900
-Wire Wire Line
-	7650 3900 7650 3450
+	8050 3900 7550 3900
 Wire Wire Line
 	8450 3450 8450 3550
 $Comp
@@ -524,14 +522,14 @@ F 3 "~" H 10150 5550 50  0001 C CNN
 	-1   0    0    1   
 $EndComp
 $Comp
-L NMEA2000-COMMON-rescue:74HC595-74xx U3
+L pdjr:74HC595 U3
 U 1 1 6399F1E7
-P 8450 5650
-F 0 "U3" H 8500 6200 50  0000 C CNN
-F 1 "74HCT595" H 8650 5200 50  0000 C CNN
-F 2 "Package_SO:SO-16_3.9x9.9mm_P1.27mm" H 8450 5650 50  0001 C CNN
-F 3 "http://www.ti.com/lit/ds/symlink/sn74hc595.pdf" H 8450 5650 50  0001 C CNN
-	1    8450 5650
+P 8450 5500
+F 0 "U3" H 8750 5900 50  0000 C CNN
+F 1 "74HCT595" H 8750 4900 50  0000 C CNN
+F 2 "Package_SO:SO-16_3.9x9.9mm_P1.27mm" H 8450 5500 50  0001 C CNN
+F 3 "http://www.ti.com/lit/ds/symlink/sn74hc595.pdf" H 8450 5500 50  0001 C CNN
+	1    8450 5500
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -568,7 +566,7 @@ Wire Wire Line
 	10000 5650 10400 5650
 Wire Wire Line
 	10300 5750 10400 5750
-Text Label 7550 5500 2    50   ~ 0
+Text Label 7550 5400 2    50   ~ 0
 SIPO_CLOCK
 Text Label 7550 5700 2    50   ~ 0
 SIPO_LATCH
@@ -592,11 +590,7 @@ F 3 "" H 7550 6250 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 Wire Wire Line
-	8050 5400 7650 5400
-Wire Wire Line
-	7650 5400 7650 4950
-Wire Wire Line
-	7650 4950 7850 4950
+	8050 5400 7550 5400
 Wire Wire Line
 	8450 4950 8450 5050
 $Comp
@@ -802,7 +796,7 @@ NoConn ~ 3400 4550
 NoConn ~ 3500 4550
 NoConn ~ 3600 4550
 $Comp
-L NMEA2000-COMMON-rescue:Teensy_3.2-pdjr U5
+L pdjr:Teensy_3.2 U5
 U 1 1 60F2AB82
 P 4150 6050
 F 0 "U5" H 4300 4500 50  0000 C CNN
@@ -904,7 +898,7 @@ CAN_L
 Text Notes 5250 1400 0    50   ~ 0
 CAN_SCR
 $Comp
-L NMEA2000-COMMON-rescue:TMR-2-2411-pdjr U2
+L pdjr:TMR-2-2411 U2
 U 1 1 63A71732
 P 3500 1150
 F 0 "U2" H 3500 1500 50  0000 C CNN
@@ -988,7 +982,7 @@ Connection ~ 8450 850
 Wire Wire Line
 	8450 850  8450 950 
 $Comp
-L NMEA2000-COMMON-rescue:74LS165-pdjr U101
+L pdjr:74HC165 U101
 U 1 1 63F7C7A4
 P 8450 1850
 F 0 "U101" H 8300 2600 50  0000 C CNN
@@ -1496,22 +1490,12 @@ Wire Wire Line
 	7550 6250 7650 6250
 Connection ~ 7650 6250
 Wire Wire Line
-	7500 3450 7650 3450
-Connection ~ 7650 3450
-Wire Wire Line
 	7550 3750 8050 3750
-Wire Wire Line
-	7550 4000 8050 4000
 Wire Wire Line
 	7550 4200 8050 4200
 Wire Wire Line
 	7550 4750 7650 4750
 Connection ~ 7650 4750
-Wire Wire Line
-	7550 4950 7650 4950
-Connection ~ 7650 4950
-Wire Wire Line
-	7550 5500 8050 5500
 Wire Wire Line
 	7550 5700 8050 5700
 Wire Wire Line
@@ -1604,8 +1588,6 @@ Connection ~ 11000 5950
 Wire Wire Line
 	11000 5950 11000 6250
 Wire Wire Line
-	8050 5250 8050 4450
-Wire Wire Line
 	7850 4750 8450 4750
 Wire Wire Line
 	7850 4750 7650 4750
@@ -1613,8 +1595,6 @@ Connection ~ 7850 4750
 Wire Wire Line
 	7850 3450 8450 3450
 Connection ~ 7850 3450
-Wire Wire Line
-	7650 3450 7850 3450
 Wire Wire Line
 	7850 3700 7850 4750
 Wire Wire Line
@@ -1660,121 +1640,223 @@ Wire Wire Line
 Connection ~ 7850 4950
 Wire Wire Line
 	2650 5850 3050 5850
-NoConn ~ 3050 5050
-NoConn ~ 3050 5150
-NoConn ~ 3050 5250
-NoConn ~ 3050 5350
-NoConn ~ 3050 5450
-NoConn ~ 3050 5550
-NoConn ~ 3050 5650
-NoConn ~ 3050 5750
-NoConn ~ 4150 5150
-NoConn ~ 4150 5250
-NoConn ~ 4150 5350
-NoConn ~ 4150 5450
-Text GLabel 6050 5200 2    50   BiDi ~ 0
+Text Label 4250 5050 0    50   ~ 0
 D9
-NoConn ~ 4150 5050
-Text GLabel 6050 5100 2    50   BiDi ~ 0
+Text Label 4250 5150 0    50   ~ 0
 D8
-Text GLabel 6050 5000 2    50   BiDi ~ 0
+Text Label 4250 5250 0    50   ~ 0
 D7
-Text GLabel 6050 4900 2    50   BiDi ~ 0
+Text Label 4250 5350 0    50   ~ 0
 D6
-Text GLabel 6050 4800 2    50   BiDi ~ 0
+Text Label 4250 5450 0    50   ~ 0
 D5
-Text GLabel 6050 5300 2    50   BiDi ~ 0
+Text Label 2950 5050 2    50   ~ 0
 D16
-Text GLabel 6050 5400 2    50   BiDi ~ 0
+Text Label 2950 5150 2    50   ~ 0
 D17
-Text GLabel 6050 5500 2    50   BiDi ~ 0
+Text Label 2950 5250 2    50   ~ 0
 D18
-Text GLabel 6050 5600 2    50   BiDi ~ 0
+Text Label 2950 5350 2    50   ~ 0
 D19
-Text GLabel 6050 5700 2    50   BiDi ~ 0
+Text Label 2950 5450 2    50   ~ 0
 D20
-Text GLabel 6050 5800 2    50   BiDi ~ 0
+Text Label 2950 5550 2    50   ~ 0
 D21
-Text GLabel 6050 5900 2    50   BiDi ~ 0
+Text Label 2950 5650 2    50   ~ 0
 D22
-Text GLabel 6050 6000 2    50   BiDi ~ 0
+Text Label 2950 5750 2    50   ~ 0
 D23
-Text Label 4150 5050 0    50   ~ 0
-D9
 Wire Wire Line
-	6050 4800 5950 4800
+	7500 3450 7650 3450
 Wire Wire Line
-	6050 4900 5950 4900
+	7550 4950 7650 4950
 Wire Wire Line
-	6050 5000 5950 5000
+	7650 4000 7650 3450
 Wire Wire Line
-	6050 5100 5950 5100
+	7650 4000 8050 4000
+Connection ~ 7650 3450
 Wire Wire Line
-	6050 5200 5950 5200
+	7650 3450 7850 3450
 Wire Wire Line
-	6050 5300 5950 5300
+	8050 4450 7950 4450
 Wire Wire Line
-	6050 5400 5950 5400
+	7950 4450 7950 5250
 Wire Wire Line
-	6050 5500 5950 5500
+	7950 5250 8050 5250
 Wire Wire Line
-	6050 5600 5950 5600
+	7650 5500 7650 4950
 Wire Wire Line
-	6050 5700 5950 5700
+	7650 5500 8050 5500
+Connection ~ 7650 4950
 Wire Wire Line
-	6050 5800 5950 5800
+	7650 4950 7850 4950
+$Comp
+L Connector:TestPoint_Small #TP1009
+U 1 1 63A4C6FD
+P 4250 5050
+F 0 "#TP1009" H 4298 5096 50  0001 L CNN
+F 1 "TestPoint_Small" H 4298 5050 50  0001 L CNN
+F 2 "" H 4450 5050 50  0001 C CNN
+F 3 "~" H 4450 5050 50  0001 C CNN
+	1    4250 5050
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:TestPoint_Small #TP1010
+U 1 1 63A50A2C
+P 4250 5150
+F 0 "#TP1010" H 4298 5196 50  0001 L CNN
+F 1 "TestPoint_Small" H 4298 5150 50  0001 L CNN
+F 2 "" H 4450 5150 50  0001 C CNN
+F 3 "~" H 4450 5150 50  0001 C CNN
+	1    4250 5150
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:TestPoint_Small #TP1011
+U 1 1 63A50E12
+P 4250 5250
+F 0 "#TP1011" H 4298 5296 50  0001 L CNN
+F 1 "TestPoint_Small" H 4298 5250 50  0001 L CNN
+F 2 "" H 4450 5250 50  0001 C CNN
+F 3 "~" H 4450 5250 50  0001 C CNN
+	1    4250 5250
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:TestPoint_Small #TP1012
+U 1 1 63A51151
+P 4250 5350
+F 0 "#TP1012" H 4298 5396 50  0001 L CNN
+F 1 "TestPoint_Small" H 4298 5350 50  0001 L CNN
+F 2 "" H 4450 5350 50  0001 C CNN
+F 3 "~" H 4450 5350 50  0001 C CNN
+	1    4250 5350
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:TestPoint_Small #TP1013
+U 1 1 63A513D5
+P 4250 5450
+F 0 "#TP1013" H 4298 5496 50  0001 L CNN
+F 1 "TestPoint_Small" H 4298 5450 50  0001 L CNN
+F 2 "" H 4450 5450 50  0001 C CNN
+F 3 "~" H 4450 5450 50  0001 C CNN
+	1    4250 5450
+	1    0    0    -1  
+$EndComp
 Wire Wire Line
-	6050 5900 5950 5900
+	4150 5050 4250 5050
 Wire Wire Line
-	6050 6000 5950 6000
-Text Label 5950 5200 2    50   ~ 0
-D9
-Text Label 4150 5150 0    50   ~ 0
-D8
-Text Label 5950 5100 2    50   ~ 0
-D8
-Text Label 4150 5250 0    50   ~ 0
-D7
-Text Label 5950 5000 2    50   ~ 0
-D7
-Text Label 4150 5350 0    50   ~ 0
-D6
-Text Label 5950 4900 2    50   ~ 0
-D6
-Text Label 4150 5450 0    50   ~ 0
-D5
-Text Label 5950 4800 2    50   ~ 0
-D5
-Text Label 3050 5050 2    50   ~ 0
-D16
-Text Label 5950 5300 2    50   ~ 0
-D16
-Text Label 3050 5150 2    50   ~ 0
-D17
-Text Label 5950 5400 2    50   ~ 0
-D17
-Text Label 5950 5500 2    50   ~ 0
-D18
-Text Label 5950 5600 2    50   ~ 0
-D19
-Text Label 5950 5700 2    50   ~ 0
-D20
-Text Label 5950 5800 2    50   ~ 0
-D21
-Text Label 5950 5900 2    50   ~ 0
-D22
-Text Label 5950 6000 2    50   ~ 0
-D23
-Text Label 3050 5250 2    50   ~ 0
-D18
-Text Label 3050 5350 2    50   ~ 0
-D19
-Text Label 3050 5450 2    50   ~ 0
-D20
-Text Label 3050 5550 2    50   ~ 0
-D21
-Text Label 3050 5650 2    50   ~ 0
-D22
-Text Label 3050 5750 2    50   ~ 0
-D23
+	4150 5150 4250 5150
+Wire Wire Line
+	4150 5250 4250 5250
+Wire Wire Line
+	4150 5350 4250 5350
+Wire Wire Line
+	4150 5450 4250 5450
+$Comp
+L Connector:TestPoint_Small #TP1001
+U 1 1 63AD55BA
+P 2950 5050
+F 0 "#TP1001" H 2998 5096 50  0001 L CNN
+F 1 "TestPoint_Small" H 2998 5050 50  0001 L CNN
+F 2 "" H 3150 5050 50  0001 C CNN
+F 3 "~" H 3150 5050 50  0001 C CNN
+	1    2950 5050
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:TestPoint_Small #TP1002
+U 1 1 63AD5AF4
+P 2950 5150
+F 0 "#TP1002" H 2998 5196 50  0001 L CNN
+F 1 "TestPoint_Small" H 2998 5150 50  0001 L CNN
+F 2 "" H 3150 5150 50  0001 C CNN
+F 3 "~" H 3150 5150 50  0001 C CNN
+	1    2950 5150
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:TestPoint_Small #TP1003
+U 1 1 63AD5DFB
+P 2950 5250
+F 0 "#TP1003" H 2998 5296 50  0001 L CNN
+F 1 "TestPoint_Small" H 2998 5250 50  0001 L CNN
+F 2 "" H 3150 5250 50  0001 C CNN
+F 3 "~" H 3150 5250 50  0001 C CNN
+	1    2950 5250
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:TestPoint_Small #TP1004
+U 1 1 63AD62D2
+P 2950 5350
+F 0 "#TP1004" H 2998 5396 50  0001 L CNN
+F 1 "TestPoint_Small" H 2998 5350 50  0001 L CNN
+F 2 "" H 3150 5350 50  0001 C CNN
+F 3 "~" H 3150 5350 50  0001 C CNN
+	1    2950 5350
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:TestPoint_Small #TP1005
+U 1 1 63AD67B5
+P 2950 5450
+F 0 "#TP1005" H 2998 5496 50  0001 L CNN
+F 1 "TestPoint_Small" H 2998 5450 50  0001 L CNN
+F 2 "" H 3150 5450 50  0001 C CNN
+F 3 "~" H 3150 5450 50  0001 C CNN
+	1    2950 5450
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:TestPoint_Small #TP1006
+U 1 1 63AD6B20
+P 2950 5550
+F 0 "#TP1006" H 2998 5596 50  0001 L CNN
+F 1 "TestPoint_Small" H 2998 5550 50  0001 L CNN
+F 2 "" H 3150 5550 50  0001 C CNN
+F 3 "~" H 3150 5550 50  0001 C CNN
+	1    2950 5550
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:TestPoint_Small #TP1007
+U 1 1 63AD706C
+P 2950 5650
+F 0 "#TP1007" H 2998 5696 50  0001 L CNN
+F 1 "TestPoint_Small" H 2998 5650 50  0001 L CNN
+F 2 "" H 3150 5650 50  0001 C CNN
+F 3 "~" H 3150 5650 50  0001 C CNN
+	1    2950 5650
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:TestPoint_Small #TP1008
+U 1 1 63AD75A4
+P 2950 5750
+F 0 "#TP1008" H 2998 5796 50  0001 L CNN
+F 1 "TestPoint_Small" H 2998 5750 50  0001 L CNN
+F 2 "" H 3150 5750 50  0001 C CNN
+F 3 "~" H 3150 5750 50  0001 C CNN
+	1    2950 5750
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2950 5050 3050 5050
+Wire Wire Line
+	2950 5150 3050 5150
+Wire Wire Line
+	2950 5250 3050 5250
+Wire Wire Line
+	2950 5350 3050 5350
+Wire Wire Line
+	2950 5450 3050 5450
+Wire Wire Line
+	2950 5550 3050 5550
+Wire Wire Line
+	2950 5650 3050 5650
+Wire Wire Line
+	2950 5750 3050 5750
 $EndSCHEMATC

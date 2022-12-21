@@ -3,10 +3,12 @@
 NOP100 provides a hardware design and firmware for a generic, abstract,
 NMEA2000 module.
 
-The microcontroller-based hardware design is elaborated with power
+## NOP100 hardware
+
+A microcontroller-based hardware design is elaborated with power
 supply, CAN interface, LED status display and configuration support,
 leaving an array of unused GPIO that can be used to extend this core
-hardware with a variety interfaces tailoring real-world application.
+hardware into a real-world application.
 
 The core schematic design translates into a PCB layout that can be
 easily expanded to implement most varieties of a working NMEA module.
