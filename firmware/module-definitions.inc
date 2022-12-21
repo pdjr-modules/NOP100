@@ -11,6 +11,8 @@
  * to this minimal set.
  */
   
+#include <ArduinoQueue.h>
+
  /**********************************************************************
  * DEVICE INFORMATION
  * 
@@ -81,4 +83,4 @@
  * handle module configuration conducted through operation of the
  * hardware PRG button.
  */
-#define PRG_JUMP_VECTOR { { 0, 0 } }
+#define PRG_JUMP_VECTOR { { 0, configureModuleInstance }, { 0, 0 } }
