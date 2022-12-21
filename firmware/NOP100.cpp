@@ -322,10 +322,14 @@ uint8_t getStatusLedsStatus() {
 
 #ifndef CONFIGURE_MODULE_INSTANCE
 /**********************************************************************
- * configureModuleInstance 
+ * configureModuleInstance - if triggered by a normal button press then
+ * update the EEPROM module instance to <value> and begin immediate use
+ * of the new setting, displaying the assigned value on the module
+ * LEDS.
+ */
 int configureModuleInstance(int value) {
   if (!(value & 0x0100)) {
-    EEPROM.write(INSTANCE_ADDRESS_EEPROM_ADDRESS, value);
+    EEPROM.write(INSTANCE_ADDRESS_EEPROM_ADDRESS, (uint8_t) value);
     MODULE_INSTANCE = EEPROM.read(INSTANCE_ADDRESS_EEPROM_ADDRESS);
   }
   STATUS_LEDS.writeByte(MODULE_INSTANCE); delay(1000);
