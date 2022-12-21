@@ -1,8 +1,12 @@
 # NOP100
 
-NOP100 is a generic NMEA2000 module that implements and abstracts
-most of the housekeeping functions necessary to build a working
-NMEA2000 module
+NOP100 provides a hardware design and firmware for a generic, abstract,
+NMEA2000 module.
+
+The hardware design provides a circuit design and PCB layout which can
+be easily extended to support the requirements of a real, functional,
+NMEA 2000 module  and abstracts most of the housekeeping functions necessary to build a working
+NMEA 2000 module
 
 The functionality required to implement a particular module
 application is abstracted out into a small collection of include
