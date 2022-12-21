@@ -3,6 +3,12 @@
  *
  * Contains #defines for the constant values which characterise a
  * particular NMEA module.
+ *
+ * For the NOP100 module these definitions are as vanilla / null as
+ * they can be and some, perhaps all, will need to be tweaked to
+ * support a real application. Additionally, definitions and function
+ * declarations which are specific to the application must be appended
+ * to this minimal set.
  */
   
  /**********************************************************************
