@@ -14,11 +14,37 @@ some supporting hardware
 and an elaborated NOP100 firmware that exploits it.
 
 The housekeeping and services implemented in the core NOP100 firmware
-must be preserved and in an effort to encourage this firmmware code is
+must be preserved and in an effort to encourage this firmware code is
 implemented so that the application specific functionality required to
 implement a particular module is abstracted out into a small
 collection of include files which allow even quite complex behaviours
 to be built with a minimum of code.
+
+## Module configuration
+
+The NOP100 module supports module configuration based around the idea
+of persistent settings which are saved in EEPROM.
+
+The module's NMEA instance number can be set using the following protocol:
+
+1. Enter the required module instance number on the ```ADDR/VALUE``` DIL
+   switch.
+   
+2. Press and release the ```PRG``` button. The new instance number will
+   enter use immediately and be saved to EEPROM. The module's transmit
+   LED will flash three times to confirm the update.
+   
+General purpose application settings consist of an 8-bit address and an
+8-bit value. A setting is entered using the following protocol:
+
+1. Enter the setting address on the ```ADDR/VALUE``` DIL switch.
+
+2. Press and hold the ```PRG``` button for over 1 second then release.
+   The transmit LED will begin flashing regularly.
+   
+3. Enter the setting value on the ```ADDR/VALUE``` DIL switch.
+
+4. Press and release the ```PRG``` button.
 
 ## HOW TO
 
