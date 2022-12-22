@@ -6,7 +6,7 @@
 The firmware has no real-world application. If you connect a NOP100
 vanilla device to your network it will appear as a device with Class
 Code 10 (System Tools) and Function Code 130 (Diagnostic). You can
-interact with a NAOP100 to the extent of setting the module instance
+interact with a NOP100 to the extent of setting the module instance
 number.
 
 That's it.
