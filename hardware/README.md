@@ -1,6 +1,6 @@
 # NOP100/hardware
 
-<table border="none">
+<table border="0px">
 <tr>
 <td>
 This project thread provides a circuit design and PCB layout for a
