@@ -15,7 +15,7 @@ See [NOP100/firmware](../firmware/) for a C++ pattern and associated
 libraries that can be used as a basis for implementing firmware which
 exploits this hardware design.
 
-<img src="pcb.svg" width="400px;" style="float: right;">
+<img src="pcb.svg" width="400px;" align="center">
 
 ## Design elements
 
