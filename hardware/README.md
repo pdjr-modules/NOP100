@@ -1,6 +1,6 @@
 # NOP100/hardware
 
-<table style="border: none;">
+<table cellspacing="0" cellpadding="0" style="border: none;">
 <tr>
 <td>
 This project thread provides a circuit design and PCB layout for a
