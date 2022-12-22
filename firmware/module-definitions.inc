@@ -20,8 +20,7 @@
  * can be made better with more research.
  *
  * DEVICE_CLASS and DEVICE_FUNCTION are explained in the document
- * "NMEA 2000 Appendix B.6 Class & Function Codes". The example values
- * below would be approprate for a switch input module.
+ * "NMEA 2000 Appendix B.6 Class & Function Codes".
  * 
  * INDUSTRY_GROUP we can be confident about (4 says maritime).
  * 
@@ -34,8 +33,8 @@
  * way to achieve this is just to bump the unique number for every
  * software build. Really this needs automating.
  */
-#define DEVICE_CLASS 30                 // Electrical Distribution
-#define DEVICE_FUNCTION 130             // Binary Event Monitor
+#define DEVICE_CLASS 10                 // System Tools
+#define DEVICE_FUNCTION 130             // Diagnostic
 #define DEVICE_INDUSTRY_GROUP 4         // Maritime
 #define DEVICE_MANUFACTURER_CODE 2046   // Currently not allocated.
 #define DEVICE_UNIQUE_NUMBER 849        // Bump me?
