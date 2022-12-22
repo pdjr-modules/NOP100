@@ -22,6 +22,7 @@ exploits this hardware design.
 <img src="pcb.svg" width="400px;" align="center">
 </td>
 </tr>
+</table>
    
 ## Design elements
 
