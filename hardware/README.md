@@ -2,7 +2,7 @@
 
 <table border="0">
 <tr>
-<td>
+<td colwidth="50%">
 This project thread provides a circuit design and PCB layout for a
 generic, re-usable, NMEA 2000 module based around the Teensy 4.0
 micro-controller.
@@ -19,7 +19,7 @@ libraries that can be used as a basis for implementing firmware which
 exploits this hardware design.
 </td>
 <td>
-<img src="pcb.svg" width="400px;" align="center">
+<img src="pcb.svg">
 </td>
 </tr>
 </table>
