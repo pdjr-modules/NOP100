@@ -6,7 +6,7 @@ micro-controller.
 <table border="0">
 <tr>
 <td>
-<img src="pcb.svg">
+<img src="schematic.svg">
 </td>
 <td>
 <img src="pcb.svg">
