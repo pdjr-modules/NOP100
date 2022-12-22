@@ -19,3 +19,4 @@ That's it.
 To build a module that performs some real-world task you will need
 some supporting hardware and an elaborated NOP100 firmware that
 exploits it.
+Follow the links above to find out more.
