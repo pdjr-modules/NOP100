@@ -10,6 +10,8 @@ micro-controller.
 <td rowspan="3">
 <img src="pcb.svg">
 </td>
+   </tr>
+   <tr>
 <td>
 The PCB layout can be imported into other projects, relieving them of
 the effort of designing and implementing fundamental services which
@@ -18,6 +20,8 @@ A project designer can import this PCB layout into their project and
 focus on just those elements of design and implementation that are
 appropriate to the development of their NMEA application.
 </td>
+   </tr>
+   <tr>
 <td>
 See [NOP100/firmware](../firmware/) for a C++ pattern and associated
 libraries that can be used as a basis for implementing firmware which
