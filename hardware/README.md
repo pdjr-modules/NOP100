@@ -1,6 +1,6 @@
 # NOP100/hardware
 
-<table>
+<table border="none">
 <tr>
 <td>
 This project thread provides a circuit design and PCB layout for a
@@ -14,9 +14,10 @@ A project designer can import this PCB layout into their project and
 focus on just those elements of design and implementation that are
 appropriate to the development of their NMEA application.
 </td>
-<td>
-<img src="pcb.svg" width="600px">
+<td colwidth="40%">
+<img src="pcb.svg">
 </td>
+</tr>
 </table>
 
 See [NOP100/firmware](../firmware/) for a C++ pattern and associated
