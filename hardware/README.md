@@ -13,6 +13,7 @@ micro-controller.
 </td>
 </tr>
 </table>
+
 The PCB layout can be imported into other projects, relieving them of
 the effort of designing and implementing fundamental services which
 power, interface, configure and process mostan NMEA module.
