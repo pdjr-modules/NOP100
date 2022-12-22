@@ -1,5 +1,8 @@
 # NOP100/hardware
 
+<table border="0">
+<tr>
+<td>
 This project thread provides a circuit design and PCB layout for a
 generic, re-usable, NMEA 2000 module based around the Teensy 4.0
 micro-controller.
@@ -14,9 +17,12 @@ appropriate to the development of their NMEA application.
 See [NOP100/firmware](../firmware/) for a C++ pattern and associated
 libraries that can be used as a basis for implementing firmware which
 exploits this hardware design.
-
+</td>
+<td>
 <img src="pcb.svg" width="400px;" align="center">
-
+</td>
+</tr>
+   
 ## Design elements
 
 ### PCB
