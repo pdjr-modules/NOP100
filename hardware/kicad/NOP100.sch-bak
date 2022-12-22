@@ -4,7 +4,7 @@ EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
 Sheet 1 1
-Title "SIM108 Switch Input Module"
+Title "NOP100 Generic N2K Module"
 Date "2022-06-11"
 Rev "2.0.0"
 Comp "PDJR <preeve@pdjr.eu>"
@@ -799,8 +799,8 @@ $Comp
 L pdjr:Teensy_3.2 U5
 U 1 1 60F2AB82
 P 4150 6050
-F 0 "U5" H 4300 4500 50  0000 C CNN
-F 1 "Teensy_4.0" H 4450 4600 50  0000 C CNN
+F 0 "U5" H 4450 4600 50  0000 C CNN
+F 1 "Teensy_4.0" H 4700 6200 50  0000 C CNN
 F 2 "Package_DIP:DIP-28_W15.24mm_LongPads" H 4150 6050 50  0001 C CNN
 F 3 "" H 4150 6050 50  0001 C CNN
 	1    4150 6050
@@ -911,13 +911,13 @@ $EndComp
 $Comp
 L power:+3V3 #PWR0103
 U 1 1 639236D5
-P 2650 5850
-F 0 "#PWR0103" H 2650 5700 50  0001 C CNN
-F 1 "+3V3" H 2665 6023 50  0000 C CNN
-F 2 "" H 2650 5850 50  0001 C CNN
-F 3 "" H 2650 5850 50  0001 C CNN
-	1    2650 5850
-	0    -1   -1   0   
+P 2550 6450
+F 0 "#PWR0103" H 2550 6300 50  0001 C CNN
+F 1 "+3V3" H 2565 6623 50  0000 C CNN
+F 2 "" H 2550 6450 50  0001 C CNN
+F 3 "" H 2550 6450 50  0001 C CNN
+	1    2550 6450
+	-1   0    0    1   
 $EndComp
 Wire Wire Line
 	10350 2600 10250 2600
@@ -1638,46 +1638,31 @@ Connection ~ 2650 950
 Wire Wire Line
 	7850 4950 8450 4950
 Connection ~ 7850 4950
-Wire Wire Line
-	2650 5850 3050 5850
-NoConn ~ 3050 5050
-NoConn ~ 3050 5150
-NoConn ~ 3050 5250
-NoConn ~ 3050 5350
-NoConn ~ 3050 5450
-NoConn ~ 3050 5550
-NoConn ~ 3050 5650
-NoConn ~ 3050 5750
-NoConn ~ 4150 5150
-NoConn ~ 4150 5250
-NoConn ~ 4150 5350
-NoConn ~ 4150 5450
-NoConn ~ 4150 5050
-Text Label 4150 5050 0    50   ~ 0
+Text Label 4250 5050 0    50   ~ 0
 D9
-Text Label 4150 5150 0    50   ~ 0
+Text Label 4250 5150 0    50   ~ 0
 D8
-Text Label 4150 5250 0    50   ~ 0
+Text Label 4250 5250 0    50   ~ 0
 D7
-Text Label 4150 5350 0    50   ~ 0
+Text Label 4250 5350 0    50   ~ 0
 D6
-Text Label 4150 5450 0    50   ~ 0
+Text Label 4250 5450 0    50   ~ 0
 D5
-Text Label 3050 5050 2    50   ~ 0
+Text Label 2950 5050 2    50   ~ 0
 D16
-Text Label 3050 5150 2    50   ~ 0
+Text Label 2950 5150 2    50   ~ 0
 D17
-Text Label 3050 5250 2    50   ~ 0
+Text Label 2950 5250 2    50   ~ 0
 D18
-Text Label 3050 5350 2    50   ~ 0
+Text Label 2950 5350 2    50   ~ 0
 D19
-Text Label 3050 5450 2    50   ~ 0
+Text Label 2950 5450 2    50   ~ 0
 D20
-Text Label 3050 5550 2    50   ~ 0
+Text Label 2950 5550 2    50   ~ 0
 D21
-Text Label 3050 5650 2    50   ~ 0
+Text Label 2950 5650 2    50   ~ 0
 D22
-Text Label 3050 5750 2    50   ~ 0
+Text Label 2950 5750 2    50   ~ 0
 D23
 Wire Wire Line
 	7500 3450 7650 3450
@@ -1703,4 +1688,177 @@ Wire Wire Line
 Connection ~ 7650 4950
 Wire Wire Line
 	7650 4950 7850 4950
+$Comp
+L Connector:TestPoint_Small #TP1009
+U 1 1 63A4C6FD
+P 4250 5050
+F 0 "#TP1009" H 4298 5096 50  0001 L CNN
+F 1 "TestPoint_Small" H 4298 5050 50  0001 L CNN
+F 2 "" H 4450 5050 50  0001 C CNN
+F 3 "~" H 4450 5050 50  0001 C CNN
+	1    4250 5050
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:TestPoint_Small #TP1010
+U 1 1 63A50A2C
+P 4250 5150
+F 0 "#TP1010" H 4298 5196 50  0001 L CNN
+F 1 "TestPoint_Small" H 4298 5150 50  0001 L CNN
+F 2 "" H 4450 5150 50  0001 C CNN
+F 3 "~" H 4450 5150 50  0001 C CNN
+	1    4250 5150
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:TestPoint_Small #TP1011
+U 1 1 63A50E12
+P 4250 5250
+F 0 "#TP1011" H 4298 5296 50  0001 L CNN
+F 1 "TestPoint_Small" H 4298 5250 50  0001 L CNN
+F 2 "" H 4450 5250 50  0001 C CNN
+F 3 "~" H 4450 5250 50  0001 C CNN
+	1    4250 5250
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:TestPoint_Small #TP1012
+U 1 1 63A51151
+P 4250 5350
+F 0 "#TP1012" H 4298 5396 50  0001 L CNN
+F 1 "TestPoint_Small" H 4298 5350 50  0001 L CNN
+F 2 "" H 4450 5350 50  0001 C CNN
+F 3 "~" H 4450 5350 50  0001 C CNN
+	1    4250 5350
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:TestPoint_Small #TP1013
+U 1 1 63A513D5
+P 4250 5450
+F 0 "#TP1013" H 4298 5496 50  0001 L CNN
+F 1 "TestPoint_Small" H 4298 5450 50  0001 L CNN
+F 2 "" H 4450 5450 50  0001 C CNN
+F 3 "~" H 4450 5450 50  0001 C CNN
+	1    4250 5450
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4150 5050 4250 5050
+Wire Wire Line
+	4150 5150 4250 5150
+Wire Wire Line
+	4150 5250 4250 5250
+Wire Wire Line
+	4150 5350 4250 5350
+Wire Wire Line
+	4150 5450 4250 5450
+$Comp
+L Connector:TestPoint_Small #TP1001
+U 1 1 63AD55BA
+P 2950 5050
+F 0 "#TP1001" H 2998 5096 50  0001 L CNN
+F 1 "TestPoint_Small" H 2998 5050 50  0001 L CNN
+F 2 "" H 3150 5050 50  0001 C CNN
+F 3 "~" H 3150 5050 50  0001 C CNN
+	1    2950 5050
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:TestPoint_Small #TP1002
+U 1 1 63AD5AF4
+P 2950 5150
+F 0 "#TP1002" H 2998 5196 50  0001 L CNN
+F 1 "TestPoint_Small" H 2998 5150 50  0001 L CNN
+F 2 "" H 3150 5150 50  0001 C CNN
+F 3 "~" H 3150 5150 50  0001 C CNN
+	1    2950 5150
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:TestPoint_Small #TP1003
+U 1 1 63AD5DFB
+P 2950 5250
+F 0 "#TP1003" H 2998 5296 50  0001 L CNN
+F 1 "TestPoint_Small" H 2998 5250 50  0001 L CNN
+F 2 "" H 3150 5250 50  0001 C CNN
+F 3 "~" H 3150 5250 50  0001 C CNN
+	1    2950 5250
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:TestPoint_Small #TP1004
+U 1 1 63AD62D2
+P 2950 5350
+F 0 "#TP1004" H 2998 5396 50  0001 L CNN
+F 1 "TestPoint_Small" H 2998 5350 50  0001 L CNN
+F 2 "" H 3150 5350 50  0001 C CNN
+F 3 "~" H 3150 5350 50  0001 C CNN
+	1    2950 5350
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:TestPoint_Small #TP1005
+U 1 1 63AD67B5
+P 2950 5450
+F 0 "#TP1005" H 2998 5496 50  0001 L CNN
+F 1 "TestPoint_Small" H 2998 5450 50  0001 L CNN
+F 2 "" H 3150 5450 50  0001 C CNN
+F 3 "~" H 3150 5450 50  0001 C CNN
+	1    2950 5450
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:TestPoint_Small #TP1006
+U 1 1 63AD6B20
+P 2950 5550
+F 0 "#TP1006" H 2998 5596 50  0001 L CNN
+F 1 "TestPoint_Small" H 2998 5550 50  0001 L CNN
+F 2 "" H 3150 5550 50  0001 C CNN
+F 3 "~" H 3150 5550 50  0001 C CNN
+	1    2950 5550
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:TestPoint_Small #TP1007
+U 1 1 63AD706C
+P 2950 5650
+F 0 "#TP1007" H 2998 5696 50  0001 L CNN
+F 1 "TestPoint_Small" H 2998 5650 50  0001 L CNN
+F 2 "" H 3150 5650 50  0001 C CNN
+F 3 "~" H 3150 5650 50  0001 C CNN
+	1    2950 5650
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:TestPoint_Small #TP1008
+U 1 1 63AD75A4
+P 2950 5750
+F 0 "#TP1008" H 2998 5796 50  0001 L CNN
+F 1 "TestPoint_Small" H 2998 5750 50  0001 L CNN
+F 2 "" H 3150 5750 50  0001 C CNN
+F 3 "~" H 3150 5750 50  0001 C CNN
+	1    2950 5750
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2950 5050 3050 5050
+Wire Wire Line
+	2950 5150 3050 5150
+Wire Wire Line
+	2950 5250 3050 5250
+Wire Wire Line
+	2950 5350 3050 5350
+Wire Wire Line
+	2950 5450 3050 5450
+Wire Wire Line
+	2950 5550 3050 5550
+Wire Wire Line
+	2950 5650 3050 5650
+Wire Wire Line
+	2950 5750 3050 5750
+Wire Wire Line
+	2550 6450 2550 5850
+Wire Wire Line
+	2550 5850 3050 5850
 $EndSCHEMATC
