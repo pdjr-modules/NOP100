@@ -1,13 +1,15 @@
 # NOP100/firmware
 
 ```NOP100.cpp``` is a complete, runnable, firmware for
-[NOP100 hardware](../hardware/README.md)
-with the caveat that the firmware has no real-world application.
+[NOP100 hardware](../hardware/README.md).
 
-If you connect a NOP100 vanilla device to your network it will appear
-as a device with Class Code 10 (System Tools) and Function Code 130
-(Diagnostic). You can interact with a NAOP100 to the extent of
-setting and displaying the module instance number. That's it.
+The firmware has no real-world application. If you connect a NOP100
+vanilla device to your network it will appear as a device with Class
+Code 10 (System Tools) and Function Code 130 (Diagnostic). You can
+interact with a NAOP100 to the extent of setting and displaying the
+module instance number.
+
+That's it.
 
 To build a module that performs some real-world task you will need
 some supporting hardware and an elaborated NOP100 firmware that
