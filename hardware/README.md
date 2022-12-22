@@ -6,20 +6,22 @@
 This project thread provides a circuit design and PCB layout for a
 generic, re-usable, NMEA 2000 module based around the Teensy 4.0
 micro-controller.
-<p>
+</td>
+<td rowspan="3">
+<img src="pcb.svg">
+</td>
+<td>
 The PCB layout can be imported into other projects, relieving them of
 the effort of designing and implementing fundamental services which
 power, interface, configure and process mostan NMEA module.
 A project designer can import this PCB layout into their project and
 focus on just those elements of design and implementation that are
 appropriate to the development of their NMEA application.
-<p>
+</td>
+<td>
 See [NOP100/firmware](../firmware/) for a C++ pattern and associated
 libraries that can be used as a basis for implementing firmware which
 exploits this hardware design.
-</td>
-<td>
-<img src="pcb.svg">
 </td>
 </tr>
 </table>
