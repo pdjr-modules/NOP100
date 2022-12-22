@@ -305,7 +305,7 @@ void prgButtonHandler(bool released) {
   unsigned long now = millis();
 
   if (released) {
-    STATE_MACHINE.process(DIL_SWITCH.readByte() + ((deadline) && (now > deadline))?255:0);
+    configureModuleSetting(DIL_SWITCH.readByte() + ((deadline) && (now > deadline))?255:0);
     deadline = 0UL;
   } else {
     deadline = (now + LONG_BUTTON_PRESS_INTERVAL);
