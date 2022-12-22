@@ -48,6 +48,7 @@
  */
 #define SOURCE_ADDRESS_EEPROM_ADDRESS 0
 #define INSTANCE_ADDRESS_EEPROM_ADDRESS 1
+#define APPLICATION_SETTINGS_BASE_ADDRESS 2
 
 /**********************************************************************
  * MCU PIN DEFINITIONS
@@ -89,6 +90,7 @@
 #define TRANSMIT_LED_UPDATE_INTERVAL 50   // Frequency at which to update the transmit LED.
 #define STATUS_LEDS_UPDATE_INTERVAL 100
 #define LONG_BUTTON_PRESS_INTERVAL 1000UL
+#define CONFIGURATION_INACTIVITY_TIMEOUT 10000UL
 
 /*********************************************************************/
 /*********************************************************************/
@@ -105,7 +107,8 @@ void messageHandler(const tN2kMsg&);
 void flashTransmitLedMaybe();
 uint8_t getStatusLedsStatus();
 void prgButtonHandler(bool released);
-int configureModuleInstance(int value);
+void configureModuleSetting(int value);
+uint8_t getModuleSetting(int address);
 
 /**********************************************************************
  * List of PGNs transmitted by this program.
@@ -125,8 +128,6 @@ tNMEA2000Handler NMEA2000Handlers[] = NMEA_PGN_HANDLERS;
  * PRG_BUTTON - debounced GPIO_PRG.
  */
 Button PRG_BUTTON(GPIO_PRG);
-StateMachine::tJump jumpVectors[] PRG_JUMP_VECTOR;
-StateMachine STATE_MACHINE(0, jumpVectors);
 
 /**********************************************************************
  * TRANSMIT_LED_STATE - holds the state that should be assigned to the
@@ -254,6 +255,9 @@ void loop() {
   /*********************************************************************/
   /*********************************************************************/
 
+  //
+  configureModuleSetting(-1);
+
   // If the PRG button has been operated, then call the button handler.
   if (PRG_BUTTON.toggled()) prgButtonHandler(PRG_BUTTON.read());
   
@@ -308,6 +312,43 @@ void prgButtonHandler(bool released) {
   }
 }
 
+/**********************************************************************
+ * configureModuleSetting - if triggered by a normal button press then
+ * update the EEPROM module instance to <value> and begin immediate use
+ * of the new setting, displaying the assigned value on the module
+ * LEDS.
+ */
+void configureModuleSetting(int param) {
+  static long resetDeadline = 0UL;
+  static int settingAddress = -1;
+  long now = millis();
+
+  if (param == -1) { // Cancel timed-out protocol.
+    if ((resetDeadline != 0UL) && (now > resetDeadline)) {
+      settingAddress = -1;
+      resetDeadline = 0UL;
+    }
+  } else {
+    if (!(param & 0x0100)) { // This is a short press
+      if (settingAddress == -1) { // Set the module instance address
+        EEPROM.write(INSTANCE_ADDRESS_EEPROM_ADDRESS, (uint8_t) param);
+        MODULE_INSTANCE = EEPROM.read(INSTANCE_ADDRESS_EEPROM_ADDRESS);
+      } else {
+        EEPROM.write((uint8_t) (APPLICATION_SETTINGS_BASE_ADDRESS + settingAddress), (uint8_t) param);
+        settingAddress = -1;
+        resetDeadline = 0UL;
+      }
+    } else { // This is a long press
+      settingAddress = param;
+      resetDeadline = (now + CONFIGURATION_INACTIVITY_TIMEOUT);
+    }
+  }
+}
+
+uint8_t getModuleSetting(int address) {
+  return((address >= 0)?EEPROM.read(address + APPLICATION_SETTINGS_BASE_ADDRESS):255);
+}
+
 #ifndef GET_STATUS_LEDS_STATUS
 /**********************************************************************
  * getStatusLedsStatus - returns a value that should be used to update
@@ -320,19 +361,3 @@ uint8_t getStatusLedsStatus() {
 }
 #endif
 
-#ifndef CONFIGURE_MODULE_INSTANCE
-/**********************************************************************
- * configureModuleInstance - if triggered by a normal button press then
- * update the EEPROM module instance to <value> and begin immediate use
- * of the new setting, displaying the assigned value on the module
- * LEDS.
- */
-int configureModuleInstance(int value) {
-  if (!(value & 0x0100)) {
-    EEPROM.write(INSTANCE_ADDRESS_EEPROM_ADDRESS, (uint8_t) value);
-    MODULE_INSTANCE = EEPROM.read(INSTANCE_ADDRESS_EEPROM_ADDRESS);
-  }
-  STATUS_LEDS.writeByte(MODULE_INSTANCE); delay(1000);
-  return(0);
-}
-#endif

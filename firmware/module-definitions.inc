@@ -71,16 +71,3 @@
  */
 #define NMEA_TRANSMIT_MESSAGE_PGNS { 0 }
 #define NMEA_PGN_HANDLERS  { { 0L, 0 } }
-
-/**********************************************************************
- * STATE MACHINE CALLBACK DEFINITIONS
- *
- * PRG_JUMP_VECTOR is an initialiser for a jump vector which defines
- * a list of pairs each of which maps an integer "machine state" to the
- * function responsible for processing that state.
- *
- * The vector is used to configure a state machine that is used to
- * handle module configuration conducted through operation of the
- * hardware PRG button.
- */
-#define PRG_JUMP_VECTOR { { 0, configureModuleInstance }, { 0, 0 } }
