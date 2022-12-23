@@ -16,7 +16,8 @@ micro-controller.
 
 The PCB layout can be imported into other projects, relieving them of
 the effort of designing and implementing fundamental services which
-power, interface, configure and process mostan NMEA module.
+can power, interface, configure and process most real-world NMEA
+applications.
 A project designer can import this PCB layout into their project and
 focus on just those elements of design and implementation that are
 appropriate to the development of their NMEA application.
