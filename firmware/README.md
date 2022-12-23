@@ -23,6 +23,20 @@ to be built with a minimum of code.
 
 ## Module configuration
 
+NOP100 models configuration data as an array of bytes and provides a
+software interface which supports the entry of data a byte at a time by
+entry of a storage address followed by the value to be stored at that
+address.
+
+implements a simple configuration mechanism based on the model
+saving byte values setting of the NOP100 DIL switch is accessed by by a single
+function which can be overri 
+
+The fundamental function (which you can override if you wish) is
+prgButtonHandler(boolean) which is called each time the PRG button
+state changes. A true argument indicates that the button has been
+released; a false argument that it has been pressed.
+
 The NOP100 module supports a simple mechanism for saving data entered
 through the NOP100 DIL switch to the Teensy microcontroller's
 persistent EEPROM storage.
