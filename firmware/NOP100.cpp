@@ -107,8 +107,9 @@ void messageHandler(const tN2kMsg&);
 void flashTransmitLedMaybe();
 uint8_t getStatusLedsStatus();
 void prgButtonHandler(bool released);
-void configureModuleSetting(int value);
+void configureModuleSettingMaybe(int param = 0);
 uint8_t getModuleSetting(int address);
+void setModuleSetting(int address, uint8_t value);
 
 /**********************************************************************
  * List of PGNs transmitted by this program.
@@ -256,7 +257,7 @@ void loop() {
   /*********************************************************************/
 
   // Timeout any hung configuration interaction.
-  configureModuleSetting(-1);
+  configureModuleSettingMaybe();
 
   // If the PRG button has been operated, then call the button handler.
   if (PRG_BUTTON.toggled()) prgButtonHandler(PRG_BUTTON.read());
@@ -290,8 +291,10 @@ void messageHandler(const tN2kMsg &N2kMsg) {
 
 /**********************************************************************
  * prgButtonHandler - handle a change of state on the PRG button which
- * now has the state indicated by <released> where true says
- * released. The handler detects short and long button presses.
+ * now has the state indicated by <released> (where true says released)
+ * and returns the value of DIL_SWITCH - positive if
+ * the result of a short button press; negative if the result of a long
+ * button press..
  * 
  * If the causal event was a button press, then a timer is started so
  * that the duration of the press can be measured. When the button is
@@ -300,31 +303,36 @@ void messageHandler(const tN2kMsg &N2kMsg) {
  * to the state machine's process() method with the value of the DIL
  * switch as argument. I 
  */
-void prgButtonHandler(bool released) {
+void prgButtonHandler(bool buttonState) {
   static unsigned long deadline = 0UL;
   unsigned long now = millis();
 
-  if (released) {
-    configureModuleSetting(DIL_SWITCH.readByte() + ((deadline) && (now > deadline))?255:0);
-    deadline = 0UL;
-  } else {
-    deadline = (now + LONG_BUTTON_PRESS_INTERVAL);
+  switch (buttonState) {
+    case Button::RELEASED :
+      configureModuleSettingMaybe(DIL_SWITCH.readByte() * (((deadline) && (now > deadline))?-1:1));
+      deadline = 0UL;
+      break;
+    case Button::PRESSED :
+      deadline = (now + LONG_BUTTON_PRESS_INTERVAL);
+      break;
   }
 }
 
 /**********************************************************************
  * configureModuleSettingMaybe - manage all aspects of module
- * configuration. There are two modes of invocation:
+ * configuration dependent upon the value of <param>.
  * 
- * configurationModuleSettingsMaybe() shoud be called from loop. The
- * function checks to see if a configuration protocol is in progress
- * and not timed out.
+ * configureModuleSettingsMaybe() shoud be called from loop. The
+ * function checks to see if and for how long a configuration protocol
+ * has been in progress and if the user does not complete the protocol
+ * times it out.
+ * 
  * i.e. a setting address has been enteredif triggered by a normal button press then
  * update the EEPROM module instance to <value> and begin immediate use
  * of the new setting, displaying the assigned value on the module
  * LEDS.
  */
-void configureModuleSettingMaybe(int param = -1) {
+void configureModuleSettingMaybe(int param) {
   static long resetDeadline = 0UL;
   static int settingAddress = EEPROM_MODULE_INSTANCE_INDEX;
   long now = millis();
@@ -334,29 +342,24 @@ void configureModuleSettingMaybe(int param = -1) {
   // indicate this by flashing the transmit LED.
   if (settingAddress != EEPROM_MODULE_INSTANCE_INDEX) TRANSMIT_LED_STATE = 1;
 
-  if (param == -1) { // Cancel timed-out protocol.
+  if (param == 0) { // Perhaps cancel a timed-out protocol.
     if ((resetDeadline != 0UL) && (now > resetDeadline)) {
       resetDeadline = 0UL;
       settingAddress = EEPROM_MODULE_INSTANCE_INDEX;
-      TRANSMIT_LED_STATE = 0;
     }
-  } else {
-
-    if (!(param & 0x0100)) { // This is a short press (param is a value)
-      setModuleSetting(settingAddress, (uint8_t) (param & 0xff));
-      if (settingAddress == EEPROM_MODULE_INSTANCE_INDEX) MODULE_INSTANCE = EEPROM.read(settingAddress);
-      settingAddress = EEPROM_MODULE_INSTANCE_INDEX;
+  } else if (param > 0) { // This is a short press (param is a value)
+    setModuleSetting(settingAddress, (uint8_t) param);
+    if (settingAddress == EEPROM_MODULE_INSTANCE_INDEX) MODULE_INSTANCE = EEPROM.read(settingAddress);
+    settingAddress = EEPROM_MODULE_INSTANCE_INDEX;
+  } else { // This is a long press (param is an address)
+    param = abs(param);
+    if ((param >= EEPROM_APPLICATION_START_INDEX) && (param < EEPROM.length())) {
+      // <param> contains a valid address
+      settingAddress = param;
+      resetDeadline = (now + CONFIGURATION_INACTIVITY_TIMEOUT);
     } else {
-      // <param> derived from a long press and is therefore a storage address
-      if ((param >= EEPROM_APPLICATION_START_INDEX) && (param < EEPROM.length())) {
-        // <param> contains a valid address
-        settingAddress = (param & 0xff);
-        resetDeadline = (now + CONFIGURATION_INACTIVITY_TIMEOUT);
-        // start steady LED flash
-      } else {
-        // Invalid application address
-        settingAddress = EEPROM_MODULE_INSTANCE_INDEX;
-      }
+      // Invalid application address
+      settingAddress = EEPROM_MODULE_INSTANCE_INDEX;
     }
   }
 }
