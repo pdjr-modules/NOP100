@@ -107,7 +107,7 @@ void messageHandler(const tN2kMsg&);
 void flashTransmitLedMaybe();
 uint8_t getStatusLedsStatus();
 void prgButtonHandler(bool released);
-void configureModuleSettingMaybe(int param = 0);
+void configureModuleSettingMaybe(int value = 0xffff, bool longPress = false);
 uint8_t getModuleSetting(int address);
 void setModuleSetting(int address, uint8_t value);
 
@@ -289,6 +289,7 @@ void messageHandler(const tN2kMsg &N2kMsg) {
   }
 }
 
+#ifndef PRG_BUTTON_HANDLER
 /**********************************************************************
  * prgButtonHandler - handle a change of state on the PRG button which
  * now has the state indicated by <released> (where true says released)
@@ -309,14 +310,14 @@ void prgButtonHandler(bool buttonState) {
 
   switch (buttonState) {
     case Button::RELEASED :
-      configureModuleSettingMaybe(DIL_SWITCH.readByte() * (((deadline) && (now > deadline))?-1:1));
+      configureModuleSettingMaybe(DIL_SWITCH.readByte(),  ((deadline) && (now > deadline)));
       deadline = 0UL;
       break;
     case Button::PRESSED :
       deadline = (now + LONG_BUTTON_PRESS_INTERVAL);
       break;
   }
-}
+#endif
 
 /**********************************************************************
  * configureModuleSettingMaybe - manage all aspects of module
@@ -332,7 +333,7 @@ void prgButtonHandler(bool buttonState) {
  * of the new setting, displaying the assigned value on the module
  * LEDS.
  */
-void configureModuleSettingMaybe(int param) {
+void configureModuleSettingMaybe(int value, bool longPress) {
   static long resetDeadline = 0UL;
   static int settingAddress = EEPROM_MODULE_INSTANCE_INDEX;
   long now = millis();
@@ -342,20 +343,19 @@ void configureModuleSettingMaybe(int param) {
   // indicate this by flashing the transmit LED.
   if (settingAddress != EEPROM_MODULE_INSTANCE_INDEX) TRANSMIT_LED_STATE = 1;
 
-  if (param == 0) { // Perhaps cancel a timed-out protocol.
+  if (value == 0xffff) { // Perhaps cancel a timed-out protocol.
     if ((resetDeadline != 0UL) && (now > resetDeadline)) {
       resetDeadline = 0UL;
       settingAddress = EEPROM_MODULE_INSTANCE_INDEX;
     }
-  } else if (param > 0) { // This is a short press (param is a value)
-    setModuleSetting(settingAddress, (uint8_t) param);
+  } else if (!longPress) { // This is a short press (param is a value)
+    setModuleSetting(settingAddress, (uint8_t) value);
     if (settingAddress == EEPROM_MODULE_INSTANCE_INDEX) MODULE_INSTANCE = EEPROM.read(settingAddress);
     settingAddress = EEPROM_MODULE_INSTANCE_INDEX;
   } else { // This is a long press (param is an address)
-    param = abs(param);
-    if ((param >= EEPROM_APPLICATION_START_INDEX) && (param < EEPROM.length())) {
+    if ((value >= EEPROM_APPLICATION_START_INDEX) && (value < EEPROM.length())) {
       // <param> contains a valid address
-      settingAddress = param;
+      settingAddress = value;
       resetDeadline = (now + CONFIGURATION_INACTIVITY_TIMEOUT);
     } else {
       // Invalid application address
