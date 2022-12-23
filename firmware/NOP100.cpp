@@ -47,7 +47,8 @@
  * module's 1-byte N2K/CAN source address.
  */
 #define EEPROM_SOURCE_ADDRESS_INDEX 0
-#define EEPROM_INSTANCE_NUMBER_INDEX 1
+#define EEPROM_MODULE_INSTANCE_INDEX 1
+#define EEPROM_APPLICATION_START_INDEX 2
 
 /**********************************************************************
  * MCU PIN DEFINITIONS
@@ -190,11 +191,11 @@ void setup() {
   //EEPROM.write(EEPROM_SOURCE_ADDRESS_INDEX, 0xff);
   if (EEPROM.read(EEPROM_SOURCE_ADDRESS_INDEX) == 0xff) {
     EEPROM.write(EEPROM_SOURCE_ADDRESS_INDEX, DEFAULT_SOURCE_ADDRESS);
-    EEPROM.write(EEPROM_INSTANCE_NUMBER_INDEX, DEFAULT_INSTANCE_ADDRESS);
+    EEPROM.write(EEPROM_MODULE_INSTANCE_INDEX, DEFAULT_INSTANCE_ADDRESS);
   }
 
   // If this module requires a instance numberRecover module instance number.
-  MODULE_INSTANCE = EEPROM.read(EEPROM_INSTANCE_NUMBER_INDEX);
+  MODULE_INSTANCE = EEPROM.read(EEPROM_MODULE_INSTANCE_INDEX);
 
   // Run a startup sequence in the LED display: all LEDs on to confirm
   // function, then a display of the module instance number.
@@ -312,29 +313,49 @@ void prgButtonHandler(bool released) {
 }
 
 /**********************************************************************
- * configureModuleSetting - if triggered by a normal button press then
+ * configureModuleSettingMaybe - manage all aspects of module
+ * configuration. There are two modes of invocation:
+ * 
+ * configurationModuleSettingsMaybe() shoud be called from loop. The
+ * function checks to see if a configuration protocol is in progress
+ * and not timed out.
+ * i.e. a setting address has been enteredif triggered by a normal button press then
  * update the EEPROM module instance to <value> and begin immediate use
  * of the new setting, displaying the assigned value on the module
  * LEDS.
  */
-void configureModuleSetting(int param) {
+void configureModuleSettingMaybe(int param = -1) {
   static long resetDeadline = 0UL;
-  static int settingAddress = EEPROM_INSTANCE_NUMBER_INDEX;
+  static int settingAddress = EEPROM_MODULE_INSTANCE_INDEX;
   long now = millis();
+   
+  // If settingAddress is something other than the default value then we
+  // are in a configuration protocol waiting for a setting value and we
+  // indicate this by flashing the transmit LED.
+  if (settingAddress != EEPROM_MODULE_INSTANCE_INDEX) TRANSMIT_LED_STATE = 1;
 
   if (param == -1) { // Cancel timed-out protocol.
     if ((resetDeadline != 0UL) && (now > resetDeadline)) {
       resetDeadline = 0UL;
+      settingAddress = EEPROM_MODULE_INSTANCE_INDEX;
+      TRANSMIT_LED_STATE = 0;
     }
   } else {
-    if (!(param & 0x0100)) { // This is a short press
+
+    if (!(param & 0x0100)) { // This is a short press (param is a value)
       setModuleSetting(settingAddress, (uint8_t) (param & 0xff));
-      if (settingAddress == EEPROM_INSTANCE_NUMBER_INDEX) MODULE_INSTANCE = EEPROM.read(settingAddress);
-      settingAddress = EEPROM_INSTANCE_NUMBER_INDEX;
-    } else { // This is a long press
-      if ((param >= 0) && (param < EEPROM.length())) {
+      if (settingAddress == EEPROM_MODULE_INSTANCE_INDEX) MODULE_INSTANCE = EEPROM.read(settingAddress);
+      settingAddress = EEPROM_MODULE_INSTANCE_INDEX;
+    } else {
+      // <param> derived from a long press and is therefore a storage address
+      if ((param >= EEPROM_APPLICATION_START_INDEX) && (param < EEPROM.length())) {
+        // <param> contains a valid address
         settingAddress = (param & 0xff);
         resetDeadline = (now + CONFIGURATION_INACTIVITY_TIMEOUT);
+        // start steady LED flash
+      } else {
+        // Invalid application address
+        settingAddress = EEPROM_MODULE_INSTANCE_INDEX;
       }
     }
   }
