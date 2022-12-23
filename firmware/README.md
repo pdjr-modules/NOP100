@@ -24,8 +24,8 @@ to be built with a minimum of code.
 ## Module configuration
 
 NOP100 models configuration data as an array of bytes and provides a
-user interface which allows configuration data to be entered a byte at
-a time by provision of a storage address followed by the value to be
+user interface which allows configuration data to be entered one byte
+at-a-time by provision of a storage address followed by the value to be
 stored at that address.
 
 | Address | Saved value |
