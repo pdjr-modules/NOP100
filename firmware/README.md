@@ -24,76 +24,50 @@ to be built with a minimum of code.
 ## Module configuration
 
 NOP100 models configuration data as an array of bytes and provides a
-software interface which supports the entry of data a byte at a time by
-entry of a storage address followed by the value to be stored at that
+user interface which allows configuration data to be entered a byte at
+a time by provision of a storage address followed by the value to be
+stored at that address.
+
+| Address | Saved value |
+| ---:    | :---        |
+| 0       | CAN source address. Not available for application use. |
+| 1       | Module instance number. Default storage location used if a value is entered without a preceeding address. |
+| 2..1080 | Available for application use. |
+
+The basic programming protocol is enter a value on the PCB's DIL switch
+and press and release PRG to confirm.
+A short press of PRG signifies entry of a value; a long press of PRG
+signifies entry of an address and the expectation is that this will
+immediately be followed by entry of a value which should be stored at
+the pre-set address.
+
+If a value is entered without a preceeding address then the entered
+value is stored at address 0 becoming the modules new instance number.
+
+Storage locations with an address greater than or equal to two are
+intended for application configuration and the required protocol is
+entry of an address followed by entry of a value to be stored at that
 address.
 
-implements a simple configuration mechanism based on the model
-saving byte values setting of the NOP100 DIL switch is accessed by by a single
-function which can be overri 
+Once an address is accepted, the transmit LED will flash rapidly
+indicating that the system is waiting for entry of a data value.
+If a value is not entered within one minute the protocol will
+self-cancel and must be re-started.
 
-The fundamental function (which you can override if you wish) is
-prgButtonHandler(boolean) which is called each time the PRG button
-state changes. A true argument indicates that the button has been
-released; a false argument that it has been pressed.
+The fundamental function handling this process is ```prgButtonHandler(boolean)```
+which is called each time the PRG button state changes. A true argument
+indicates that the button has been released; a false argument that it
+has been pressed.
 
-The NOP100 module supports a simple mechanism for saving data entered
-through the NOP100 DIL switch to the Teensy microcontroller's
-persistent EEPROM storage.
-
-The fundamental function (which you can override if you wish) is
-prgButtonHandler(boolean) which is called each time the PRG button
-state changes. A true argument indicates that the button has been
-released; a false argument that it has been pressed.
-
-The default config with a single boolean
-argument: false sa
-
-The PRG button supports a short-press (less than 1s between press and
-release) and a long press (more than 1s between press and release).
-
-Module configuration is handled by the function
-```configureModuleSettingMaybe(int)``` which is called in the following
-ways.
-
-configureModuleSettingMaybe(0xffff) is called from loop() and is
-used to mange the
-
-
-function with the value on the module
-
-Each time the PRG button button is released a call is made to the
-configureModuleSettingMaybe() function with the value on the module
-DIL switch passed in the low 8-bits of the function's integer
-argument.
-Bit 8 of the argument is set to 0 if the call resulted from a short
-press of the PRG button and to 1 if it resulted from a long press.
-
-An additional call to configureModuleSettingsMaybe() is made from
-loop wih an argument of zero.  
-
-You can override the default configuration function by redefining the
-
-The module's NMEA instance number can be set using the following protocol:
-
-1. Enter the required module instance number on the ```ADDR/VALUE``` DIL
-   switch.
-   
-2. Press and release the ```PRG``` button. The new instance number will
-   enter use immediately and be saved to EEPROM. The module's transmit
-   LED will flash three times to confirm the update.
-   
-General purpose application settings consist of an 8-bit address and an
-8-bit value. A setting is entered using the following protocol:
-
-1. Enter the setting address on the ```ADDR/VALUE``` DIL switch.
-
-2. Press and hold the ```PRG``` button for over 1 second then release.
-   The transmit LED will begin flashing regularly.
-   
-3. Enter the setting value on the ```ADDR/VALUE``` DIL switch.
-
-4. Press and release the ```PRG``` button.
+You can override the built-in bhaviour and implement your own by
+overriding the handler in ```module-declarations.inc```.
+The following example disables configuration entirely:
+```
+#define PRG_BUTTON_HANDLER
+void prgButtonHandler(bool state) {
+   return;
+}
+```
 
 ## HOW TO
 
