@@ -43,12 +43,11 @@
  * 
  * Module configuration is persisted to Teensy EEPROM storage.
  * 
- * SOURCE_ADDRESS_EEPROM_ADDRESS is the storage address for the
+ * EEPROM_SOURCE_ADDRESS_INDEX is the storage address for the
  * module's 1-byte N2K/CAN source address.
  */
-#define SOURCE_ADDRESS_EEPROM_ADDRESS 0
-#define INSTANCE_ADDRESS_EEPROM_ADDRESS 1
-#define APPLICATION_SETTINGS_BASE_ADDRESS 2
+#define EEPROM_SOURCE_ADDRESS_INDEX 0
+#define EEPROM_INSTANCE_NUMBER_INDEX 1
 
 /**********************************************************************
  * MCU PIN DEFINITIONS
@@ -188,14 +187,14 @@ void setup() {
   // 0x00    | N2K source address                       | 1
   // 0x01    | N2K module instance number               | 1
   //
-  //EEPROM.write(SOURCE_ADDRESS_EEPROM_ADDRESS, 0xff);
-  if (EEPROM.read(SOURCE_ADDRESS_EEPROM_ADDRESS) == 0xff) {
-    EEPROM.write(SOURCE_ADDRESS_EEPROM_ADDRESS, DEFAULT_SOURCE_ADDRESS);
-    EEPROM.write(INSTANCE_ADDRESS_EEPROM_ADDRESS, DEFAULT_INSTANCE_ADDRESS);
+  //EEPROM.write(EEPROM_SOURCE_ADDRESS_INDEX, 0xff);
+  if (EEPROM.read(EEPROM_SOURCE_ADDRESS_INDEX) == 0xff) {
+    EEPROM.write(EEPROM_SOURCE_ADDRESS_INDEX, DEFAULT_SOURCE_ADDRESS);
+    EEPROM.write(EEPROM_INSTANCE_NUMBER_INDEX, DEFAULT_INSTANCE_ADDRESS);
   }
 
   // If this module requires a instance numberRecover module instance number.
-  MODULE_INSTANCE = EEPROM.read(INSTANCE_ADDRESS_EEPROM_ADDRESS);
+  MODULE_INSTANCE = EEPROM.read(EEPROM_INSTANCE_NUMBER_INDEX);
 
   // Run a startup sequence in the LED display: all LEDs on to confirm
   // function, then a display of the module instance number.
@@ -215,7 +214,7 @@ void setup() {
   // Initialise and start N2K services.
   NMEA2000.SetProductInformation(PRODUCT_SERIAL_CODE, PRODUCT_CODE, PRODUCT_TYPE, PRODUCT_FIRMWARE_VERSION, PRODUCT_VERSION);
   NMEA2000.SetDeviceInformation(DEVICE_UNIQUE_NUMBER, DEVICE_FUNCTION, DEVICE_CLASS, DEVICE_MANUFACTURER_CODE);
-  NMEA2000.SetMode(tNMEA2000::N2km_ListenAndNode, EEPROM.read(SOURCE_ADDRESS_EEPROM_ADDRESS)); // Configure for sending and receiving.
+  NMEA2000.SetMode(tNMEA2000::N2km_ListenAndNode, EEPROM.read(EEPROM_SOURCE_ADDRESS_INDEX)); // Configure for sending and receiving.
   NMEA2000.EnableForward(false); // Disable all msg forwarding to USB (=Serial)
   NMEA2000.ExtendTransmitMessages(TransmitMessages); // Tell library which PGNs we transmit
   NMEA2000.SetMsgHandler(messageHandler);
@@ -245,7 +244,7 @@ void loop() {
   // of a new CAN source address, so we check if there has been any
   // change and if so save the new address to EEPROM for future re-use.
   NMEA2000.ParseMessages();
-  if (NMEA2000.ReadResetAddressChanged()) EEPROM.update(SOURCE_ADDRESS_EEPROM_ADDRESS, NMEA2000.GetN2kSource());
+  if (NMEA2000.ReadResetAddressChanged()) EEPROM.update(EEPROM_SOURCE_ADDRESS_INDEX, NMEA2000.GetN2kSource());
 
   /*********************************************************************/
   /*********************************************************************/
@@ -255,7 +254,7 @@ void loop() {
   /*********************************************************************/
   /*********************************************************************/
 
-  //
+  // Timeout any hung configuration interaction.
   configureModuleSetting(-1);
 
   // If the PRG button has been operated, then call the button handler.
@@ -320,33 +319,33 @@ void prgButtonHandler(bool released) {
  */
 void configureModuleSetting(int param) {
   static long resetDeadline = 0UL;
-  static int settingAddress = -1;
+  static int settingAddress = EEPROM_INSTANCE_NUMBER_INDEX;
   long now = millis();
 
   if (param == -1) { // Cancel timed-out protocol.
     if ((resetDeadline != 0UL) && (now > resetDeadline)) {
-      settingAddress = -1;
       resetDeadline = 0UL;
     }
   } else {
     if (!(param & 0x0100)) { // This is a short press
-      if (settingAddress == -1) { // Set the module instance address
-        EEPROM.write(INSTANCE_ADDRESS_EEPROM_ADDRESS, (uint8_t) param);
-        MODULE_INSTANCE = EEPROM.read(INSTANCE_ADDRESS_EEPROM_ADDRESS);
-      } else {
-        EEPROM.write((uint8_t) (APPLICATION_SETTINGS_BASE_ADDRESS + settingAddress), (uint8_t) param);
-        settingAddress = -1;
-        resetDeadline = 0UL;
-      }
+      setModuleSetting(settingAddress, (uint8_t) (param & 0xff));
+      if (settingAddress == EEPROM_INSTANCE_NUMBER_INDEX) MODULE_INSTANCE = EEPROM.read(settingAddress);
+      settingAddress = EEPROM_INSTANCE_NUMBER_INDEX;
     } else { // This is a long press
-      settingAddress = param;
-      resetDeadline = (now + CONFIGURATION_INACTIVITY_TIMEOUT);
+      if ((param >= 0) && (param < EEPROM.length())) {
+        settingAddress = (param & 0xff);
+        resetDeadline = (now + CONFIGURATION_INACTIVITY_TIMEOUT);
+      }
     }
   }
 }
 
 uint8_t getModuleSetting(int address) {
-  return((address >= 0)?EEPROM.read(address + APPLICATION_SETTINGS_BASE_ADDRESS):255);
+  return(((address >= 0) && (address < EEPROM.length()))?EEPROM.read(address):255);
+}
+
+void setModuleSetting(int address, uint8_t value) {
+  if ((address >= 0) && (address < EEPROM.length())) EEPROM.update(address, value);
 }
 
 #ifndef GET_STATUS_LEDS_STATUS
