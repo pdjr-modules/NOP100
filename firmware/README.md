@@ -3,20 +3,19 @@
 ```NOP100.cpp``` is a complete, runnable, firmware for
 [NOP100 hardware](../hardware/README.md).
 
-The firmware has no real-world application. If you connect a NOP100
-vanilla device to your network it will appear as a device with Class
-Code 10 (System Tools) and Function Code 130 (Diagnostic). You can
-interact with a NOP100 to the extent of setting the module instance
-number.
-
-That's it.
+The firmware is self-contained and if compiled and installed on
+NOP100 hardware will create an NMEA 2000 device with Class Code 10
+(System Tools) and Function Code 130 (Diagnostic). You can
+interact with NOP100 firmware by entering arbitrary configuration
+settings, but only the default module instance setting is actually
+used by NOP100.
 
 To build a module that performs some real-world task you will need
 some supporting hardware and an elaborated NOP100 firmware that
 exploits it.
 
 The housekeeping and services implemented in the core NOP100 firmware
-must be preserved and in an effort to encourage this firmware code is
+should be preserved and in an effort to encourage this firmware code is
 implemented so that the application specific functionality required to
 implement a particular module is abstracted out into a small
 collection of include files which allow even quite complex behaviours
@@ -24,8 +23,42 @@ to be built with a minimum of code.
 
 ## Module configuration
 
-The NOP100 module supports module configuration based around the idea
-of persistent settings which are saved in EEPROM.
+The NOP100 module supports a simple mechanism for saving data entered
+through the NOP100 DIL switch to the Teensy microcontroller's
+persistent EEPROM storage.
+
+The fundamental function (which you can override if you wish) is
+prgButtonHandler(boolean) which is called each time the PRG button
+state changes. A true argument indicates that the button has been
+released; a false argument that it has been pressed.
+
+The default config with a single boolean
+argument: false sa
+
+The PRG button supports a short-press (less than 1s between press and
+release) and a long press (more than 1s between press and release).
+
+Module configuration is handled by the function
+```configureModuleSettingMaybe(int)``` which is called in the following
+ways.
+
+configureModuleSettingMaybe(0xffff) is called from loop() and is
+used to mange the
+
+
+function with the value on the module
+
+Each time the PRG button button is released a call is made to the
+configureModuleSettingMaybe() function with the value on the module
+DIL switch passed in the low 8-bits of the function's integer
+argument.
+Bit 8 of the argument is set to 0 if the call resulted from a short
+press of the PRG button and to 1 if it resulted from a long press.
+
+An additional call to configureModuleSettingsMaybe() is made from
+loop wih an argument of zero.  
+
+You can override the default configuration function by redefining the
 
 The module's NMEA instance number can be set using the following protocol:
 
