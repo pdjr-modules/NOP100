@@ -42,7 +42,7 @@ immediately be followed by entry of a value which should be stored at
 the pre-set address.
 
 If a value is entered without a preceeding address then the entered
-value is stored at address 0 becoming the modules new instance number.
+value is stored at address 1 becoming the module's new instance number.
 
 Storage locations with an address greater than or equal to two are
 intended for application configuration and the required protocol is
