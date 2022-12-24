@@ -106,7 +106,7 @@
 void messageHandler(const tN2kMsg&);
 void flashTransmitLedMaybe();
 uint8_t getStatusLedsStatus();
-void prgButtonHandler(bool released);
+void prgButtonHandler(bool state, int value);
 void configureModuleSettingMaybe(int value = 0xffff, bool longPress = false);
 uint8_t getModuleSetting(int address);
 void setModuleSetting(int address, uint8_t value);
@@ -260,7 +260,7 @@ void loop() {
   configureModuleSettingMaybe();
 
   // If the PRG button has been operated, then call the button handler.
-  if (PRG_BUTTON.toggled()) prgButtonHandler(PRG_BUTTON.read());
+  if (PRG_BUTTON.toggled()) prgButtonHandler(PRG_BUTTON.read(), DIL_SWITCH.readByte());
   
   // Maybe update the transmit and status LEDs.
   flashTransmitLedMaybe();
@@ -304,13 +304,13 @@ void messageHandler(const tN2kMsg &N2kMsg) {
  * to the state machine's process() method with the value of the DIL
  * switch as argument. I 
  */
-void prgButtonHandler(bool buttonState) {
+void prgButtonHandler(bool state, int value) {
   static unsigned long deadline = 0UL;
   unsigned long now = millis();
 
-  switch (buttonState) {
+  switch (state) {
     case Button::RELEASED :
-      configureModuleSettingMaybe(DIL_SWITCH.readByte(),  ((deadline) && (now > deadline)));
+      configureModuleSettingMaybe(value,  ((deadline) && (now > deadline)));
       deadline = 0UL;
       break;
     case Button::PRESSED :
