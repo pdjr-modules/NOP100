@@ -1,6 +1,6 @@
 # NOP100/firmware
 
-```NOP100.cpp``` and its associate ```.inc``` files implement a complete,
+```NOP100.cpp``` and its associated ```.inc``` files implement a complete,
 runnable, firmware for
 [NOP100 hardware](../hardware/README.md).
 The firmware consists of six C++ files.
