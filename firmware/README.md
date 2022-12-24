@@ -1,25 +1,24 @@
 # NOP100/firmware
 
 ```NOP100.cpp``` and its five associated ```.inc``` files implement a
-complete, runnable, firmware for
-[NOP100 hardware](../hardware/README.md).
+complete, runnable, extensible firmware for
+[NOP100-based hardware](../hardware/README.md).
 
-| Filename | Editable | Description |
-| :---                          | :---: | :--- |
-| ```NOP100.cpp```              |   N   | Firmware main programme. |
-| ```module-libraries.inc```    |   Y   | Not used by NOP100. Used to declare any external libraries that may be required by an application based on ```NOP100.cpp```.|
-| ```module-directives.inc```  |   Y   | Used by NOP100 to build a basic NMEA 2000 module. C-preprocessor directives which will need editing and extending to suit a real-world application. Also (somewhat incongruously) includes header declarations for some core functions. |
-| ```module-definitions.inc``` |   Y   | Not used by NOP100. An application's global types, constants, variables and functions (including any overrides) should be defined here. |
-| ```module-setup.inc```        |   Y   | Not used by NOP100. Application code to be executed in setup(). |
-| ```module-loop.inc```         |   Y   | Not used by NOP100. Application code to be executed in loop(). | 
-
-The vanilla firmware is self-contained, complete and designed to be
-extensible through elaboration of the various ```.inc``` files.
-Of course, any real world NMEA 2000 application will also require
-concommitant extension of the NOP100 hardware platform.
-See the
+The NOP100 build framework consists of six C++ source files:
+```NOP100.cpp```,
+```module-libraries.inc```,
+```module-directives.inc```,
+```module-definitions.inc```,
+```module-setup.inc``` and
+```module-loop.inc```.
+Firmware for a specialised NMEA application is implemented by
+extending and modifying the ```.inc``` files to suit the requirements
+of the project in hand.
+Each ```.inc``` file includes documentary comments which explain
+how to structure a specialisation and the
 [SIM108 - NMEA 2000 switch input module](https://github.com/preeve9534/SIM108/)
-For an example of a real-world application built on top of NOP100.
+project is based on NOP100 and gives a working example of a real-world
+application built on top of NOP100.
 
 If compiled and installed on NOP100 hardware the vanilla firmware
 will create an NMEA 2000 device with Class Code 10 (System Tools)
