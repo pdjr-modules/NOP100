@@ -317,6 +317,7 @@ void prgButtonHandler(bool state, int value) {
       deadline = (now + LONG_BUTTON_PRESS_INTERVAL);
       break;
   }
+}
 #endif
 
 /**********************************************************************
