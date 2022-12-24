@@ -23,48 +23,61 @@ to be built with a minimum of code.
 
 ## Module configuration
 
-NOP100 models configuration data as an array of bytes and provides a
-user interface which allows configuration data to be entered one byte
-at-a-time by provision of a storage address followed by the value to be
+NOP100 treats persistent configuration data as a simple byte array and
+provides a user interface which allows the hardware DIL switch to be  
+used sequentially to specify a storage address and the value to be
 stored at that address.
+This restricts the configuration data cache to a size of 256 bytes with
+254 bytes available to the application.
+The Teensy microcontroller has a about 1KB of EEPROM available and if
+you want to access more than 256 bytes of this storage then you will
+need to override NOP100's simple configuration model with a more
+elaborate one of your own.
+If you do this, make sure that your application configuration data
+leaves address locations 0 and 1 for use by NOP100.
 
 | Address | Saved value |
 | ---:    | :---        |
 | 0       | CAN source address. Not available for application use. |
-| 1       | Module instance number. Default storage location used if a value is entered without a preceeding address. |
-| 2..1080 | Available for application use. |
+| 1       | Module instance number. Not available for application use. |
+| 2...    | Available for application use. |
 
-The basic programming protocol is enter a value on the PCB's DIL switch
-and press and release PRG to confirm.
-A short press of PRG signifies entry of a value; a long press of PRG
-signifies entry of an address and the expectation is that this will
-immediately be followed by entry of a value which should be stored at
-the pre-set address.
+Entry of configuration data into NOP100 requires a value to be set on
+the PCB's DIL switch and then confirmed by press and release of the PRG
+button.
+A short press of PRG signifies the entry of a data value; a long press
+of PRG signifies entry of an address and, in this latter case, the
+expectation is that address entry will promptly be followed by the
+entry of a data value which should be stored at the pre-set address.
 
 If a value is entered without a preceeding address then the entered
-value is stored at address 1 becoming the module's new instance number.
+value is stored at address 1 and will become the module's new instance
+number.
 
 Storage locations with an address greater than or equal to two are
-intended for application configuration and the required protocol is
-entry of an address followed by entry of a value to be stored at that
-address.
+intended for application configuration data and entry of this data
+requires the entry of an address followed by entry of the value to be
+stored at this address.
 
-Once an address is accepted, the transmit LED will flash rapidly
+When an address is entered, the transmit LED will flash rapidly
 indicating that the system is waiting for entry of a data value.
-If a value is not entered within one minute the protocol will
-self-cancel and must be re-started.
+If a data value is not entered within one minute the data entry protocol
+will self-cancel (the transmit LED will stop flashing).
 
-The fundamental function handling this process is ```prgButtonHandler(boolean)```
-which is called each time the PRG button state changes. A true argument
-indicates that the button has been released; a false argument that it
-has been pressed.
+In ```NOP100.cpp``` the configuration process is handled by the
+```prgButtonHandler(bool _state_, int _value_)``` function which is
+called each time the PRG button is operated.
+*state* will be true if the PRG button has been released or false if
+the PRG button has been pressed.
+In either case, *value* will be set to the current value read from the
+DIL switch.
 
-You can override the built-in bhaviour and implement your own by
-overriding the handler in ```module-declarations.inc```.
-The following example disables configuration entirely:
+You can override NOP100's built-in behaviour by overriding the button
+handler in ```module-declarations.inc```.
+For example, the following code disables configuration entirely:
 ```
 #define PRG_BUTTON_HANDLER
-void prgButtonHandler(bool state) {
+void prgButtonHandler(bool state, int value) {
    return;
 }
 ```
