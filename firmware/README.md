@@ -19,7 +19,7 @@ extensible through elaboration of the various ```.inc``` files.
 Of course, any real world NMEA 2000 application will also require
 concommitant extension of the NOP100 hardware platform.
 See the
-[SIM108 switch input module](https://github.com/preeve9534/SIM108/)
+[SIM108 - NMEA 2000 switch input module](https://github.com/preeve9534/SIM108/)
 For an example of a real-world application built on top of NOP100.
 
 If compiled and installed on NOP100 hardware the vanilla firmware
