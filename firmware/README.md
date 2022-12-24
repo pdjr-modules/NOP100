@@ -15,24 +15,19 @@ The firmware consists of six C++ files.
 | ```module-loop.inc```         |   Y   | Not used by NOP100. | 
 
 The vanilla firmware is self-contained, complete and designed to be
-extensible through elaboration of the various ```.inc``` files. 
-If compiled and installed on NOP100 hardware it will create an NMEA
-2000 device with Class Code 10 (System Tools) and Function Code 130
-(Diagnostic).
-You can interact with the NOP100 firmware by entering arbitrary
-configuration data (see below), but only the module instance setting
-is actually used by NOP100.
+extensible through elaboration of the various ```.inc``` files.
+Of course, any real world NMEA 2000 application will also require
+concommitant extension of the NOP100 hardware platform.
+See the
+[SIM108 switch input module](https://github.com/preeve9534/SIM108/)
+For an example of a real-world application built on top of NOP100.
 
-To build a module that performs some real-world task you will need
-some supporting hardware and an elaborated NOP100 firmware that
-exploits it.
-
-The housekeeping and services implemented in the core NOP100 firmware
-should be preserved and in an effort to encourage this firmware code is
-implemented so that the application specific functionality required to
-implement a particular module is abstracted out into a small
-collection of include files which allow even quite complex behaviours
-to be built with a minimum of code.
+If compiled and installed on NOP100 hardware the vanilla firmware
+will create an NMEA 2000 device with Class Code 10 (System Tools)
+and Function Code 130 (Diagnostic).
+The firmware supports the entry of configuration data (see below),
+but only the configuration data item that is used by NOP100 is the
+module instance setting.
 
 ## Module configuration
 
