@@ -8,11 +8,11 @@ The firmware consists of six C++ files.
 | Filename | Editable | Description |
 | :---                          | :---: | :--- |
 | ```NOP100.cpp```              |   N   | Firmware main programme. |
-| ```module-libraries.inc```    |   Y   | Not used by NOP100. |
-| ```module-definitions.inc```  |   Y   | Used by NOP100 to build a basic NMEA 2000 module. |
-| ```module-declarations.inc``` |   Y   | Not used by NOP100. |
-| ```module-setup.inc```        |   Y   | Not used by NOP100. |
-| ```module-loop.inc```         |   Y   | Not used by NOP100. | 
+| ```module-libraries.inc```    |   Y   | Not used by NOP100. Used to declare any external libraries that may be required by an application based on ```NOP100.cpp```.|
+| ```module-directives.inc```  |   Y   | Used by NOP100 to build a basic NMEA 2000 module. C-preprocessor directives which will need editing and extending to suit a real-world application. Also (somewhat incongruously) includes header declarations for some core functions. |
+| ```module-definitions.inc``` |   Y   | Not used by NOP100. An application's global types, constants, variables and functions (including any overrides) should be defined here. |
+| ```module-setup.inc```        |   Y   | Not used by NOP100. Application code to be executed in setup(). |
+| ```module-loop.inc```         |   Y   | Not used by NOP100. Application code to be executed in loop(). | 
 
 The vanilla firmware is self-contained, complete and designed to be
 extensible through elaboration of the various ```.inc``` files.
