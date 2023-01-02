@@ -102,7 +102,7 @@
  * Declarations of local functions.
  */
 void messageHandler(const tN2kMsg&);
-void flashTransmitLedMaybe();
+void operateTransmitLedMaybe();
 uint8_t getStatusLedsStatus();
 void prgButtonHandler(bool state, int value);
 void configureModuleSettingMaybe(int value = 0xffff, bool longPress = false);
@@ -123,6 +123,8 @@ const unsigned long TransmitMessages[] = NMEA_TRANSMIT_MESSAGE_PGNS;
 typedef struct { unsigned long PGN; void (*Handler)(const tN2kMsg &N2kMsg); } tNMEA2000Handler;
 tNMEA2000Handler NMEA2000Handlers[] = NMEA_PGN_HANDLERS;
 
+enum LedState = { on, off, flash };
+
 /**********************************************************************
  * PRG_BUTTON - debounced GPIO_PRG.
  */
@@ -133,7 +135,7 @@ Button PRG_BUTTON(GPIO_PRG);
  * GPIO_TRANSMIT_LED pin the next time its output is updated (the value
  * will be reset to 0 after each update). 
  */
-int TRANSMIT_LED_STATE = 0;
+LedState TRANSMIT_LED_STATE = off;
 
 /**********************************************************************
  * STATUS_LEDS -
@@ -261,20 +263,33 @@ void loop() {
   if (PRG_BUTTON.toggled()) prgButtonHandler(PRG_BUTTON.read(), DIL_SWITCH.readByte());
   
   // Maybe update the transmit and status LEDs.
-  flashTransmitLedMaybe();
+  operateTransmitLedMaybe();
   STATUS_LEDS.updateMaybe();
 }
 
 /**********************************************************************
- * flashTransmitLedMaybe - set the transmit LED GPIO pin to the value
+ * operateTransmitLedMaybe - set the transmit LED GPIO pin to the value
  * of TRANSMIT_LED_STATE. 
  */
-void flashTransmitLedMaybe() {
+void operateTransmitLedMaybe() {
   static unsigned long deadline = 0UL;
   unsigned long now = millis();
+  static unsigned int state = 0;
 
   if (now > deadline) {
-    digitalWrite(GPIO_TRANSMIT_LED, TRANSMIT_LED_STATE); TRANSMIT_LED_STATE = 0;
+    switch (TRANSMIT_LED_STATE) {
+      case on:
+        digitalWrite(GPIO_TRANSMIT_LED, 1);
+        break;
+      case off:
+        digitalWrite(GPIO_TRANSMIT_LED, 0);
+        state = 0;
+        break; 
+      case flash:
+        state = (state == 0)?1:0;
+        digitalWrite(GPIO_TRANSMIT_LED, state);
+        break;
+    }
     deadline = (now + TRANSMIT_LED_UPDATE_INTERVAL);
   }
 }
@@ -318,14 +333,15 @@ void prgButtonHandler(bool state, int value) {
 }
 #endif
 
+#ifndef CONFIGURE_MODULE_SETTING_MAYBE
 /**********************************************************************
  * configureModuleSettingMaybe - manage all aspects of module
- * configuration dependent upon the value of <param>.
+ * configuration. <value> is the current value of the PCB DIL switch;
+ * <longPress> is true if the call was triggered by a long button
+ * press, false if the button press was short.
  * 
- * configureModuleSettingsMaybe() shoud be called from loop. The
- * function checks to see if and for how long a configuration protocol
- * has been in progress and if the user does not complete the protocol
- * times it out.
+ * configureModuleSettingsMaybe() is typically called from the PRG
+ * button handler on release of the PRG button.
  * 
  * i.e. a setting address has been enteredif triggered by a normal button press then
  * update the EEPROM module instance to <value> and begin immediate use
@@ -362,6 +378,7 @@ void configureModuleSettingMaybe(int value, bool longPress) {
     }
   }
 }
+#endif
 
 uint8_t getModuleSetting(int address) {
   return(((address >= 0) && (address < EEPROM.length()))?EEPROM.read(address):255);
