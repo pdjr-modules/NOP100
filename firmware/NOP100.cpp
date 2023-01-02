@@ -123,7 +123,7 @@ const unsigned long TransmitMessages[] = NMEA_TRANSMIT_MESSAGE_PGNS;
 typedef struct { unsigned long PGN; void (*Handler)(const tN2kMsg &N2kMsg); } tNMEA2000Handler;
 tNMEA2000Handler NMEA2000Handlers[] = NMEA_PGN_HANDLERS;
 
-enum LedState = { on, off, flash };
+enum LedState { on, off, flash, once };
 
 /**********************************************************************
  * PRG_BUTTON - debounced GPIO_PRG.
@@ -289,6 +289,9 @@ void operateTransmitLedMaybe() {
         state = (state == 0)?1:0;
         digitalWrite(GPIO_TRANSMIT_LED, state);
         break;
+      case once:
+        digitalWrite(GPIO_TRANSMIT_LED, 1);
+        TRANSMIT_LED_STATE = off;
     }
     deadline = (now + TRANSMIT_LED_UPDATE_INTERVAL);
   }
@@ -356,21 +359,24 @@ void configureModuleSettingMaybe(int value, bool longPress) {
   // If settingAddress is something other than the default value then we
   // are in a configuration protocol waiting for a setting value and we
   // indicate this by flashing the transmit LED.
-  if (settingAddress != MODULE_INSTANCE_EEPROM_ADDRESS) TRANSMIT_LED_STATE = 1;
+  if (settingAddress != MODULE_INSTANCE_EEPROM_ADDRESS) TRANSMIT_LED_STATE = flash;
 
   if (value == 0xffff) { // Perhaps cancel a timed-out protocol.
     if ((resetDeadline != 0UL) && (now > resetDeadline)) {
       resetDeadline = 0UL;
       settingAddress = MODULE_INSTANCE_EEPROM_ADDRESS;
+      TRANSMIT_LED_STATE = off;
     }
   } else if (!longPress) { // This is a short press (param is a value)
     setModuleSetting(settingAddress, (uint8_t) value);
     if (settingAddress == MODULE_INSTANCE_EEPROM_ADDRESS) MODULE_INSTANCE = EEPROM.read(settingAddress);
     settingAddress = MODULE_INSTANCE_EEPROM_ADDRESS;
+    TRANSMIT_LED_STATE = off;
   } else { // This is a long press (param is an address)
     if ((value >= FIRST_AVAILABLE_APPLICATION_EEPROM_ADDRESS) && (value < EEPROM.length())) {
       // <param> contains a valid address
       settingAddress = value;
+      TRANSMIT_LED_STATE = flash;
       resetDeadline = (now + CONFIGURATION_INACTIVITY_TIMEOUT);
     } else {
       // Invalid application address
