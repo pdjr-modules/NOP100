@@ -13,8 +13,6 @@
 #include <N2kMessages.h>
 #include <IC74HC165.h>
 #include <IC74HC595.h>
-#include <ProcessQueue.h>
-#include <StateMachine.h>
 #include <arraymacros.h>
 
 /*********************************************************************/
