@@ -121,7 +121,7 @@ const unsigned long TransmitMessages[] = NMEA_TRANSMIT_MESSAGE_PGNS;
 typedef struct { unsigned long PGN; void (*Handler)(const tN2kMsg &N2kMsg); } tNMEA2000Handler;
 tNMEA2000Handler NMEA2000Handlers[] = NMEA_PGN_HANDLERS;
 
-enum LedState { on, off, flash, once };
+enum LedState { on, off, flash, once, flashOn, flashOff };
 
 /**********************************************************************
  * PRG_BUTTON - debounced GPIO_PRG.
@@ -272,7 +272,6 @@ void loop() {
 void operateTransmitLedMaybe() {
   static unsigned long deadline = 0UL;
   unsigned long now = millis();
-  static unsigned int state = 0;
 
   if (now > deadline) {
     switch (TRANSMIT_LED_STATE) {
@@ -284,8 +283,15 @@ void operateTransmitLedMaybe() {
         state = 0;
         break; 
       case flash:
-        state = (state == 0)?1:0;
-        digitalWrite(GPIO_TRANSMIT_LED, state);
+        TRANSMIT_LED_STATE = flashOn;
+        break;
+      case flashOn:
+        digitalWrite(GPIO_TRANSMIT_LED, 1);
+        TRANSMIT_LED_STATE = flashOff;
+        break;
+      case flashOff:
+        digitalWrite(GPIO_TRANSMIT_LED, 0);
+        TRANSMIT_LED_STATE = flashOn;
         break;
       case once:
         digitalWrite(GPIO_TRANSMIT_LED, 1);
