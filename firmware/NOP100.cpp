@@ -280,7 +280,6 @@ void operateTransmitLedMaybe() {
         break;
       case off:
         digitalWrite(GPIO_TRANSMIT_LED, 0);
-        state = 0;
         break; 
       case flash:
         TRANSMIT_LED_STATE = flashOn;
