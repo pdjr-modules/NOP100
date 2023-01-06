@@ -13,6 +13,7 @@
 #include <N2kMessages.h>
 #include <IC74HC165.h>
 #include <IC74HC595.h>
+#include <StatusLeds.h>
 #include <arraymacros.h>
 
 /*********************************************************************/
@@ -76,7 +77,6 @@
 #define GPIO_D21 21
 #define GPIO_D22 22
 #define GPIO_D23 23
-#define GPIO_OUTPUT_PINS { GPIO_SIPO_CLOCK, GPIO_SIPO_DATA, GPIO_SIPO_LATCH, GPIO_PISO_CLOCK, GPIO_PISO_LATCH, GPIO_POWER_LED, GPIO_TRANSMIT_LED }
 
 #define NMEA2000_SOURCE_ADDRESS_SEED 22     // Arbitrary seed value
 #define NMEA2000_INSTANCE_UNDEFINED 255     // NMEA defines 255 as "undefined"
@@ -84,6 +84,7 @@
 #define DEFAULT_INSTANCE_ADDRESS NMEA2000_INSTANCE_UNDEFINED
 
 #define TRANSMIT_LED_UPDATE_INTERVAL 100UL   // 10 times a second
+#define NUMBER_OF_STATUS_LEDS 8
 #define STATUS_LEDS_UPDATE_INTERVAL 200UL // 5 times a second
 #define LONG_BUTTON_PRESS_INTERVAL 1000UL // 1 second
 #define CONFIGURATION_INACTIVITY_TIMEOUT 30000UL // 30 seconds 
@@ -100,8 +101,8 @@
  * Declarations of local functions.
  */
 void messageHandler(const tN2kMsg&);
-void operateTransmitLedMaybe();
-uint8_t getStatusLedsStatus();
+void updateTransmitLed(unsigned char status);
+void updateStatusLeds(unsigned char status);
 void prgButtonHandler(bool state, int value);
 void configureModuleSettingMaybe(int value = 0xffff, bool longPress = false);
 uint8_t getModuleSetting(int address);
@@ -121,30 +122,34 @@ const unsigned long TransmitMessages[] = NMEA_TRANSMIT_MESSAGE_PGNS;
 typedef struct { unsigned long PGN; void (*Handler)(const tN2kMsg &N2kMsg); } tNMEA2000Handler;
 tNMEA2000Handler NMEA2000Handlers[] = NMEA_PGN_HANDLERS;
 
-enum LedState { on, off, flash, once, flashOn, flashOff };
-
 /**********************************************************************
  * PRG_BUTTON - debounced GPIO_PRG.
  */
 Button PRG_BUTTON(GPIO_PRG);
 
 /**********************************************************************
- * TRANSMIT_LED_STATE - holds the state that should be assigned to the
- * GPIO_TRANSMIT_LED pin the next time its output is updated (the value
- * will be reset to 0 after each update). 
- */
-LedState TRANSMIT_LED_STATE = off;
-
-/**********************************************************************
- * STATUS_LEDS -
- */
-IC74HC595 STATUS_LEDS (GPIO_SIPO_CLOCK, GPIO_SIPO_DATA, GPIO_SIPO_LATCH);
-
-/**********************************************************************
  * DIL_SWITCH - interface to the IC74HC165 IC that connects the eight
  * DIL switch parallel inputs.
  */
 IC74HC165 DIL_SWITCH (GPIO_PISO_CLOCK, GPIO_PISO_DATA, GPIO_PISO_LATCH);
+
+
+IC74HC595 STATUS_LEDS_SIPO(GPIO_SIPO_CLOCK, GPIO_SIPO_DATA, GPIO_SIPO_LATCH);
+
+/**********************************************************************
+ * Create handlers for the transmit LED (connected to a GPIO pin) and
+ * the status LEDs connected to the SIPO. 
+ */
+StatusLeds TRANSMIT_LED(1, TRANSMIT_LED_UPDATE_INTERVAL, updateTransmitLed);
+StatusLeds STATUS_LEDS(NUMBER_OF_STATUS_LEDS, STATUS_LEDS_UPDATE_INTERVAL, updateStatusLeds);
+
+void updateTransmitLed(unsigned char status) {
+  digitalWrite(GPIO_TRANSMIT_LED, (status & 0x01));
+}
+
+void updateStatusLeds(unsigned char status) {
+  STATUS_LEDS_SIPO.writeByte(status);
+}
 
 /**********************************************************************
  * MODULE_INSTANCE - working storage for the module instance number.
@@ -171,11 +176,11 @@ void setup() {
   #endif
 
   // Initialise all core GPIO pins.
-  int opins[] = GPIO_OUTPUT_PINS;
-  for (unsigned int i = 0 ; i < ELEMENTCOUNT(opins); i++) pinMode(opins[i], OUTPUT);
+  pinMode(GPIO_POWER_LED, OUTPUT);
   PRG_BUTTON.begin();
   DIL_SWITCH.begin();
-  STATUS_LEDS.begin();
+  pinMode(GPIO_TRANSMIT_LED, OUTPUT);
+  STATUS_LEDS_SIPO.begin();
 
   // We assume that a new host system has its EEPROM initialised to all
   // 0xFF. We test by reading a byte that in a configured system should
@@ -198,10 +203,9 @@ void setup() {
 
   // Run a startup sequence in the LED display: all LEDs on to confirm
   // function, then a display of the module instance number.
-  STATUS_LEDS.writeByte(0xff); delay(100);
-  STATUS_LEDS.writeByte(MODULE_INSTANCE); delay(1000);
-  STATUS_LEDS.writeByte(0x00);
-  STATUS_LEDS.configureUpdate(STATUS_LEDS_UPDATE_INTERVAL, getStatusLedsStatus);
+  TRANSMIT_LED.setStatus(0xff); STATUS_LEDS.setStatus(0xff); delay(100);
+  TRANSMIT_LED.setStatus(0x00); STATUS_LEDS.setStatus(MODULE_INSTANCE); delay(1000);
+  TRANSMIT_LED.setStatus(0x00); STATUS_LEDS.setStatus(0x00);
 
   /*********************************************************************/
   /*********************************************************************/
@@ -261,43 +265,8 @@ void loop() {
   if (PRG_BUTTON.toggled()) prgButtonHandler(PRG_BUTTON.read(), DIL_SWITCH.readByte());
   
   // Maybe update the transmit and status LEDs.
-  operateTransmitLedMaybe();
-  STATUS_LEDS.updateMaybe();
-}
-
-/**********************************************************************
- * operateTransmitLedMaybe - set the transmit LED GPIO pin to the value
- * of TRANSMIT_LED_STATE. 
- */
-void operateTransmitLedMaybe() {
-  static unsigned long deadline = 0UL;
-  unsigned long now = millis();
-
-  if (now > deadline) {
-    switch (TRANSMIT_LED_STATE) {
-      case on:
-        digitalWrite(GPIO_TRANSMIT_LED, 1);
-        break;
-      case off:
-        digitalWrite(GPIO_TRANSMIT_LED, 0);
-        break; 
-      case flash:
-        TRANSMIT_LED_STATE = flashOn;
-        break;
-      case flashOn:
-        digitalWrite(GPIO_TRANSMIT_LED, 1);
-        TRANSMIT_LED_STATE = flashOff;
-        break;
-      case flashOff:
-        digitalWrite(GPIO_TRANSMIT_LED, 0);
-        TRANSMIT_LED_STATE = flashOn;
-        break;
-      case once:
-        digitalWrite(GPIO_TRANSMIT_LED, 1);
-        TRANSMIT_LED_STATE = off;
-    }
-    deadline = (now + TRANSMIT_LED_UPDATE_INTERVAL);
-  }
+  TRANSMIT_LED.process();
+  STATUS_LEDS.process();
 }
 
 void messageHandler(const tN2kMsg &N2kMsg) {
@@ -362,24 +331,24 @@ void configureModuleSettingMaybe(int value, bool longPress) {
   // If settingAddress is something other than the default value then we
   // are in a configuration protocol waiting for a setting value and we
   // indicate this by flashing the transmit LED.
-  if (settingAddress != MODULE_INSTANCE_EEPROM_ADDRESS) TRANSMIT_LED_STATE = flash;
+  if (settingAddress != MODULE_INSTANCE_EEPROM_ADDRESS) TRANSMIT_LED.setLedState(0, flash);
 
   if (value == 0xffff) { // Perhaps cancel a timed-out protocol.
     if ((resetDeadline != 0UL) && (now > resetDeadline)) {
       resetDeadline = 0UL;
       settingAddress = MODULE_INSTANCE_EEPROM_ADDRESS;
-      TRANSMIT_LED_STATE = off;
+      TRANSMIT_LED.setLedState(0, off);
     }
   } else if (!longPress) { // This is a short press (param is a value)
     setModuleSetting(settingAddress, (uint8_t) value);
     if (settingAddress == MODULE_INSTANCE_EEPROM_ADDRESS) MODULE_INSTANCE = EEPROM.read(settingAddress);
     settingAddress = MODULE_INSTANCE_EEPROM_ADDRESS;
-    TRANSMIT_LED_STATE = off;
+    TRANSMIT_LED.setLedState(0, off);
   } else { // This is a long press (param is an address)
     if ((value >= FIRST_AVAILABLE_APPLICATION_EEPROM_ADDRESS) && (value < EEPROM.length())) {
       // <param> contains a valid address
       settingAddress = value;
-      TRANSMIT_LED_STATE = flash;
+      TRANSMIT_LED.setLedState(0, flash);
       resetDeadline = (now + CONFIGURATION_INACTIVITY_TIMEOUT);
     } else {
       // Invalid application address
@@ -396,16 +365,4 @@ uint8_t getModuleSetting(int address) {
 void setModuleSetting(int address, uint8_t value) {
   if ((address >= 0) && (address < EEPROM.length())) EEPROM.update(address, value);
 }
-
-#ifndef GET_STATUS_LEDS_STATUS
-/**********************************************************************
- * getStatusLedsStatus - returns a value that should be used to update
- * the status LEDs. An application using NOP100 will need to override
- * this function and must define GET_STATUS_LEDS_STATUS to prevent
- * redefinition issues.
- */
-uint8_t getStatusLedsStatus() {
-  return(0);
-}
-#endif
 
