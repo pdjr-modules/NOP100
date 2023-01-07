@@ -140,16 +140,8 @@ IC74HC595 STATUS_LEDS_SIPO(GPIO_SIPO_CLOCK, GPIO_SIPO_DATA, GPIO_SIPO_LATCH);
  * Create handlers for the transmit LED (connected to a GPIO pin) and
  * the status LEDs connected to the SIPO. 
  */
-StatusLeds TRANSMIT_LED(1, TRANSMIT_LED_UPDATE_INTERVAL, updateTransmitLed);
-StatusLeds STATUS_LEDS(NUMBER_OF_STATUS_LEDS, STATUS_LEDS_UPDATE_INTERVAL, updateStatusLeds);
-
-void updateTransmitLed(unsigned char status) {
-  digitalWrite(GPIO_TRANSMIT_LED, (status & 0x01));
-}
-
-void updateStatusLeds(unsigned char status) {
-  STATUS_LEDS_SIPO.writeByte(status);
-}
+StatusLeds TRANSMIT_LED(1, TRANSMIT_LED_UPDATE_INTERVAL, [](unsigned char status){ digitalWrite(GPIO_TRANSMIT_LED, (status & 0x01)); });
+StatusLeds STATUS_LEDS(NUMBER_OF_STATUS_LEDS, STATUS_LEDS_UPDATE_INTERVAL, [](unsigned char status){ STATUS_LEDS_SIPO.writeByte(status); });
 
 /**********************************************************************
  * MODULE_INSTANCE - working storage for the module instance number.
