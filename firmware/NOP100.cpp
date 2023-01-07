@@ -265,8 +265,8 @@ void loop() {
   if (PRG_BUTTON.toggled()) prgButtonHandler(PRG_BUTTON.read(), DIL_SWITCH.readByte());
   
   // Maybe update the transmit and status LEDs.
-  TRANSMIT_LED.process();
-  STATUS_LEDS.process();
+  TRANSMIT_LED.update(false, true);
+  STATUS_LEDS.update(false, true);
 }
 
 void messageHandler(const tN2kMsg &N2kMsg) {
