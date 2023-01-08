@@ -108,6 +108,8 @@ void configureModuleSettingMaybe(int value = 0xffff, bool longPress = false);
 uint8_t getModuleSetting(int address);
 void setModuleSetting(int address, uint8_t value);
 
+ModuleConfiguration MODULE_CONFIGURATION(EEPROM.size(), EEPROM_CONFIGURATION_ADDRESS, configurationCallback);
+
 /**********************************************************************
  * List of PGNs transmitted by this program.
  * 
@@ -185,13 +187,12 @@ void setup() {
   // 0x01    | N2K module instance number               | 1
   //
   //EEPROM.write(SOURCE_ADDRESS_EEPROM_ADDRESS, 0xff);
+  
   if (EEPROM.read(SOURCE_ADDRESS_EEPROM_ADDRESS) == 0xff) {
     EEPROM.write(SOURCE_ADDRESS_EEPROM_ADDRESS, DEFAULT_SOURCE_ADDRESS);
     EEPROM.write(MODULE_INSTANCE_EEPROM_ADDRESS, DEFAULT_INSTANCE_ADDRESS);
   }
-
-  // If this module requires a instance numberRecover module instance number.
-  MODULE_INSTANCE = EEPROM.read(MODULE_INSTANCE_EEPROM_ADDRESS);
+  MODULE_CONFIGURATIOM.setup();
 
   // Run a startup sequence in the LED display: all LEDs on to confirm
   // function, then a display of the module instance number.
@@ -220,7 +221,6 @@ void setup() {
   Serial.println();
   Serial.println("Starting:");
   Serial.print("  N2K Source address is "); Serial.println(NMEA2000.GetN2kSource());
-  Serial.print("  Module instance number is "); Serial.println(MODULE_INSTANCE);
   #endif
 
 }
@@ -251,7 +251,7 @@ void loop() {
   /*********************************************************************/
 
   // Timeout any hung configuration interaction.
-  configureModuleSettingMaybe();
+  MODULE_CONFIGURATION.interact();
 
   // If the PRG button has been operated, then call the button handler.
   if (PRG_BUTTON.toggled()) prgButtonHandler(PRG_BUTTON.read(), DIL_SWITCH.readByte());
@@ -290,7 +290,11 @@ void prgButtonHandler(bool state, int value) {
 
   switch (state) {
     case Button::RELEASED :
-      configureModuleSettingMaybe(value,  ((deadline) && (now > deadline)));
+      if (MODULE_CONFIGURATION.interact(int value,  ((deadline) && (now > deadline)))) {
+        TRANSMIT_LED.setState(0, LedStatus::flash);
+      } else {
+        TRANSMIT_LED.setState(0, LedStatus::off);
+      }
       deadline = 0UL;
       break;
     case Button::PRESSED :
@@ -300,61 +304,8 @@ void prgButtonHandler(bool state, int value) {
 }
 #endif
 
-#ifndef CONFIGURE_MODULE_SETTING_MAYBE
-/**********************************************************************
- * configureModuleSettingMaybe - manage all aspects of module
- * configuration. <value> is the current value of the PCB DIL switch;
- * <longPress> is true if the call was triggered by a long button
- * press, false if the button press was short.
- * 
- * configureModuleSettingsMaybe() is typically called from the PRG
- * button handler on release of the PRG button.
- * 
- * i.e. a setting address has been enteredif triggered by a normal button press then
- * update the EEPROM module instance to <value> and begin immediate use
- * of the new setting, displaying the assigned value on the module
- * LEDS.
- */
-void configureModuleSettingMaybe(int value, bool longPress) {
-  static long resetDeadline = 0UL;
-  static int settingAddress = MODULE_INSTANCE_EEPROM_ADDRESS;
-  long now = millis();
-   
-  // If settingAddress is something other than the default value then we
-  // are in a configuration protocol waiting for a setting value and we
-  // indicate this by flashing the transmit LED.
-  if (settingAddress != MODULE_INSTANCE_EEPROM_ADDRESS) TRANSMIT_LED.setLedState(0, flash);
+#ifndef CONFIGURATION_CALLBACK
+void configurationCallback(unsigned int address, unsigned char value) {
 
-  if (value == 0xffff) { // Perhaps cancel a timed-out protocol.
-    if ((resetDeadline != 0UL) && (now > resetDeadline)) {
-      resetDeadline = 0UL;
-      settingAddress = MODULE_INSTANCE_EEPROM_ADDRESS;
-      TRANSMIT_LED.setLedState(0, off);
-    }
-  } else if (!longPress) { // This is a short press (param is a value)
-    setModuleSetting(settingAddress, (uint8_t) value);
-    if (settingAddress == MODULE_INSTANCE_EEPROM_ADDRESS) MODULE_INSTANCE = EEPROM.read(settingAddress);
-    settingAddress = MODULE_INSTANCE_EEPROM_ADDRESS;
-    TRANSMIT_LED.setLedState(0, off);
-  } else { // This is a long press (param is an address)
-    if ((value >= FIRST_AVAILABLE_APPLICATION_EEPROM_ADDRESS) && (value < EEPROM.length())) {
-      // <param> contains a valid address
-      settingAddress = value;
-      TRANSMIT_LED.setLedState(0, flash);
-      resetDeadline = (now + CONFIGURATION_INACTIVITY_TIMEOUT);
-    } else {
-      // Invalid application address
-      settingAddress = MODULE_INSTANCE_EEPROM_ADDRESS;
-    }
-  }
 }
 #endif
-
-uint8_t getModuleSetting(int address) {
-  return(((address >= 0) && (address < EEPROM.length()))?EEPROM.read(address):255);
-}
-
-void setModuleSetting(int address, uint8_t value) {
-  if ((address >= 0) && (address < EEPROM.length())) EEPROM.update(address, value);
-}
-
