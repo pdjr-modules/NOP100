@@ -14,6 +14,7 @@
 #include <IC74HC165.h>
 #include <IC74HC595.h>
 #include <StatusLeds.h>
+#include <ModuleConfiguration.h>
 #include <arraymacros.h>
 
 /*********************************************************************/
@@ -43,9 +44,7 @@
  * Module configuration is persisted to Teensy EEPROM storage and here
  * are the locations used by NOP100.
  */
-#define SOURCE_ADDRESS_EEPROM_ADDRESS 0
-#define MODULE_INSTANCE_EEPROM_ADDRESS 1
-#define FIRST_AVAILABLE_APPLICATION_EEPROM_ADDRESS 2
+#define MODULE_CONFIGURATION_EEPROM_ADDRESS 0
 
 /**********************************************************************
  * MCU PIN DEFINITIONS
@@ -80,6 +79,7 @@
 
 #define NMEA2000_SOURCE_ADDRESS_SEED 22     // Arbitrary seed value
 #define NMEA2000_INSTANCE_UNDEFINED 255     // NMEA defines 255 as "undefined"
+
 #define DEFAULT_SOURCE_ADDRESS NMEA2000_SOURCE_ADDRESS_SEED
 #define DEFAULT_INSTANCE_ADDRESS NMEA2000_INSTANCE_UNDEFINED
 
@@ -108,7 +108,8 @@ void configureModuleSettingMaybe(int value = 0xffff, bool longPress = false);
 uint8_t getModuleSetting(int address);
 void setModuleSetting(int address, uint8_t value);
 
-ModuleConfiguration MODULE_CONFIGURATION(EEPROM.size(), EEPROM_CONFIGURATION_ADDRESS, configurationCallback);
+ModuleConfiguration MODULE_CONFIGURATION(EEPROM.size(), MODULE_CONFIGURATION_EEPROM_ADDRESS, configurationChangeHandler);
+MODULE_CONFIGURATION.setInitialisationCallback(congigurationInitialiser)
 
 /**********************************************************************
  * List of PGNs transmitted by this program.
@@ -188,11 +189,12 @@ void setup() {
   //
   //EEPROM.write(SOURCE_ADDRESS_EEPROM_ADDRESS, 0xff);
   
-  if (EEPROM.read(SOURCE_ADDRESS_EEPROM_ADDRESS) == 0xff) {
-    EEPROM.write(SOURCE_ADDRESS_EEPROM_ADDRESS, DEFAULT_SOURCE_ADDRESS);
-    EEPROM.write(MODULE_INSTANCE_EEPROM_ADDRESS, DEFAULT_INSTANCE_ADDRESS);
+  MODULE_CONFIGURATION.load();
+  if (MODULE_CONFIGURATION.getByte(0) == 0xff) {
+    MODULE_CONFIGURATION.setByte(0, DEFAULT_SOURCE_ADDRESS);
+    MODULE_CONFIGURATION.save();
+    MODULE_CONFIGURATION.initialise())
   }
-  MODULE_CONFIGURATIOM.setup();
 
   // Run a startup sequence in the LED display: all LEDs on to confirm
   // function, then a display of the module instance number.
@@ -304,8 +306,14 @@ void prgButtonHandler(bool state, int value) {
 }
 #endif
 
-#ifndef CONFIGURATION_CALLBACK
-void configurationCallback(unsigned int address, unsigned char value) {
+#ifndef CONFIGURATION_CHANGE_HANDLER
+void configurationChangeHandler(unsigned int address, unsigned char value) {
 
+}
+#endif
+
+#ifndef CONFIGURATION_INITIALISER
+bool configurationInitialiser() {
+  return(false);
 }
 #endif
