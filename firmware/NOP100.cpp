@@ -104,12 +104,12 @@ void messageHandler(const tN2kMsg&);
 void updateTransmitLed(unsigned char status);
 void updateStatusLeds(unsigned char status);
 void prgButtonHandler(bool state, int value);
-void configureModuleSettingMaybe(int value = 0xffff, bool longPress = false);
-uint8_t getModuleSetting(int address);
-void setModuleSetting(int address, uint8_t value);
 
-ModuleConfiguration MODULE_CONFIGURATION(EEPROM.size(), MODULE_CONFIGURATION_EEPROM_ADDRESS, configurationChangeHandler);
-MODULE_CONFIGURATION.setInitialisationCallback(congigurationInitialiser)
+void configurationChangeHandler(unsigned int address, unsigned char value);
+bool configurationInitialiser();
+
+ModuleConfiguration MODULE_CONFIGURATION(EEPROM.length(), MODULE_CONFIGURATION_EEPROM_ADDRESS, configurationChangeHandler);
+//MODULE_CONFIGURATION.setInitialisationCallback(configurationInitialiser)
 
 /**********************************************************************
  * List of PGNs transmitted by this program.
@@ -193,7 +193,7 @@ void setup() {
   if (MODULE_CONFIGURATION.getByte(0) == 0xff) {
     MODULE_CONFIGURATION.setByte(0, DEFAULT_SOURCE_ADDRESS);
     MODULE_CONFIGURATION.save();
-    MODULE_CONFIGURATION.initialise())
+    MODULE_CONFIGURATION.initialise();
   }
 
   // Run a startup sequence in the LED display: all LEDs on to confirm
@@ -213,7 +213,7 @@ void setup() {
   // Initialise and start N2K services.
   NMEA2000.SetProductInformation(PRODUCT_SERIAL_CODE, PRODUCT_CODE, PRODUCT_TYPE, PRODUCT_FIRMWARE_VERSION, PRODUCT_VERSION);
   NMEA2000.SetDeviceInformation(DEVICE_UNIQUE_NUMBER, DEVICE_FUNCTION, DEVICE_CLASS, DEVICE_MANUFACTURER_CODE);
-  NMEA2000.SetMode(tNMEA2000::N2km_ListenAndNode, EEPROM.read(SOURCE_ADDRESS_EEPROM_ADDRESS)); // Configure for sending and receiving.
+  NMEA2000.SetMode(tNMEA2000::N2km_ListenAndNode, MODULE_CONFIGURATION.getByte(0)); // Configure for sending and receiving.
   NMEA2000.EnableForward(false); // Disable all msg forwarding to USB (=Serial)
   NMEA2000.ExtendTransmitMessages(TransmitMessages); // Tell library which PGNs we transmit
   NMEA2000.SetMsgHandler(messageHandler);
@@ -242,7 +242,7 @@ void loop() {
   // of a new CAN source address, so we check if there has been any
   // change and if so save the new address to EEPROM for future re-use.
   NMEA2000.ParseMessages();
-  if (NMEA2000.ReadResetAddressChanged()) EEPROM.update(SOURCE_ADDRESS_EEPROM_ADDRESS, NMEA2000.GetN2kSource());
+  if (NMEA2000.ReadResetAddressChanged()) MODULE_CONFIGURATION.setByte(0, NMEA2000.GetN2kSource());
 
   /*********************************************************************/
   /*********************************************************************/
@@ -292,10 +292,10 @@ void prgButtonHandler(bool state, int value) {
 
   switch (state) {
     case Button::RELEASED :
-      if (MODULE_CONFIGURATION.interact(int value,  ((deadline) && (now > deadline)))) {
-        TRANSMIT_LED.setState(0, LedStatus::flash);
+      if (MODULE_CONFIGURATION.interact(value,  ((deadline) && (now > deadline)))) {
+        TRANSMIT_LED.setLedState(0, StatusLeds::LedState::flash);
       } else {
-        TRANSMIT_LED.setState(0, LedStatus::off);
+        TRANSMIT_LED.setLedState(0, StatusLeds::LedState::off);
       }
       deadline = 0UL;
       break;
