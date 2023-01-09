@@ -49,8 +49,7 @@
 /**********************************************************************
  * MCU PIN DEFINITIONS
  * 
- * GPIO pin definitions for the Teensy 3.2/4.0 MCU and some collections
- * that can be used as array initialisers
+ * GPIO pin definitions for the Teensy 3.2/4.0 MCU.
  */
 #define GPIO_SIPO_DATA 0
 #define GPIO_SIPO_LATCH 1
@@ -76,6 +75,11 @@
 #define GPIO_D21 21
 #define GPIO_D22 22
 #define GPIO_D23 23
+
+/**********************************************************************
+ * NOP100 uses the ModuleConfiguration library class to handle its
+ * configuration data (all one byte of it!).
+ */
 
 #define CONFIGURATION_SIZE 1
 #define CAN_SOURCE_INDEX 0
@@ -301,7 +305,9 @@ void prgButtonHandler(bool state, int value) {
 #ifndef CONFIGURATION_CHANGE_HANDLER
 void configurationChangeHandler(unsigned int index, unsigned char value) {
   switch (index) {
-    case CAN_SOURCE_INDEX: break;// No action neccessary - handled by NMEA2000 library.
+    case CAN_SOURCE_INDEX: // We should save a changed value for future use.
+      MODULE_CONFIGURATION.saveByte(index); 
+      break;
     default: break;
   }
 
