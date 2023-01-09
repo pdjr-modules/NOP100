@@ -77,11 +77,9 @@
 #define GPIO_D22 22
 #define GPIO_D23 23
 
-#define NMEA2000_SOURCE_ADDRESS_SEED 22     // Arbitrary seed value
-#define NMEA2000_INSTANCE_UNDEFINED 255     // NMEA defines 255 as "undefined"
-
-#define DEFAULT_SOURCE_ADDRESS NMEA2000_SOURCE_ADDRESS_SEED
-#define DEFAULT_INSTANCE_ADDRESS NMEA2000_INSTANCE_UNDEFINED
+#define CONFIGURATION_SIZE 1
+#define CAN_SOURCE_INDEX 0
+#define CAN_SOURCE_DEFAULT_VALUE 22
 
 #define TRANSMIT_LED_UPDATE_INTERVAL 100UL   // 10 times a second
 #define NUMBER_OF_STATUS_LEDS 8
@@ -104,12 +102,15 @@ void messageHandler(const tN2kMsg&);
 void updateTransmitLed(unsigned char status);
 void updateStatusLeds(unsigned char status);
 void prgButtonHandler(bool state, int value);
+void configurationChangeHandler(unsigned int index, unsigned char value);
+unsigned char* configurationInitialiser(int& size);
 
-void configurationChangeHandler(unsigned int address, unsigned char value);
-bool configurationInitialiser();
+/**********************************************************************
+ * Create a new ModuleConfiguration object that can handle all of the
+ * module configuration values.
+*/
+ModuleConfiguration MODULE_CONFIGURATION(MODULE_CONFIGURATION_EEPROM_ADDRESS, configurationChangeHandler);
 
-ModuleConfiguration MODULE_CONFIGURATION(EEPROM.length(), MODULE_CONFIGURATION_EEPROM_ADDRESS, configurationChangeHandler);
-//MODULE_CONFIGURATION.setInitialisationCallback(configurationInitialiser)
 
 /**********************************************************************
  * List of PGNs transmitted by this program.
@@ -146,13 +147,6 @@ IC74HC595 STATUS_LEDS_SIPO(GPIO_SIPO_CLOCK, GPIO_SIPO_DATA, GPIO_SIPO_LATCH);
 StatusLeds TRANSMIT_LED(1, TRANSMIT_LED_UPDATE_INTERVAL, [](unsigned char status){ digitalWrite(GPIO_TRANSMIT_LED, (status & 0x01)); });
 StatusLeds STATUS_LEDS(NUMBER_OF_STATUS_LEDS, STATUS_LEDS_UPDATE_INTERVAL, [](unsigned char status){ STATUS_LEDS_SIPO.writeByte(status); });
 
-/**********************************************************************
- * MODULE_INSTANCE - working storage for the module instance number.
- * The user selected value is recovered from hardware and assigned
- * during module initialisation and reconfiguration.
- */
-unsigned char MODULE_INSTANCE = DEFAULT_INSTANCE_ADDRESS;
-
 /*********************************************************************/
 /*********************************************************************/
 /*********************************************************************/
@@ -188,18 +182,16 @@ void setup() {
   // 0x01    | N2K module instance number               | 1
   //
   //EEPROM.write(SOURCE_ADDRESS_EEPROM_ADDRESS, 0xff);
-  
+
   MODULE_CONFIGURATION.load();
   if (MODULE_CONFIGURATION.getByte(0) == 0xff) {
-    MODULE_CONFIGURATION.setByte(0, DEFAULT_SOURCE_ADDRESS);
+    MODULE_CONFIGURATION.initialise(configurationInitialiser);
     MODULE_CONFIGURATION.save();
-    MODULE_CONFIGURATION.initialise();
   }
 
   // Run a startup sequence in the LED display: all LEDs on to confirm
   // function, then a display of the module instance number.
   TRANSMIT_LED.setStatus(0xff); STATUS_LEDS.setStatus(0xff); delay(100);
-  TRANSMIT_LED.setStatus(0x00); STATUS_LEDS.setStatus(MODULE_INSTANCE); delay(1000);
   TRANSMIT_LED.setStatus(0x00); STATUS_LEDS.setStatus(0x00);
 
   /*********************************************************************/
@@ -213,7 +205,7 @@ void setup() {
   // Initialise and start N2K services.
   NMEA2000.SetProductInformation(PRODUCT_SERIAL_CODE, PRODUCT_CODE, PRODUCT_TYPE, PRODUCT_FIRMWARE_VERSION, PRODUCT_VERSION);
   NMEA2000.SetDeviceInformation(DEVICE_UNIQUE_NUMBER, DEVICE_FUNCTION, DEVICE_CLASS, DEVICE_MANUFACTURER_CODE);
-  NMEA2000.SetMode(tNMEA2000::N2km_ListenAndNode, MODULE_CONFIGURATION.getByte(0)); // Configure for sending and receiving.
+  NMEA2000.SetMode(tNMEA2000::N2km_ListenAndNode, MODULE_CONFIGURATION.getByte(CAN_SOURCE_INDEX)); // Configure for sending and receiving.
   NMEA2000.EnableForward(false); // Disable all msg forwarding to USB (=Serial)
   NMEA2000.ExtendTransmitMessages(TransmitMessages); // Tell library which PGNs we transmit
   NMEA2000.SetMsgHandler(messageHandler);
@@ -242,7 +234,9 @@ void loop() {
   // of a new CAN source address, so we check if there has been any
   // change and if so save the new address to EEPROM for future re-use.
   NMEA2000.ParseMessages();
-  if (NMEA2000.ReadResetAddressChanged()) MODULE_CONFIGURATION.setByte(0, NMEA2000.GetN2kSource());
+  if (NMEA2000.ReadResetAddressChanged()) {
+    MODULE_CONFIGURATION.setByte(CAN_SOURCE_INDEX, NMEA2000.GetN2kSource());
+  }
 
   /*********************************************************************/
   /*********************************************************************/
@@ -271,7 +265,6 @@ void messageHandler(const tN2kMsg &N2kMsg) {
   }
 }
 
-#ifndef PRG_BUTTON_HANDLER
 /**********************************************************************
  * prgButtonHandler - handle a change of state on the PRG button which
  * now has the state indicated by <released> (where true says released)
@@ -304,16 +297,21 @@ void prgButtonHandler(bool state, int value) {
       break;
   }
 }
-#endif
 
 #ifndef CONFIGURATION_CHANGE_HANDLER
-void configurationChangeHandler(unsigned int address, unsigned char value) {
+void configurationChangeHandler(unsigned int index, unsigned char value) {
+  switch (index) {
+    case CAN_SOURCE_INDEX: break;// No action neccessary - handled by NMEA2000 library.
+    default: break;
+  }
 
 }
 #endif
 
 #ifndef CONFIGURATION_INITIALISER
-bool configurationInitialiser() {
-  return(false);
+unsigned char* configurationInitialiser(int& size) {
+  static unsigned char *buffer = new unsigned char[size = CONFIGURATION_SIZE];
+  buffer[CAN_SOURCE_INDEX] = CAN_SOURCE_DEFAULT_VALUE;
+  return(buffer);
 }
 #endif
