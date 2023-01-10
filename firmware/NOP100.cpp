@@ -283,10 +283,16 @@ void prgButtonHandler(bool state, int value) {
 
   switch (state) {
     case Button::RELEASED :
-      if (MODULE_CONFIGURATION.interact(value,  ((deadline) && (now > deadline)))) {
-        TRANSMIT_LED.setLedState(0, StatusLeds::LedState::flash);
-      } else {
-        TRANSMIT_LED.setLedState(0, StatusLeds::LedState::off);
+      switch (MODULE_CONFIGURATION.interact(value,  ((deadline) && (now > deadline)))) {
+        case 1: 
+          TRANSMIT_LED.setLedState(0, StatusLeds::LedState::flash);
+          break;
+        case 2: 
+          TRANSMIT_LED.setLedState(0, StatusLeds::LedState::off);
+          break;
+        default:
+          TRANSMIT_LED.setLedState(0, StatusLeds::LedState::off);
+          break;
       }
       deadline = 0UL;
       break;
