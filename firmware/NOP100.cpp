@@ -107,7 +107,7 @@ void updateTransmitLed(unsigned char status);
 void updateStatusLeds(unsigned char status);
 void prgButtonHandler(bool state, int value);
 void configurationChangeHandler(unsigned int index, unsigned char value);
-unsigned char* configurationInitialiser(int& size);
+unsigned char* configurationInitialiser(int& size, unsigned int eepromAddress);
 int prgFunctionHandler(unsigned char code);
 
 /**********************************************************************
@@ -324,7 +324,6 @@ unsigned char* configurationInitialiser(int& size, unsigned int eepromAddress) {
   EEPROM.get(eepromAddress, buffer);
   if (buffer[CAN_SOURCE_INDEX] == 0xff) {
     buffer[CAN_SOURCE_INDEX] = CAN_SOURCE_DEFAULT_VALUE;
-    EEPROM.put(eepromAddress, buffer);
   }
   return(buffer);
 }
@@ -335,3 +334,4 @@ int prgFunctionHandler(unsigned char code) {
   int retval = 0;
   return(retval);
 }
+#endif
