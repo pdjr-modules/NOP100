@@ -306,13 +306,28 @@ void prgButtonHandler(bool state, int value) {
   }
 }
 
+
 #ifndef CONFIGURATION_CHANGE_HANDLER
+/**********************************************************************
+ * NOP100's configuration consists of just one byte holding the CAN
+ * interface source address, so <index> will only ever be 0. We accept
+ * any value and there is no need to advise any other software
+ * components of an update.
+ */
 bool configurationChangeHandler(unsigned int index, unsigned char value) {
   return(true);
 }
 #endif
 
 #ifndef CONFIGURATION_INITIALISER
+/**********************************************************************
+ * NOP100's configuration consists of just one byte holding the CAN
+ * interface source address. We create a one-element array to hold this
+ * value and attempt to load any previously saved buffer from EEPROM.
+ * If there is no previous value (i.e. this is the first time the
+ * firmware has been used) the we write a default value into the buffer
+ * and return the whole thing.
+*/
 unsigned char* configurationInitialiser(int& size, unsigned int eepromAddress) {
   static unsigned char *buffer = new unsigned char[size = CONFIGURATION_SIZE];
   EEPROM.get(eepromAddress, buffer);
@@ -323,9 +338,15 @@ unsigned char* configurationInitialiser(int& size, unsigned int eepromAddress) {
 }
 #endif
 
+/**********************************************************************
+ * This function is called when value has been entered through the
+ * configuration dialogue (i.e. by a short button press) without any
+ * prior entry of a configuration address. This means that the user has
+ * requested a special function, but NOP100 doesn't support any!
+*/
 #ifndef PRG_FUNCTION_HANDLER
 int prgFunctionHandler(unsigned char code) {
-  int retval = 0;
+  int retval = (int) StatusLeds::LedState::off;
   return(retval);
 }
 #endif
