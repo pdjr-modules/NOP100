@@ -115,7 +115,6 @@ unsigned char* configurationInitialiser(int& size);
 */
 ModuleConfiguration MODULE_CONFIGURATION(MODULE_CONFIGURATION_EEPROM_ADDRESS, configurationChangeHandler);
 
-
 /**********************************************************************
  * List of PGNs transmitted by this program.
  * 
@@ -140,7 +139,6 @@ Button PRG_BUTTON(GPIO_PRG);
  * DIL switch parallel inputs.
  */
 IC74HC165 DIL_SWITCH (GPIO_PISO_CLOCK, GPIO_PISO_DATA, GPIO_PISO_LATCH);
-
 
 IC74HC595 STATUS_LEDS_SIPO(GPIO_SIPO_CLOCK, GPIO_SIPO_DATA, GPIO_SIPO_LATCH);
 
@@ -187,12 +185,8 @@ void setup() {
   //
   //EEPROM.write(SOURCE_ADDRESS_EEPROM_ADDRESS, 0xff);
 
-  MODULE_CONFIGURATION.load();
-  if (MODULE_CONFIGURATION.getByte(0) == 0xff) {
-    MODULE_CONFIGURATION.initialise(configurationInitialiser);
-    MODULE_CONFIGURATION.save();
-  }
-
+  MODULE_CONFIGURATION.initialise(configurationInitialiser);
+  
   // Run a startup sequence in the LED display: all LEDs on to confirm
   // function, then a display of the module instance number.
   TRANSMIT_LED.setStatus(0xff); STATUS_LEDS.setStatus(0xff); delay(100);
@@ -317,7 +311,11 @@ void configurationChangeHandler(unsigned int index, unsigned char value) {
 #ifndef CONFIGURATION_INITIALISER
 unsigned char* configurationInitialiser(int& size, unsigned int eepromAddress) {
   static unsigned char *buffer = new unsigned char[size = CONFIGURATION_SIZE];
-  buffer[CAN_SOURCE_INDEX] = CAN_SOURCE_DEFAULT_VALUE;
+  EEPROM.get(eepromAddress, buffer);
+  if (buffer[CAN_SOURCE_INDEX] == 0xff) {
+    buffer[CAN_SOURCE_INDEX] = CAN_SOURCE_DEFAULT_VALUE;
+    EEPROM.put(eepromAddress, buffer);
+  }
   return(buffer);
 }
 #endif
