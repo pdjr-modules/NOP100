@@ -108,6 +108,7 @@ void updateStatusLeds(unsigned char status);
 void prgButtonHandler(bool state, int value);
 void configurationChangeHandler(unsigned int index, unsigned char value);
 unsigned char* configurationInitialiser(int& size);
+int prgFunctionHandler(unsigned char code);
 
 /**********************************************************************
  * Create a new ModuleConfiguration object that can handle all of the
@@ -280,18 +281,21 @@ void messageHandler(const tN2kMsg &N2kMsg) {
 void prgButtonHandler(bool state, int value) {
   static unsigned long deadline = 0UL;
   unsigned long now = millis();
-
+  
   switch (state) {
     case Button::RELEASED :
       switch (MODULE_CONFIGURATION.interact(value,  ((deadline) && (now > deadline)))) {
-        case 1: 
+        case 0:
+          TRANSMIT_LED.setLedState(0, StatusLeds::LedState::off);
+          break;
+        case 1:
           TRANSMIT_LED.setLedState(0, StatusLeds::LedState::flash);
           break;
         case 2: 
           TRANSMIT_LED.setLedState(0, StatusLeds::LedState::off);
           break;
         default:
-          TRANSMIT_LED.setLedState(0, StatusLeds::LedState::off);
+          TRANSMIT_LED.setLedState(0, (StatusLeds::LedState) prgFunctionHandler(value));
           break;
       }
       deadline = 0UL;
@@ -325,3 +329,9 @@ unsigned char* configurationInitialiser(int& size, unsigned int eepromAddress) {
   return(buffer);
 }
 #endif
+
+#ifndef PRG_FUNCTION_HANDLER
+int prgFunctionHandler(unsigned char code) {
+  int retval = 0;
+  return(retval);
+}
