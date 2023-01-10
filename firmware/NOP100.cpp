@@ -315,7 +315,7 @@ void configurationChangeHandler(unsigned int index, unsigned char value) {
 #endif
 
 #ifndef CONFIGURATION_INITIALISER
-unsigned char* configurationInitialiser(int& size) {
+unsigned char* configurationInitialiser(int& size, unsigned int eepromAddress) {
   static unsigned char *buffer = new unsigned char[size = CONFIGURATION_SIZE];
   buffer[CAN_SOURCE_INDEX] = CAN_SOURCE_DEFAULT_VALUE;
   return(buffer);
