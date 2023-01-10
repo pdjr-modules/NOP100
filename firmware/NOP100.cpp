@@ -106,7 +106,7 @@ void messageHandler(const tN2kMsg&);
 void updateTransmitLed(unsigned char status);
 void updateStatusLeds(unsigned char status);
 void prgButtonHandler(bool state, int value);
-void configurationChangeHandler(unsigned int index, unsigned char value);
+bool configurationChangeHandler(unsigned int index, unsigned char value);
 unsigned char* configurationInitialiser(int& size, unsigned int eepromAddress);
 int prgFunctionHandler(unsigned char code);
 
@@ -307,14 +307,8 @@ void prgButtonHandler(bool state, int value) {
 }
 
 #ifndef CONFIGURATION_CHANGE_HANDLER
-void configurationChangeHandler(unsigned int index, unsigned char value) {
-  switch (index) {
-    case CAN_SOURCE_INDEX: // We should save a changed value for future use.
-      EEPROM.update(index, value); 
-      break;
-    default: break;
-  }
-
+bool configurationChangeHandler(unsigned int index, unsigned char value) {
+  return(true);
 }
 #endif
 
