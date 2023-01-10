@@ -300,7 +300,7 @@ void prgButtonHandler(bool state, int value) {
 void configurationChangeHandler(unsigned int index, unsigned char value) {
   switch (index) {
     case CAN_SOURCE_INDEX: // We should save a changed value for future use.
-      MODULE_CONFIGURATION.saveByte(index); 
+      EEPROM.update(index, value); 
       break;
     default: break;
   }
