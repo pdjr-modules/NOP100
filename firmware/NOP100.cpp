@@ -99,16 +99,19 @@
 /*********************************************************************/
 /*********************************************************************/
 
+enum OperatingMode { normal, configuration } OPERATING_MODE = normal;
+
 /**********************************************************************
  * Declarations of local functions.
  */
 void messageHandler(const tN2kMsg&);
 void updateTransmitLed(unsigned char status);
 void updateStatusLeds(unsigned char status);
-void prgButtonHandler(bool state, int value);
+void prgButtonHandler(OperatingMode mode, bool state, int value);
 bool configurationChangeHandler(unsigned int index, unsigned char value);
 unsigned char* configurationInitialiser(int& size, unsigned int eepromAddress);
 int prgFunctionHandler(unsigned char code);
+
 
 /**********************************************************************
  * Create a new ModuleConfiguration object that can handle all of the
@@ -174,22 +177,11 @@ void setup() {
   pinMode(GPIO_TRANSMIT_LED, OUTPUT);
   STATUS_LEDS_SIPO.begin();
 
-  // We assume that a new host system has its EEPROM initialised to all
-  // 0xFF. We test by reading a byte that in a configured system should
-  // never be this value and if it indicates a scratch system then we
-  // set EEPROM memory up in the following way.
-  //
-  // Address | Value                                    | Size in bytes
-  // --------+------------------------------------------+--------------
-  // 0x00    | N2K source address                       | 1
-  // 0x01    | N2K module instance number               | 1
-  //
-  //EEPROM.write(SOURCE_ADDRESS_EEPROM_ADDRESS, 0xff);
-
+  // Initialise module configuration (see configurationInitialiser())
   MODULE_CONFIGURATION.initialise(configurationInitialiser);
   
   // Run a startup sequence in the LED display: all LEDs on to confirm
-  // function, then a display of the module instance number.
+  // function.
   TRANSMIT_LED.setStatus(0xff); STATUS_LEDS.setStatus(0xff); delay(100);
   TRANSMIT_LED.setStatus(0x00); STATUS_LEDS.setStatus(0x00);
 
@@ -249,11 +241,13 @@ void loop() {
   MODULE_CONFIGURATION.interact();
 
   // If the PRG button has been operated, then call the button handler.
-  if (PRG_BUTTON.toggled()) prgButtonHandler(PRG_BUTTON.read(), DIL_SWITCH.readByte());
+  if (PRG_BUTTON.toggled()) prgButtonHandler(OPERATING_MODE, PRG_BUTTON.read(), DIL_SWITCH.readByte());
   
-  // Maybe update the transmit and status LEDs.
-  TRANSMIT_LED.update(false, true);
-  STATUS_LEDS.update(false, true);
+  if (OPERATING_MODE == normal) {
+    // Maybe update the transmit and status LEDs.
+    TRANSMIT_LED.update(false, true);
+    STATUS_LEDS.update(false, true);
+  }
 }
 
 void messageHandler(const tN2kMsg &N2kMsg) {
@@ -278,24 +272,36 @@ void messageHandler(const tN2kMsg &N2kMsg) {
  * to the state machine's process() method with the value of the DIL
  * switch as argument. I 
  */
-void prgButtonHandler(bool state, int value) {
+void prgButtonHandler(OperatingMode mode, bool state, int value) {
   static unsigned long deadline = 0UL;
   unsigned long now = millis();
   
   switch (state) {
     case Button::RELEASED :
-      switch (MODULE_CONFIGURATION.interact(value,  ((deadline) && (now > deadline)))) {
-        case 0:
-          TRANSMIT_LED.setLedState(0, StatusLeds::LedState::off);
-          break;
-        case 1:
-          TRANSMIT_LED.setLedState(0, StatusLeds::LedState::flash);
-          break;
-        case 2: 
-          TRANSMIT_LED.setLedState(0, StatusLeds::LedState::off);
+      switch (mode) {
+        case normal:
+          switch (MODULE_CONFIGURATION.interact(value,  ((deadline) && (now > deadline)))) {
+            case 1: // Address entry acknowledged ... waiting for a value
+              TRANSMIT_LED.setLedState(0, StatusLeds::LedState::flash);
+              break;
+            case -1: // Address entry rejected (invalid address)
+              break;
+            case 2: // Value entry accepted (value saved to configuration)
+              TRANSMIT_LED.setLedState(0, StatusLeds::LedState::off);
+              break;
+            case -2: // Value entry rejected (value was invalid / out of range)
+              break;
+            case 0: // Short press supplied a value but no address is active
+              TRANSMIT_LED.setLedState(0, (StatusLeds::LedState)::off);
+              if (value == 0)
+              prgFunctionHandler(state, value));
+              break;
+            default:
+              break;
+          }
           break;
         default:
-          TRANSMIT_LED.setLedState(0, (StatusLeds::LedState) prgFunctionHandler(value));
+          prgFunctionHandler(state, value));
           break;
       }
       deadline = 0UL;
