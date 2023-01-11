@@ -99,7 +99,7 @@
 /*********************************************************************/
 /*********************************************************************/
 
-enum OperatingMode { normal, configuration } OPERATING_MODE = normal;
+enum OperatingMode { normal, extended } OPERATING_MODE = normal;
 
 /**********************************************************************
  * Declarations of local functions.
@@ -108,16 +108,16 @@ void messageHandler(const tN2kMsg&);
 void updateTransmitLed(unsigned char status);
 void updateStatusLeds(unsigned char status);
 void prgButtonHandler(OperatingMode mode, bool state, int value);
-bool configurationChangeHandler(unsigned int index, unsigned char value);
+bool configurationValidator(unsigned int index, unsigned char value);
 unsigned char* configurationInitialiser(int& size, unsigned int eepromAddress);
-int prgFunctionHandler(unsigned char code);
+int extendedFunctionHandler(unsigned int index, unsigned char code);
 
 
 /**********************************************************************
  * Create a new ModuleConfiguration object that can handle all of the
  * module configuration values.
 */
-ModuleConfiguration MODULE_CONFIGURATION(MODULE_CONFIGURATION_EEPROM_ADDRESS, configurationChangeHandler);
+ModuleConfiguration MODULE_CONFIGURATION(configurationInitialiser, configurationValidator, MODULE_CONFIGURATION_EEPROM_ADDRESS);
 
 /**********************************************************************
  * List of PGNs transmitted by this program.
@@ -178,7 +178,7 @@ void setup() {
   STATUS_LEDS_SIPO.begin();
 
   // Initialise module configuration (see configurationInitialiser())
-  MODULE_CONFIGURATION.initialise(configurationInitialiser);
+  MODULE_CONFIGURATION.setup();
   
   // Run a startup sequence in the LED display: all LEDs on to confirm
   // function.
@@ -312,19 +312,6 @@ void prgButtonHandler(OperatingMode mode, bool state, int value) {
   }
 }
 
-
-#ifndef CONFIGURATION_CHANGE_HANDLER
-/**********************************************************************
- * NOP100's configuration consists of just one byte holding the CAN
- * interface source address, so <index> will only ever be 0. We accept
- * any value and there is no need to advise any other software
- * components of an update.
- */
-bool configurationChangeHandler(unsigned int index, unsigned char value) {
-  return(true);
-}
-#endif
-
 #ifndef CONFIGURATION_INITIALISER
 /**********************************************************************
  * NOP100's configuration consists of just one byte holding the CAN
@@ -343,6 +330,19 @@ unsigned char* configurationInitialiser(int& size, unsigned int eepromAddress) {
   return(buffer);
 }
 #endif
+
+#ifndef CONFIGURATION_VALIDATOR
+/**********************************************************************
+ * NOP100's configuration consists of just one byte holding the CAN
+ * interface source address, so <index> will only ever be 0. We accept
+ * any value and there is no need to advise any other software
+ * components of an update.
+ */
+bool configurationValidator(unsigned int index, unsigned char value) {
+  return(true);
+}
+#endif
+
 
 /**********************************************************************
  * This function is called when value has been entered through the
