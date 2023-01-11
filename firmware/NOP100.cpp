@@ -275,33 +275,43 @@ void messageHandler(const tN2kMsg &N2kMsg) {
 void prgButtonHandler(OperatingMode mode, bool state, int value) {
   static unsigned long deadline = 0UL;
   unsigned long now = millis();
+  int result = 0;
   
   switch (state) {
     case Button::RELEASED :
       switch (mode) {
         case normal:
-          switch (MODULE_CONFIGURATION.interact(value,  ((deadline) && (now > deadline)))) {
-            case 1: // Address entry acknowledged ... waiting for a value
-              TRANSMIT_LED.setLedState(0, StatusLeds::LedState::flash);
-              break;
-            case -1: // Address entry rejected (invalid address)
-              break;
-            case 2: // Value entry accepted (value saved to configuration)
-              TRANSMIT_LED.setLedState(0, StatusLeds::LedState::off);
-              break;
-            case -2: // Value entry rejected (value was invalid / out of range)
-              break;
-            case 0: // Short press supplied a value but no address is active
-              TRANSMIT_LED.setLedState(0, (StatusLeds::LedState)::off);
-              if (value == 0)
-              prgFunctionHandler(state, value));
-              break;
-            default:
-              break;
-          }
+          result = MODULE_CONFIGURATION.interact(value,  ((deadline) && (now > deadline)));
           break;
-        default:
-          prgFunctionHandler(state, value));
+        case extended:
+          result = extendedInteract(value, ((deadline) && (now > deadline)));
+          break;
+      }
+      switch (result) {
+        case 1: // Address entry acknowledged ... waiting for a value
+          TRANSMIT_LED.setLedState(0, StatusLeds::LedState::flash);
+          break;
+        case -1: // Address entry rejected (invalid address)
+          break;
+        case 2: // Value entry accepted (value saved to configuration)
+          TRANSMIT_LED.setLedState(0, StatusLeds::LedState::off);
+          break;
+        case -2: // Value entry rejected (value was invalid / out of range)
+          break;
+        case 0: // Short press supplied a value but no address is active
+          if (value == 0) {
+            switch (mode) {
+              case normal:
+                OPERATING_MODE = extended;
+                TRANSMIT_LED.setLedState(0, StatusLeds::LedState::flash);
+                break;
+              case extended:
+                OPERATING_MODE = normal;
+                TRANSMIT_LED.setLedState(0, StatusLeds::LedState::off);
+                break;
+            }
+          }
+          TRANSMIT_LED.setLedState(0, (StatusLeds::LedState)::off);
           break;
       }
       deadline = 0UL;
@@ -350,9 +360,8 @@ bool configurationValidator(unsigned int index, unsigned char value) {
  * prior entry of a configuration address. This means that the user has
  * requested a special function, but NOP100 doesn't support any!
 */
-#ifndef PRG_FUNCTION_HANDLER
-int prgFunctionHandler(unsigned char code) {
-  int retval = (int) StatusLeds::LedState::off;
-  return(retval);
+#ifndef EXTENDED_INTERACT
+int extendedInteract(int value, bool longPress) {
+  return(0);
 }
 #endif
