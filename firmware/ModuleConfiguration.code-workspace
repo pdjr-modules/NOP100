@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "../../ModuleConfiguration"
+		},
+		{
+			"name": "sketch",
+			"path": "../../firmware-factory/sketch"
+		}
+	],
+	"settings": {}
+}

@@ -110,7 +110,7 @@ void updateStatusLeds(unsigned char status);
 void prgButtonHandler(OperatingMode mode, bool state, int value);
 bool configurationValidator(unsigned int index, unsigned char value);
 unsigned char* configurationInitialiser(int& size, unsigned int eepromAddress);
-int extendedFunctionHandler(unsigned int index, unsigned char code);
+int extendedInteract(unsigned int value, bool longPress);
 
 
 /**********************************************************************
@@ -311,7 +311,7 @@ void prgButtonHandler(OperatingMode mode, bool state, int value) {
                 break;
             }
           }
-          TRANSMIT_LED.setLedState(0, (StatusLeds::LedState)::off);
+          TRANSMIT_LED.setLedState(0, StatusLeds::LedState::off);
           break;
       }
       deadline = 0UL;
@@ -361,7 +361,7 @@ bool configurationValidator(unsigned int index, unsigned char value) {
  * requested a special function, but NOP100 doesn't support any!
 */
 #ifndef EXTENDED_INTERACT
-int extendedInteract(int value, bool longPress) {
+int extendedInteract(unsigned int value, bool longPress) {
   return(0);
 }
 #endif
