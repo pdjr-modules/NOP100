@@ -90,6 +90,7 @@
 #define STATUS_LEDS_UPDATE_INTERVAL 200UL // 5 times a second
 #define LONG_BUTTON_PRESS_INTERVAL 1000UL // 1 second
 #define CONFIGURATION_INACTIVITY_TIMEOUT 30000UL // 30 seconds 
+#define EXTENDED_OPERATING_MODE_INACTIVITY_TIMEOUT 60000UL // 60 seconds
 
 /*********************************************************************/
 /*********************************************************************/
@@ -107,10 +108,11 @@ enum OperatingMode { normal, extended } OPERATING_MODE = normal;
 void messageHandler(const tN2kMsg&);
 void updateTransmitLed(unsigned char status);
 void updateStatusLeds(unsigned char status);
-void prgButtonHandler(OperatingMode mode, bool state, int value);
+unsigned long prgButtonHandler(OperatingMode mode, bool state, int value);
 bool configurationValidator(unsigned int index, unsigned char value);
 unsigned char* configurationInitialiser(int& size, unsigned int eepromAddress);
 int extendedInteract(unsigned int value, bool longPress);
+void cancelExtendedOperatingModeMaybe();
 
 
 /**********************************************************************
@@ -137,6 +139,8 @@ tNMEA2000Handler NMEA2000Handlers[] = NMEA_PGN_HANDLERS;
  * PRG_BUTTON - debounced GPIO_PRG.
  */
 Button PRG_BUTTON(GPIO_PRG);
+
+unsigned long PRG_PRESSED_AT = 0UL;
 
 /**********************************************************************
  * DIL_SWITCH - interface to the IC74HC165 IC that connects the eight
@@ -241,13 +245,17 @@ void loop() {
   MODULE_CONFIGURATION.interact();
 
   // If the PRG button has been operated, then call the button handler.
-  if (PRG_BUTTON.toggled()) prgButtonHandler(OPERATING_MODE, PRG_BUTTON.read(), DIL_SWITCH.readByte());
-  
+  if (PRG_BUTTON.toggled()) {
+    PRG_PRESSED_AT = prgButtonHandler(OPERATING_MODE, PRG_BUTTON.read(), DIL_SWITCH.readByte());
+  }
+
   if (OPERATING_MODE == normal) {
     // Maybe update the transmit and status LEDs.
     TRANSMIT_LED.update(false, true);
     STATUS_LEDS.update(false, true);
   }
+
+  cancelExtendedOperatingModeMaybe();
 }
 
 void messageHandler(const tN2kMsg &N2kMsg) {
@@ -255,6 +263,28 @@ void messageHandler(const tN2kMsg &N2kMsg) {
   for (iHandler=0; NMEA2000Handlers[iHandler].PGN!=0 && !(N2kMsg.PGN==NMEA2000Handlers[iHandler].PGN); iHandler++);
   if (NMEA2000Handlers[iHandler].PGN != 0) {
     NMEA2000Handlers[iHandler].Handler(N2kMsg); 
+  }
+}
+
+void toggleOperatingMode() {
+  switch (OPERATING_MODE) {
+    case normal:
+      OPERATING_MODE == extended;
+      TRANSMIT_LED.setLedState(0, StatusLeds::LedState::on);
+      break;
+    case extended:
+      OPERATING_MODE == normal;
+      TRANSMIT_LED.setLedState(0, StatusLeds::LedState::off);
+      break;
+  }
+}
+
+void cancelExtendedOperatingModeMaybe() {
+  if (OPERATING_MODE == extended) {
+    if ((PRG_PRESSED_AT) && ((millis() - PRG_PRESSED_AT) > EXTENDED_OPERATING_MODE_INACTIVITY_TIMEOUT)) {
+      toggleOperatingMode();
+      PRG_PRESSED_AT = 0UL;
+    }
   }
 }
 
@@ -272,7 +302,7 @@ void messageHandler(const tN2kMsg &N2kMsg) {
  * to the state machine's process() method with the value of the DIL
  * switch as argument. I 
  */
-void prgButtonHandler(OperatingMode mode, bool state, int value) {
+unsigned long prgButtonHandler(OperatingMode mode, bool state, int value) {
   static unsigned long deadline = 0UL;
   unsigned long now = millis();
   int result = 0;
@@ -294,24 +324,12 @@ void prgButtonHandler(OperatingMode mode, bool state, int value) {
         case -1: // Address entry rejected (invalid address)
           break;
         case 2: // Value entry accepted (value saved to configuration)
-          TRANSMIT_LED.setLedState(0, StatusLeds::LedState::off);
+          TRANSMIT_LED.setLedState(0, (mode == normal)?StatusLeds::LedState::off:StatusLeds::LedState::on);
           break;
         case -2: // Value entry rejected (value was invalid / out of range)
           break;
-        case 0: // Short press supplied a value but no address is active
-          if (value == 0) {
-            switch (mode) {
-              case normal:
-                OPERATING_MODE = extended;
-                TRANSMIT_LED.setLedState(0, StatusLeds::LedState::flash);
-                break;
-              case extended:
-                OPERATING_MODE = normal;
-                TRANSMIT_LED.setLedState(0, StatusLeds::LedState::off);
-                break;
-            }
-          }
-          TRANSMIT_LED.setLedState(0, StatusLeds::LedState::off);
+        default: // Short press supplied a value but no address is active
+          toggleOperatingMode();
           break;
       }
       deadline = 0UL;
@@ -320,6 +338,7 @@ void prgButtonHandler(OperatingMode mode, bool state, int value) {
       deadline = (now + LONG_BUTTON_PRESS_INTERVAL);
       break;
   }
+  return(now);
 }
 
 #ifndef CONFIGURATION_INITIALISER
