@@ -355,6 +355,7 @@ unsigned char* configurationInitialiser(int& size, unsigned int eepromAddress) {
   EEPROM.get(eepromAddress, buffer);
   if (buffer[CAN_SOURCE_INDEX] == 0xff) {
     buffer[CAN_SOURCE_INDEX] = CAN_SOURCE_DEFAULT_VALUE;
+    EEPROM.put(eepromAddress, buffer);
   }
   return(buffer);
 }
@@ -371,7 +372,6 @@ bool configurationValidator(unsigned int index, unsigned char value) {
   return(true);
 }
 #endif
-
 
 /**********************************************************************
  * This function is called when value has been entered through the
