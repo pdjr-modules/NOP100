@@ -269,11 +269,11 @@ void messageHandler(const tN2kMsg &N2kMsg) {
 void toggleOperatingMode() {
   switch (OPERATING_MODE) {
     case normal:
-      OPERATING_MODE == extended;
+      OPERATING_MODE = extended;
       TRANSMIT_LED.setLedState(0, StatusLeds::LedState::on);
       break;
     case extended:
-      OPERATING_MODE == normal;
+      OPERATING_MODE = normal;
       TRANSMIT_LED.setLedState(0, StatusLeds::LedState::off);
       break;
   }
