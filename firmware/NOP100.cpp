@@ -154,7 +154,6 @@
  */
 #define SL_STATUS_LEDS_UPDATE_INTERVAL 100UL
 
-
 /*********************************************************************/
 /*********************************************************************/
 /*********************************************************************/
@@ -163,61 +162,83 @@
 /*********************************************************************/
 /*********************************************************************/
 
+/**
+ * @brief Variable capturing the firmware's current operating mode.
+ */
 enum OperatingMode { normal, extended } OPERATING_MODE = normal;
 
-/**********************************************************************
- * Declarations of local functions.
+/**
+ * @brief Declarations of local functions.
  */
 void messageHandler(const tN2kMsg&);
-void updateTransmitLed(unsigned char status);
-void updateStatusLeds(unsigned char status);
 unsigned long prgButtonHandler(OperatingMode mode, bool state, int value);
 bool configurationValidator(unsigned int index, unsigned char value);
 unsigned char* configurationInitialiser(int& size, unsigned int eepromAddress);
 int extendedInteract(unsigned int value, bool longPress);
 void cancelExtendedOperatingModeMaybe();
 
-
-/**********************************************************************
- * Create a new ModuleConfiguration object that can handle all of the
- * module configuration values.
+/**
+ * @brief Create a ModuleConfiguration object for managing all module
+ *        configuration data.
 */
 ModuleConfiguration MODULE_CONFIGURATION(configurationInitialiser, configurationValidator, MODULE_CONFIGURATION_EEPROM_ADDRESS);
 
-/**********************************************************************
- * List of PGNs transmitted by this program.
+/**
+ * @brief Create and initialise an array of transmitted PGNs.
  * 
- * PGN 127501 Binary Status Report.
+ * Array initialiser is specified in defined.h. Required by NMEA2000
+ * library. 
  */
 const unsigned long TransmitMessages[] = NMEA_TRANSMIT_MESSAGE_PGNS;
 
-/**********************************************************************
- * NMEA2000Handlers -  vector mapping each PGN handled by this module
- * onto a function which will process any received messages.
+/**
+ * @brief Create and initialise a vector of received PGNs and their
+ *        handlers.
+ * 
+ * Array initialiser is specified in defined.h. Required by NMEA2000
+ * library. 
  */
 typedef struct { unsigned long PGN; void (*Handler)(const tN2kMsg &N2kMsg); } tNMEA2000Handler;
 tNMEA2000Handler NMEA2000Handlers[] = NMEA_PGN_HANDLERS;
 
-/**********************************************************************
- * PRG_BUTTON - debounced GPIO_PRG.
+/**
+ * @brief Create a Button object for debouncing the module's PRG
+ *        button.
  */
 Button PRG_BUTTON(GPIO_PRG);
 
+/**
+ * @brief Register for remembering the time of the most recent PRG
+ *        button press. 
+ */
 unsigned long PRG_PRESSED_AT = 0UL;
 
-/**********************************************************************
- * DIL_SWITCH - interface to the IC74HC165 IC that connects the eight
- * DIL switch parallel inputs.
+/**
+ * @brief Interface to the IC74HC165 PISO IC that connects the eight 
+ *        DIL switch parallel inputs.
  */
 IC74HC165 DIL_SWITCH (GPIO_PISO_CLOCK, GPIO_PISO_DATA, GPIO_PISO_LATCH);
 
+/**
+ * @brief Interface to the IC74HC595 SIPO IC that operates the eight
+ *        status LEDs. 
+ */
 IC74HC595 STATUS_LEDS_SIPO(GPIO_SIPO_CLOCK, GPIO_SIPO_DATA, GPIO_SIPO_LATCH);
 
-/**********************************************************************
- * Create handlers for the transmit LED (connected to a GPIO pin) and
- * the status LEDs connected to the SIPO. 
+/**
+ * @brief StatusLed object for operating the transmit LED.
+ * 
+ * The transmit LED is connected directly to a GPIO pin, so the lambda
+ * callback just uses a digital write operation to drive the output.
  */
 StatusLeds TRANSMIT_LED(1, TRANSMIT_LED_UPDATE_INTERVAL, [](unsigned char status){ digitalWrite(GPIO_TRANSMIT_LED, (status & 0x01)); });
+
+/**
+ * @brief StatusLed object for operating the status LEDs.
+ * 
+ * The status LEDs are connected through a SIPO IC, so the lambda
+ * callback can operate all eight LEDs in a single operation.
+ */
 StatusLeds STATUS_LEDS(NUMBER_OF_STATUS_LEDS, STATUS_LEDS_UPDATE_INTERVAL, [](unsigned char status){ STATUS_LEDS_SIPO.writeByte(status); });
 
 /*********************************************************************/
@@ -329,6 +350,13 @@ void messageHandler(const tN2kMsg &N2kMsg) {
   }
 }
 
+/**
+ * @brief Switch operating mode from normal to extended or vice-versa.
+ * 
+ * The operating mode is indicated by the baseline state of the
+ * transmit LED, so as well as flagging the state change we also
+ * tweak the LED.
+ */
 void toggleOperatingMode() {
   switch (OPERATING_MODE) {
     case normal:
@@ -342,6 +370,11 @@ void toggleOperatingMode() {
   }
 }
 
+/**
+ * @brief Revert operating mode to normal if the PRG button has not
+ *        been operated within the inactivity timeout period.
+ * 
+ */
 void cancelExtendedOperatingModeMaybe() {
   if (OPERATING_MODE == extended) {
     if ((PRG_PRESSED_AT) && ((millis() - PRG_PRESSED_AT) > EXTENDED_OPERATING_MODE_INACTIVITY_TIMEOUT)) {
