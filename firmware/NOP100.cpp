@@ -98,18 +98,37 @@
  * A specialization will almost always need to override this definition
  * (in definitions.h) to suit its own configuration needs.
  */
-#define CA_SIZE 1
+#define CM_SIZE 1
 
 /**
  * @brief List of named locations in the configuration array. 
  */
-#define CA_CAN_SOURCE_INDEX 0
+#define CM_CAN_SOURCE_INDEX 0
 
 /**
  * @brief List of default (initialisation) values for each location in
  *        the configuration array. 
  */
-#define CA_CAN_SOURCE_DEFAULT 22
+#define CM_CAN_SOURCE_DEFAULT 22
+
+/**
+ * @brief Number of milliseconds that the PRG button must be held
+ *        closed to constitute a 'long' button press. 
+ */
+#define CM_LONG_BUTTON_PRESS_INTERVAL 1000UL
+
+/**
+ * @brief Number of milliseconds of inactivity that must elapse within
+ *        a dialog before the dialog times out. 
+ * 
+ */
+#define CM_DIALOG_INACTIVITY_TIMEOUT 30000UL
+
+/**
+ * @brief Number of milliseconds of inactivity that must elapse before
+ *        extended operating mode reverts to normal mode.
+ */
+#define CM_EXTENDED_OPERATING_MODE_INACTIVITY_TIMEOUT 60000UL // 60 seconds
 
 /**
  * @brief Number of milliseconds between updates of the transmit LED.
@@ -117,7 +136,7 @@
  * This value implicitly sets the ON-period and OFF-period of a
  * flashing LED. 
  */
-#define TRANSMIT_LED_UPDATE_INTERVAL 100UL
+#define SL_TRANSMIT_LED_UPDATE_INTERVAL 100UL
 
 /**
  * @brief The number of status LEDS supported by the firmware.
@@ -125,7 +144,7 @@
  * The NOP100 hardware supports a maximum of 16 LEDs. Most applications
  * will be happy with a maximum of eight. 
  */
-#define NUMBER_OF_STATUS_LEDS 8
+#define SL_NUMBER_OF_STATUS_LEDS 8
 
 /**
  * @brief Number of milliseconds between updates of the status LEDs.
@@ -133,16 +152,8 @@
  * This value implicitly sets the ON-period and OFF-period of all
  * status LEDs. 
  */
-#define STATUS_LEDS_UPDATE_INTERVAL 100UL
+#define SL_STATUS_LEDS_UPDATE_INTERVAL 100UL
 
-/**
- * @brief Number of milliseconds that the PRG button must be held
- *        closed to constitute a 'long' button press. 
- */
-#define LONG_BUTTON_PRESS_INTERVAL 1000UL
-
-#define DIALOG_INACTIVITY_TIMEOUT 30000UL 
-#define EXTENDED_OPERATING_MODE_INACTIVITY_TIMEOUT 60000UL // 60 seconds
 
 /*********************************************************************/
 /*********************************************************************/
