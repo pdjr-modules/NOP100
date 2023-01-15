@@ -1,8 +1,26 @@
-/**********************************************************************
- * NOP100.cpp - firmware for an NMEA 2000 module that does nothing.
- * Copyright (c) 2021-22 Paul Reeve <preeve@pdjr.eu>
+/**
+ * @file NOP100.cpp
+ * @author Paul Reeve (preeve@pdjr.eu)
+ * @brief Extensible firmware based on the NMEA2000 library.
+ * @version 0.1
+ * @date 2023-01-15
+ * 
+ * @copyright Copyright (c) 2023
  *
- * Target platform: Teensy 4.0
+ * This firmware is targetted at hardware based on the
+ * [NOP100](https://github.com/preeve9534/NOP100)
+ * module design.
+ * It implements a functional NMEA 2000 device that performs no
+ * real-world task, but it is easily extended through a small number
+ * of include files into a specialisation that can perform most things
+ * required of an NMEA 2000 module application.
+ * 
+ * The firmware implements basic bus connectivity and the normal
+ * housekeeping required by NMEA through use of the
+ * [NMEA2000](https://github.com/ttlappalainen/NMEA2000) library.
+ * It also relieves any derived application of much of the hard work
+ * associated with module configuration using the switch inputs of the
+ * NOP100 hardware.  
  */
 
 #include <Arduino.h>
@@ -20,36 +38,34 @@
 /*********************************************************************/
 /*********************************************************************/
 /*********************************************************************/
-#include "module-libraries.inc"
+#include "includes.h"
 /*********************************************************************/
 /*********************************************************************/
 /*********************************************************************/
 
-/**********************************************************************
- * SERIAL DEBUG
- * 
- * The firmware can be built so that it writes copious trace and debug
- * data to the MCU's serial output by defining DEBUG_SERIAL. When the
- * Teensy reboots it switches its USB port to serial emulation and it
- * can take a few seconds for a connected host computer to recognise
- * the switch: - DEBUG_SERIAL_START_DELAY introduces a delay that can
- * be used to prevent loss of early debug output.
+/**
+ * @brief Enable or disable process messaging on the Arduino serial
+ *        output.
  */
 #define DEBUG_SERIAL
+
+/**
+ * @brief Delay start of firmware execution after boot. 
+ *
+ * When the Teensy reboots it switches its USB port to serial emulation
+ * and it can take a few seconds for a connected host computer to
+ * recognise the switch. This millisecond delay can be used to prevent
+ * loss of early debug output.
+ */
 #define DEBUG_SERIAL_START_DELAY 4000
 
-/**********************************************************************
- * MCU EEPROM (PERSISTENT) STORAGE ADDRESSES
- * 
- * Module configuration is persisted to Teensy EEPROM storage and here
- * are the locations used by NOP100.
+/**
+ * @brief EEPROM address at which to persist module configuration data. 
  */
 #define MODULE_CONFIGURATION_EEPROM_ADDRESS 0
 
-/**********************************************************************
- * MCU PIN DEFINITIONS
- * 
- * GPIO pin definitions for the Teensy 3.2/4.0 MCU.
+/**
+ * @brief Microcontroller pin definitions for the Teensy 3.2/4.0.
  */
 #define GPIO_SIPO_DATA 0
 #define GPIO_SIPO_LATCH 1
@@ -76,26 +92,62 @@
 #define GPIO_D22 22
 #define GPIO_D23 23
 
-/**********************************************************************
- * NOP100 uses the ModuleConfiguration library class to handle its
- * configuration data (all one byte of it!).
+/**
+ * @brief Size of the module configuration array. 
+ * 
+ * A specialization will almost always need to override this definition
+ * (in definitions.h) to suit its own configuration needs.
  */
+#define CA_SIZE 1
 
-#define CONFIGURATION_SIZE 1
-#define CAN_SOURCE_INDEX 0
-#define CAN_SOURCE_DEFAULT_VALUE 22
+/**
+ * @brief List of named locations in the configuration array. 
+ */
+#define CA_CAN_SOURCE_INDEX 0
 
-#define TRANSMIT_LED_UPDATE_INTERVAL 100UL   // 10 times a second
+/**
+ * @brief List of default (initialisation) values for each location in
+ *        the configuration array. 
+ */
+#define CA_CAN_SOURCE_DEFAULT 22
+
+/**
+ * @brief Number of milliseconds between updates of the transmit LED.
+ * 
+ * This value implicitly sets the ON-period and OFF-period of a
+ * flashing LED. 
+ */
+#define TRANSMIT_LED_UPDATE_INTERVAL 100UL
+
+/**
+ * @brief The number of status LEDS supported by the firmware.
+ * 
+ * The NOP100 hardware supports a maximum of 16 LEDs. Most applications
+ * will be happy with a maximum of eight. 
+ */
 #define NUMBER_OF_STATUS_LEDS 8
-#define STATUS_LEDS_UPDATE_INTERVAL 200UL // 5 times a second
-#define LONG_BUTTON_PRESS_INTERVAL 1000UL // 1 second
-#define CONFIGURATION_INACTIVITY_TIMEOUT 30000UL // 30 seconds 
+
+/**
+ * @brief Number of milliseconds between updates of the status LEDs.
+ * 
+ * This value implicitly sets the ON-period and OFF-period of all
+ * status LEDs. 
+ */
+#define STATUS_LEDS_UPDATE_INTERVAL 100UL
+
+/**
+ * @brief Number of milliseconds that the PRG button must be held
+ *        closed to constitute a 'long' button press. 
+ */
+#define LONG_BUTTON_PRESS_INTERVAL 1000UL
+
+#define DIALOG_INACTIVITY_TIMEOUT 30000UL 
 #define EXTENDED_OPERATING_MODE_INACTIVITY_TIMEOUT 60000UL // 60 seconds
 
 /*********************************************************************/
 /*********************************************************************/
 /*********************************************************************/
-#include "module-directives.inc"
+#include "defines.h"
 /*********************************************************************/
 /*********************************************************************/
 /*********************************************************************/
@@ -160,7 +212,7 @@ StatusLeds STATUS_LEDS(NUMBER_OF_STATUS_LEDS, STATUS_LEDS_UPDATE_INTERVAL, [](un
 /*********************************************************************/
 /*********************************************************************/
 /*********************************************************************/
-#include "module-definitions.inc"
+#include "definitions.h"
 /*********************************************************************/
 /*********************************************************************/
 /*********************************************************************/
@@ -192,7 +244,7 @@ void setup() {
   /*********************************************************************/
   /*********************************************************************/
   /*********************************************************************/
-  #include "module-setup.inc"
+  #include "setup.h"
   /*********************************************************************/
   /*********************************************************************/
   /*********************************************************************/
@@ -236,7 +288,7 @@ void loop() {
   /*********************************************************************/
   /*********************************************************************/
   /*********************************************************************/
-  #include "module-loop.inc"
+  #include "loop.h"
   /*********************************************************************/
   /*********************************************************************/
   /*********************************************************************/
