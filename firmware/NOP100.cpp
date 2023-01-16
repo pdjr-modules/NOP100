@@ -20,7 +20,7 @@
  * [NMEA2000](https://github.com/ttlappalainen/NMEA2000) library.
  * It also relieves any derived application of much of the hard work
  * associated with module configuration using the switch inputs of the
- * NOP100 hardware.  
+ * NOP100 hardware.
  */
 
 #include <Arduino.h>
@@ -260,9 +260,9 @@ void setup() {
 
   // Initialise all core GPIO pins.
   pinMode(GPIO_POWER_LED, OUTPUT);
+  pinMode(GPIO_TRANSMIT_LED, OUTPUT);
   PRG_BUTTON.begin();
   DIL_SWITCH.begin();
-  pinMode(GPIO_TRANSMIT_LED, OUTPUT);
   STATUS_LEDS_SIPO.begin();
 
   // Initialise module configuration (see configurationInitialiser())
