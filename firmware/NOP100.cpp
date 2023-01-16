@@ -35,13 +35,80 @@
 #include <ModuleConfiguration.h>
 #include <arraymacros.h>
 
-/*********************************************************************/
-/*********************************************************************/
-/*********************************************************************/
 #include "includes.h"
-/*********************************************************************/
-/*********************************************************************/
-/*********************************************************************/
+
+/**
+ * @brief Device information required by the NMEA2000 library.
+ * 
+ * Most specialisations of NOP100 will want to override DEVICE_CLASS,
+ * DEVICE_FUNCTION and perhaps DEVICE_UNIQUE_NUMBER.
+ * 
+ * DEVICE_CLASS and DEVICE_FUNCTION are explained in the document
+ * "NMEA 2000 Appendix B.6 Class & Function Codes".
+ * 
+ * DEVICE_INDUSTRY_GROUP we can be confident about (4 says maritime).
+ * 
+ * DEVICE_MANUFACTURER_CODE is only allocated to subscribed NMEA
+ * members so we grub around and use 2046 which is currently not
+ * allocated.  
+ * 
+ * DEVICE_UNIQUE_NUMBER is a bit of mystery.
+ */
+#define DEVICE_CLASS 10                 // System Tools
+#define DEVICE_FUNCTION 130             // Diagnostic
+#define DEVICE_INDUSTRY_GROUP 4         // Maritime
+#define DEVICE_MANUFACTURER_CODE 2046   // Currently not allocated.
+#define DEVICE_UNIQUE_NUMBER 849        // Bump me?
+
+/**
+ * @brief Product information required by the NMEA2000 library.
+ * 
+ * Specialisations of NOP100 will want to override most of these.
+ * 
+ * PRODUCT_CERTIFICATION_LEVEL is granted by NMEA when a product is
+ * officially certified. We won't be.
+ * 
+ * PRODUCT_CODE is our own unique numerical identifier for this device.
+ * 
+ * PRODUCT_FIRMWARE_VERSION should probably be generated automatically
+ * from semewhere.
+ * 
+ * PRODUCT_LEN specifies the Load Equivalence Network number for the
+ * product which encodes the normal power loading placed on the host
+ * NMEA bus. One LEN = 50mA and values are rounded up.
+ * 
+ * PRODUCT_N2K_VERSION is the version of the N2K specification witht
+ * which the firmware complies. 
+ */
+#define PRODUCT_CERTIFICATION_LEVEL 0   // Not certified
+#define PRODUCT_CODE 002                // Our own product code
+#define PRODUCT_FIRMWARE_VERSION "1.1.0 (Jun 2022)"
+#define PRODUCT_LEN 1                   // This device's LEN
+#define PRODUCT_N2K_VERSION 2100        // N2K specification version 2.1
+#define PRODUCT_SERIAL_CODE "002-849"   // PRODUCT_CODE + DEVICE_UNIQUE_NUMBER
+#define PRODUCT_TYPE "SIM108"           // The product name?
+#define PRODUCT_VERSION "1.0 (Mar 2022)"
+
+/**
+ * @brief Zero terminated list of PGNs transmitted by this firmware
+ *        (required by the NMEA2000 library).
+ *
+ * Specialisations of NOP100 will probably need to override this.
+ */
+#define NMEA_TRANSMIT_MESSAGE_PGNS { 0L }
+
+/**
+ * @brief Vector of PGNs handled by this application and the callback
+ *        functions that process them (required by the NMEA2000
+ *        library). 
+ * 
+ * Specialisations of NOP100 may need to override this.
+ * 
+ * Each entry is a pair { *pgn*, *callback* }, for example
+ * { 127501L, handlerForPgn127501 }, and the list must terminate with
+ * the special flag value { 0L, 0 }.
+ */
+#define NMEA_PGN_HANDLERS  { { 0L, 0 } }
 
 /**
  * @brief Enable or disable process messaging on the Arduino serial
