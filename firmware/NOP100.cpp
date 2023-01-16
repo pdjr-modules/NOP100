@@ -11,9 +11,9 @@
  * [NOP100](https://github.com/preeve9534/NOP100)
  * module design.
  * It implements a functional NMEA 2000 device that performs no
- * real-world task, but it is easily extended through a small number
- * of include files into a specialisation that can perform most things
- * required of an NMEA 2000 module application.
+ * real-world task, but which can be easily extended or specialised
+ * into a variant that can perform most things required of an NMEA 2000
+ * module.
  * 
  * The firmware implements basic bus connectivity and the normal
  * housekeeping required by NMEA through use of the
@@ -221,13 +221,7 @@
  */
 #define SL_STATUS_LEDS_UPDATE_INTERVAL 100UL
 
-/*********************************************************************/
-/*********************************************************************/
-/*********************************************************************/
 #include "defines.h"
-/*********************************************************************/
-/*********************************************************************/
-/*********************************************************************/
 
 /**
  * @brief Variable capturing the firmware's current operating mode.
@@ -308,13 +302,7 @@ StatusLeds TRANSMIT_LED(1, SL_TRANSMIT_LED_UPDATE_INTERVAL, [](unsigned char sta
  */
 StatusLeds STATUS_LEDS(SL_NUMBER_OF_STATUS_LEDS, SL_STATUS_LEDS_UPDATE_INTERVAL, [](unsigned char status){ STATUS_LEDS_SIPO.writeByte(status); });
 
-/*********************************************************************/
-/*********************************************************************/
-/*********************************************************************/
 #include "definitions.h"
-/*********************************************************************/
-/*********************************************************************/
-/*********************************************************************/
 
 /**********************************************************************
  * MAIN PROGRAM - setup()
@@ -340,13 +328,7 @@ void setup() {
   TRANSMIT_LED.setStatus(0xff); STATUS_LEDS.setStatus(0xff); delay(100);
   TRANSMIT_LED.setStatus(0x00); STATUS_LEDS.setStatus(0x00);
 
-  /*********************************************************************/
-  /*********************************************************************/
-  /*********************************************************************/
   #include "setup.h"
-  /*********************************************************************/
-  /*********************************************************************/
-  /*********************************************************************/
 
   // Initialise and start N2K services.
   NMEA2000.SetProductInformation(PRODUCT_SERIAL_CODE, PRODUCT_CODE, PRODUCT_TYPE, PRODUCT_FIRMWARE_VERSION, PRODUCT_VERSION);
@@ -384,13 +366,7 @@ void loop() {
     MODULE_CONFIGURATION.setByte(CM_CAN_SOURCE_INDEX, NMEA2000.GetN2kSource());
   }
 
-  /*********************************************************************/
-  /*********************************************************************/
-  /*********************************************************************/
   #include "loop.h"
-  /*********************************************************************/
-  /*********************************************************************/
-  /*********************************************************************/
 
   // Timeout any hung configuration interaction.
   MODULE_CONFIGURATION.interact();
