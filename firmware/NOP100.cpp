@@ -231,7 +231,7 @@ IC74HC595 STATUS_LEDS_SIPO(GPIO_SIPO_CLOCK, GPIO_SIPO_DATA, GPIO_SIPO_LATCH);
  * The transmit LED is connected directly to a GPIO pin, so the lambda
  * callback just uses a digital write operation to drive the output.
  */
-StatusLeds TRANSMIT_LED(1, TRANSMIT_LED_UPDATE_INTERVAL, [](unsigned char status){ digitalWrite(GPIO_TRANSMIT_LED, (status & 0x01)); });
+StatusLeds TRANSMIT_LED(1, SL_TRANSMIT_LED_UPDATE_INTERVAL, [](unsigned char status){ digitalWrite(GPIO_TRANSMIT_LED, (status & 0x01)); });
 
 /**
  * @brief StatusLed object for operating the status LEDs.
@@ -239,7 +239,7 @@ StatusLeds TRANSMIT_LED(1, TRANSMIT_LED_UPDATE_INTERVAL, [](unsigned char status
  * The status LEDs are connected through a SIPO IC, so the lambda
  * callback can operate all eight LEDs in a single operation.
  */
-StatusLeds STATUS_LEDS(NUMBER_OF_STATUS_LEDS, STATUS_LEDS_UPDATE_INTERVAL, [](unsigned char status){ STATUS_LEDS_SIPO.writeByte(status); });
+StatusLeds STATUS_LEDS(SL_NUMBER_OF_STATUS_LEDS, SL_STATUS_LEDS_UPDATE_INTERVAL, [](unsigned char status){ STATUS_LEDS_SIPO.writeByte(status); });
 
 /*********************************************************************/
 /*********************************************************************/
@@ -284,7 +284,7 @@ void setup() {
   // Initialise and start N2K services.
   NMEA2000.SetProductInformation(PRODUCT_SERIAL_CODE, PRODUCT_CODE, PRODUCT_TYPE, PRODUCT_FIRMWARE_VERSION, PRODUCT_VERSION);
   NMEA2000.SetDeviceInformation(DEVICE_UNIQUE_NUMBER, DEVICE_FUNCTION, DEVICE_CLASS, DEVICE_MANUFACTURER_CODE);
-  NMEA2000.SetMode(tNMEA2000::N2km_ListenAndNode, MODULE_CONFIGURATION.getByte(CAN_SOURCE_INDEX)); // Configure for sending and receiving.
+  NMEA2000.SetMode(tNMEA2000::N2km_ListenAndNode, MODULE_CONFIGURATION.getByte(CM_CAN_SOURCE_INDEX)); // Configure for sending and receiving.
   NMEA2000.EnableForward(false); // Disable all msg forwarding to USB (=Serial)
   NMEA2000.ExtendTransmitMessages(TransmitMessages); // Tell library which PGNs we transmit
   NMEA2000.SetMsgHandler(messageHandler);
@@ -314,7 +314,7 @@ void loop() {
   // change and if so save the new address to EEPROM for future re-use.
   NMEA2000.ParseMessages();
   if (NMEA2000.ReadResetAddressChanged()) {
-    MODULE_CONFIGURATION.setByte(CAN_SOURCE_INDEX, NMEA2000.GetN2kSource());
+    MODULE_CONFIGURATION.setByte(CM_CAN_SOURCE_INDEX, NMEA2000.GetN2kSource());
   }
 
   /*********************************************************************/
@@ -371,32 +371,46 @@ void toggleOperatingMode() {
 }
 
 /**
- * @brief Revert operating mode to normal if the PRG button has not
- *        been operated within the inactivity timeout period.
- * 
+ * @brief Revert operating mode from extended to normal if the PRG
+ *        button has not been pushed within the inactivity timeout
+ *        period.
  */
 void cancelExtendedOperatingModeMaybe() {
   if (OPERATING_MODE == extended) {
-    if ((PRG_PRESSED_AT) && ((millis() - PRG_PRESSED_AT) > EXTENDED_OPERATING_MODE_INACTIVITY_TIMEOUT)) {
+    if ((PRG_PRESSED_AT) && ((millis() - PRG_PRESSED_AT) > CM_EXTENDED_OPERATING_MODE_INACTIVITY_TIMEOUT)) {
       toggleOperatingMode();
       PRG_PRESSED_AT = 0UL;
     }
   }
 }
 
-/**********************************************************************
- * prgButtonHandler - handle a change of state on the PRG button which
- * now has the state indicated by <released> (where true says released)
- * and returns the value of DIL_SWITCH - positive if
- * the result of a short button press; negative if the result of a long
- * button press..
+/**
+ * @brief Handle a change of state on the PRG button.
  * 
- * If the causal event was a button press, then a timer is started so
- * that the duration of the press can be measured. When the button is
- * released, the value of DIL_SWITCH is read and, if the causal button
- * press was long the value is incremented by 256. A call is then made
- * to the state machine's process() method with the value of the DIL
- * switch as argument. I 
+ * This function is called from loop() each time a state change is
+ * detected on the PRG button. A press of the PRG button simply starts
+ * a timer whilst a release triggers a callout (see below) which has
+ * responsibility for handling the interaction. The timer value allows
+ * a determination to made of whether the trigger was a short or long
+ * press of PRG.
+ * 
+ * In normal operating mode the ModuleConfiguration interact() method
+ * is called to manage a configuration update protocol. In extended
+ * operating mode the extendedInteract() function is called to manage
+ * special function protocols.
+ * 
+ * The return value from either of these callouts is used to set the
+ * status of the transmit LED or to switch firmware operating mode.
+ * 
+ * @param mode  - the current firmware operating mode.
+ * @param state - one of Button::RELEASED or Button::PRESSED depending
+ *                upon the current state of the PRG button (i.e. the
+ *                state after the change event).
+ * @param value - the current value of the hardware DIL switch.
+ * @return      - an unsigned long reporting the time in milliseconds
+ *                at which the function was called. This can be used
+ *                by the caller to determine if the user has fallen
+ *                asleep.
  */
 unsigned long prgButtonHandler(OperatingMode mode, bool state, int value) {
   static unsigned long deadline = 0UL;
@@ -431,7 +445,7 @@ unsigned long prgButtonHandler(OperatingMode mode, bool state, int value) {
       deadline = 0UL;
       break;
     case Button::PRESSED :
-      deadline = (now + LONG_BUTTON_PRESS_INTERVAL);
+      deadline = (now + CM_LONG_BUTTON_PRESS_INTERVAL);
       break;
   }
   return(now);
@@ -447,10 +461,10 @@ unsigned long prgButtonHandler(OperatingMode mode, bool state, int value) {
  * and return the whole thing.
 */
 unsigned char* configurationInitialiser(int& size, unsigned int eepromAddress) {
-  static unsigned char *buffer = new unsigned char[size = CONFIGURATION_SIZE];
+  static unsigned char *buffer = new unsigned char[size = CM_SIZE];
   EEPROM.get(eepromAddress, buffer);
-  if (buffer[CAN_SOURCE_INDEX] == 0xff) {
-    buffer[CAN_SOURCE_INDEX] = CAN_SOURCE_DEFAULT_VALUE;
+  if (buffer[CM_CAN_SOURCE_INDEX] == 0xff) {
+    buffer[CM_CAN_SOURCE_INDEX] = CM_CAN_SOURCE_DEFAULT;
     EEPROM.put(eepromAddress, buffer);
   }
   return(buffer);
