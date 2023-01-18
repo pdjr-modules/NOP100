@@ -10,21 +10,19 @@ The created device is entirely passive.
 
 The usefulness of ```NOP100.cpp``` is that the firmware can be
 extended or *specialised* by supplying application specificic code
-by editing five C++ source files (
-```includes.h```,
-```defines.h```,
-```definitions.h```,
-```setup.h``` and
-```loop.h```) which are .
+by editing five C++ source files (```includes.h```, ```defines.h```,
+```definitions.h```, ```setup.h``` and ```loop.h```).
 Firmware for a specialised NMEA application is implemented by
-extending and modifying the ```.inc``` files to suit the requirements
+extending and modifying these  source files to suit the requirements
 of the project in hand.
-Each ```.inc``` file includes documentary comments which explain
-how to structure a specialisation and the
-[SIM108 - NMEA 2000 switch input module](https://github.com/preeve9534/SIM108/)
-project is based on NOP100 and gives a working example of a real-world
-application built on top of NOP100.
+```NOP100.cpp``` makes no use of these files.
 
+Each ```.h``` file includes documentary comments which explain
+how to structure a specialisation.
+The
+[SIM108 - NMEA 2000 switch input module](https://www.github.com/preeve9534/SIM108/)
+project is based on NOP100 and gives a working example of a real-world
+application.
 
 ## Module configuration
 
