@@ -16,7 +16,7 @@ to make a plethora of useful things.
 The following NMEA modules use **NOP100** as their underlying
 architecture.
 
-* [ROM106 - NMEA 2000 relay output module](https:/www.github.com/preeve9534/ROM106)
-* [SIM108 - NMEA 2000 switch input module](https:/www.github.com/preeve9534/ROM106)
-* [TMP106 - NMEA 2000 temperature sensor module](https:/www.github.com/preeve9534/ROM106)
+* [ROM106 - NMEA 2000 relay output module](https://www.github.com/preeve9534/ROM106)
+* [SIM108 - NMEA 2000 switch input module](https://www.github.com/preeve9534/ROM106)
+* [TMP106 - NMEA 2000 temperature sensor module](https://www.github.com/preeve9534/ROM106)
 
