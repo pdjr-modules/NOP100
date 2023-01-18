@@ -1,16 +1,21 @@
 # NOP100/firmware
 
-```NOP100.cpp``` and its five associated ```.inc``` files implement a
-complete, runnable, extensible firmware for
+```NOP100.cpp``` implements a runnable, extensible, firmware for
 [NOP100-based hardware](../hardware/README.md).
 
-The NOP100 build framework consists of six C++ source files:
-```NOP100.cpp```,
-```module-libraries.inc```,
-```module-directives.inc```,
-```module-definitions.inc```,
-```module-setup.inc``` and
-```module-loop.inc```.
+If compiled and installed on NOP100 hardware the firmware creates
+an NMEA 2000 device with Class Code 10 (System Tools) and Function
+Code 130 (Diagnostic).
+The created device is entirely passive.
+
+The usefulness of ```NOP100.cpp``` is that the firmware can be
+extended or *specialised* by supplying application specificic code
+by editing five C++ source files (
+```includes.h```,
+```defines.h```,
+```definitions.h```,
+```setup.h``` and
+```loop.h```) which are .
 Firmware for a specialised NMEA application is implemented by
 extending and modifying the ```.inc``` files to suit the requirements
 of the project in hand.
@@ -20,12 +25,6 @@ how to structure a specialisation and the
 project is based on NOP100 and gives a working example of a real-world
 application built on top of NOP100.
 
-If compiled and installed on NOP100 hardware the vanilla firmware
-will create an NMEA 2000 device with Class Code 10 (System Tools)
-and Function Code 130 (Diagnostic).
-The firmware supports the entry of configuration data (see below),
-but only the configuration data item that is used by NOP100 is the
-module instance setting.
 
 ## Module configuration
 
