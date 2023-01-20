@@ -6,11 +6,7 @@
 class ModuleInterface {
 
   public:
-    static const int MODE_CHANGE = 0;
-    static const int ADDRESS_ACCEPTED = 1;
-    static const int ADDRESS_REJECTED = 2;
-    static const int VALUE_ACCEPTED = 3;
-    static const int VALUE_REJECTED = 4;
+    enum EventOutcome { MODE_CHANGE, ADDRESS_ACCEPTED, ADDRESS_REJECTED, VALUE_ACCEPTED, VALUE_REJECTED };
 
     /**
      * @brief Construct a new ModuleInterface object.
@@ -60,7 +56,7 @@ class ModuleInterface {
      * @param value 
      * @return int 
      */
-    int ModuleInterface::handleButtonEvent(bool buttonState, unsigned char value = 0);
+    EventOutcome ModuleInterface::handleButtonEvent(bool buttonState, unsigned char value = 0);
     
   private:
     unsigned int numberOfModes;

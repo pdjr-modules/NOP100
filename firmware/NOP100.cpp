@@ -32,7 +32,9 @@
 #include <IC74HC165.h>
 #include <IC74HC595.h>
 #include <StatusLeds.h>
-#include <ModuleConfiguration.h>
+#include "ModuleInterface.h"
+#include "ModuleConfiguration.h"
+#include "FunctionHandler.h"
 #include <arraymacros.h>
 
 #include "includes.h"
@@ -237,6 +239,7 @@ bool configurationValidator(unsigned int index, unsigned char value);
 unsigned char* configurationInitialiser(int& size, unsigned int eepromAddress);
 int extendedInteract(unsigned int value, bool longPress);
 void cancelExtendedOperatingModeMaybe();
+bool clearEEPROM(unsigned char functionCode, unsigned char value);
 
 /**
  * @brief Create a ModuleConfiguration object for managing all module
@@ -244,6 +247,11 @@ void cancelExtendedOperatingModeMaybe();
 */
 ModuleConfiguration MODULE_CONFIGURATION(configurationInitialiser, configurationValidator, MODULE_CONFIGURATION_EEPROM_ADDRESS);
 
+FunctionHandler FUNCTION_HANDLER;
+FUNCTION_HANDLER.addHandler(0xff, [](unsigned char i, unsigned char v) { MODULE_CONFIGURATION.erase(); });
+
+ModuleInterface MODULE_INTERFACE(MODULE_CONFIGURATION, 2);
+MODULE_INTERFACE.addHandler(FUNCTION_HANDLER);
 /**
  * @brief Create and initialise an array of transmitted PGNs.
  * 
@@ -368,15 +376,13 @@ void loop() {
 
   #include "loop.h"
 
-  // Timeout any hung configuration interaction.
-  MODULE_CONFIGURATION.interact();
-
   // If the PRG button has been operated, then call the button handler.
   if (PRG_BUTTON.toggled()) {
-    PRG_PRESSED_AT = prgButtonHandler(OPERATING_MODE, PRG_BUTTON.read(), DIL_SWITCH.readByte());
-  }
+    switch (MODULE_INTERFACE.handleButtonEvent(PRG_BUTTON.read(), DIL_SWITCH.readByte())) {
+      case MODULE_INTERFACE::M
+    }
 
-  if (OPERATING_MODE == normal) {
+  if (!MODULE_INTERFACE.getCurrentMode()) {
     // Maybe update the transmit and status LEDs.
     TRANSMIT_LED.update(false, true);
     STATUS_LEDS.update(false, true);

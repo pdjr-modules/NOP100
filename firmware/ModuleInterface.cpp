@@ -1,6 +1,6 @@
 #include "ModuleInterface.h"
   
-ModuleInterface(unsigned int numberOfModes, ModuleInterfaceHandler *defaultHandler, unsigned long revertInterval = 0UL) {
+ModuleInterface(ModuleInterfaceHandler *defaultHandler, int numberOfModes, unsigned long revertInterval = 0UL) {
   this->numberOfModes = numberOfModes;
   this->handlers = new ModuleInterfaceHandler[this->numberOfModes];
   for (unsigned int i = 0; i < this->numberOfModes; i++) this->handlers[i] = (i == 0)?defaultHandler:0;
@@ -29,8 +29,8 @@ unsigned long ModuleInterface::getButtonPressedAt() {
   return(this->buttonPressedAt);
 }
     
-int ModuleInterface::handleButtonEvent(bool buttonState, unsigned char value = 0) {
-  int retval = 0;
+EventOutcome ModuleInterface::handleButtonEvent(bool buttonState, unsigned char value = 0) {
+  EventOutcome retval = MODE_CHANGE;
   unsigned long now = millis();
   static unsigned char address = -1;
 
