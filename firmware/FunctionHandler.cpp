@@ -1,10 +1,12 @@
 #include "FunctionHandler.h"
 
 FunctionHandler::FunctionHandler(FunctionMap *functionMapArray, unsigned int size) {
-  unsigned int fmaSize;
-  for (fmaSize = 0; functionMapArray[fmaSize].handler != 0; fmaSize++);
+  unsigned int fmaSize = 0;
 
-  this->arraySize = (size == 0)?fmaSize:size;
+  if (functionMapArray != 0) while (functionMapArray[fmaSize].handler != 0) fmaSize++;
+  if (size < fmaSize) size = fmaSize;
+
+  this->arraySize = size;
   this->functionMapArray = new FunctionMap[this->arraySize + 1];
 
   for (unsigned int i = 0; i < (this->arraySize + 1); i++) {
@@ -47,5 +49,4 @@ bool FunctionHandler::process(unsigned char functionCode, unsigned char value) {
     }
   }
   return(retval);
-
 }
