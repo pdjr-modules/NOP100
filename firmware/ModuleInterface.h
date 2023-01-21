@@ -17,7 +17,7 @@ class ModuleInterface {
      *                         a call to handleButtonEvent() before the current mode will be
      *                         reset to the default mode.
      */
-    ModuleInterface::ModuleInterface(ModuleInterfaceHandler *defaultHandler, int numberOfModes = 1, unsigned long revertInterval = 30000UL);
+    ModuleInterface(ModuleInterfaceHandler *defaultHandler, int numberOfModes = 1, unsigned long revertInterval = 30000);
 
     /**
      * @brief Add a non-default ModuleInterfaceHandler object.
@@ -26,21 +26,21 @@ class ModuleInterface {
      * @return int    - the mode number assigned to the new handler or
      *                  zero if the handler could not be assigned.
      */
-    int ModuleInterface::addHandler(ModuleInterfaceHandler *handler);
+    int addHandler(ModuleInterfaceHandler *handler);
 
     /**
      * @brief Get the current operating mode.
      * 
      * @return int    - the current operating mode.
      */
-    int ModuleInterface::getCurrentMode();
+    int getCurrentMode();
 
     /**
      * @brief Get the time in milliseconds of the last invocation of handleButtonEvent().
      * 
      * @return unsigned long - timetsamp in milliseconds.
      */
-    unsigned long ModuleInterface::getButtonPressedAt();
+    unsigned long getButtonPressedAt();
 
     /**
      * @brief Calls the an appropriate handler method for the current
@@ -56,12 +56,15 @@ class ModuleInterface {
      * @param value 
      * @return int 
      */
-    EventOutcome ModuleInterface::handleButtonEvent(bool buttonState, unsigned char value = 0);
+    EventOutcome handleButtonEvent(bool buttonState, unsigned char value = 0);
+
+    void revertModeMaybe();
     
   private:
     unsigned int numberOfModes;
-    ModuleInterfaceHandler *handlers;
+    ModuleInterfaceHandler **handlers;
     unsigned int currentMode;
+    int currentAddress;
     unsigned long buttonPressedAt;
     unsigned long revertInterval;
 

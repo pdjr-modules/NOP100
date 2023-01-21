@@ -248,10 +248,8 @@ bool clearEEPROM(unsigned char functionCode, unsigned char value);
 ModuleConfiguration MODULE_CONFIGURATION(configurationInitialiser, configurationValidator, MODULE_CONFIGURATION_EEPROM_ADDRESS);
 
 FunctionHandler FUNCTION_HANDLER;
-FUNCTION_HANDLER.addHandler(0xff, [](unsigned char i, unsigned char v) { MODULE_CONFIGURATION.erase(); });
 
-ModuleInterface MODULE_INTERFACE(MODULE_CONFIGURATION, 2);
-MODULE_INTERFACE.addHandler(FUNCTION_HANDLER);
+ModuleInterface MODULE_INTERFACE(&MODULE_CONFIGURATION, 2);
 /**
  * @brief Create and initialise an array of transmitted PGNs.
  * 
@@ -330,7 +328,9 @@ void setup() {
 
   // Initialise module configuration (see configurationInitialiser())
   MODULE_CONFIGURATION.setup();
-  
+  FUNCTION_HANDLER.addHandler(0xff, [](unsigned char i, unsigned char v) { MODULE_CONFIGURATION.erase(); return(true); });
+  MODULE_INTERFACE.addHandler(&FUNCTION_HANDLER);
+
   // Run a startup sequence in the LED display: all LEDs on to confirm
   // function.
   TRANSMIT_LED.setStatus(0xff); STATUS_LEDS.setStatus(0xff); delay(100);
@@ -353,6 +353,7 @@ void setup() {
   Serial.print("  N2K Source address is "); Serial.println(NMEA2000.GetN2kSource());
   #endif
 
+  MODULE_INTERFACE.revertModeMaybe();
 }
 
 /**********************************************************************
@@ -379,8 +380,12 @@ void loop() {
   // If the PRG button has been operated, then call the button handler.
   if (PRG_BUTTON.toggled()) {
     switch (MODULE_INTERFACE.handleButtonEvent(PRG_BUTTON.read(), DIL_SWITCH.readByte())) {
-      case MODULE_INTERFACE::M
+      case ModuleInterface::MODE_CHANGE:
+        break;
+      default:
+        break;
     }
+  }
 
   if (!MODULE_INTERFACE.getCurrentMode()) {
     // Maybe update the transmit and status LEDs.
@@ -388,7 +393,7 @@ void loop() {
     STATUS_LEDS.update(false, true);
   }
 
-  cancelExtendedOperatingModeMaybe();
+  //cancelExtendedOperatingModeMaybe();
 }
 
 void messageHandler(const tN2kMsg &N2kMsg) {
@@ -399,106 +404,6 @@ void messageHandler(const tN2kMsg &N2kMsg) {
   }
 }
 
-/**
- * @brief Switch operating mode from normal to extended or vice-versa.
- * 
- * The operating mode is indicated by the baseline state of the
- * transmit LED, so as well as flagging the state change we also
- * tweak the LED.
- */
-void toggleOperatingMode() {
-  switch (OPERATING_MODE) {
-    case normal:
-      OPERATING_MODE = extended;
-      TRANSMIT_LED.setLedState(0, StatusLeds::LedState::on);
-      break;
-    case extended:
-      OPERATING_MODE = normal;
-      TRANSMIT_LED.setLedState(0, StatusLeds::LedState::off);
-      break;
-  }
-}
-
-/**
- * @brief Revert operating mode from extended to normal if the PRG
- *        button has not been pushed within the inactivity timeout
- *        period.
- */
-void cancelExtendedOperatingModeMaybe() {
-  if (OPERATING_MODE == extended) {
-    if ((PRG_PRESSED_AT) && ((millis() - PRG_PRESSED_AT) > CM_EXTENDED_OPERATING_MODE_INACTIVITY_TIMEOUT)) {
-      toggleOperatingMode();
-      PRG_PRESSED_AT = 0UL;
-    }
-  }
-}
-
-/**
- * @brief Handle a change of state on the PRG button.
- * 
- * This function is called from loop() each time a state change is
- * detected on the PRG button. A press of the PRG button simply starts
- * a timer whilst a release triggers a callout (see below) which has
- * responsibility for handling the interaction. The timer value allows
- * a determination to made of whether the trigger was a short or long
- * press of PRG.
- * 
- * In normal operating mode the ModuleConfiguration interact() method
- * is called to manage a configuration update protocol. In extended
- * operating mode the extendedInteract() function is called to manage
- * special function protocols.
- * 
- * The return value from either of these callouts is used to set the
- * status of the transmit LED or to switch firmware operating mode.
- * 
- * @param mode  - the current firmware operating mode.
- * @param state - one of Button::RELEASED or Button::PRESSED depending
- *                upon the current state of the PRG button (i.e. the
- *                state after the change event).
- * @param value - the current value of the hardware DIL switch.
- * @return      - an unsigned long reporting the time in milliseconds
- *                at which the function was called. This can be used
- *                by the caller to determine if the user has fallen
- *                asleep.
- */
-unsigned long prgButtonHandler(OperatingMode mode, bool state, int value) {
-  static unsigned long deadline = 0UL;
-  unsigned long now = millis();
-  int result = 0;
-  
-  switch (state) {
-    case Button::RELEASED :
-      switch (mode) {
-        case normal:
-          result = MODULE_CONFIGURATION.interact(value,  ((deadline) && (now > deadline)));
-          break;
-        case extended:
-          result = extendedInteract(value, ((deadline) && (now > deadline)));
-          break;
-      }
-      switch (result) {
-        case 1: // Address entry acknowledged ... waiting for a value
-          TRANSMIT_LED.setLedState(0, StatusLeds::LedState::flash);
-          break;
-        case -1: // Address entry rejected (invalid address)
-          break;
-        case 2: // Value entry accepted (value saved to configuration)
-          TRANSMIT_LED.setLedState(0, (mode == normal)?StatusLeds::LedState::off:StatusLeds::LedState::on);
-          break;
-        case -2: // Value entry rejected (value was invalid / out of range)
-          break;
-        default: // Short press supplied a value but no address is active
-          toggleOperatingMode();
-          break;
-      }
-      deadline = 0UL;
-      break;
-    case Button::PRESSED :
-      deadline = (now + CM_LONG_BUTTON_PRESS_INTERVAL);
-      break;
-  }
-  return(now);
-}
 
 #ifndef CONFIGURATION_INITIALISER
 /**********************************************************************
