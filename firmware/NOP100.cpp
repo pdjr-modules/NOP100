@@ -261,7 +261,7 @@ FunctionHandler FUNCTION_HANDLER;
  *        FunctionHandler objects.
  */
 typedef struct { unsigned char mode; ModuleInterfaceHandler *handler; } tModeHandler;
-ModuleInterface::ModeHandler ModeHandlers[] = { { 0, &MODULE_CONFIGURATION }, { 1, &FUNCTION_HANDLER }, { 0, 0 } };
+ModuleInterfaceHandler  *ModeHandlers[] = { &MODULE_CONFIGURATION, &FUNCTION_HANDLER, 0 };
 ModuleInterface MODULE_INTERFACE(ModeHandlers);
 
 /**

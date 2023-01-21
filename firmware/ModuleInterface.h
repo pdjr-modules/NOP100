@@ -12,12 +12,12 @@ class ModuleInterface {
     enum EventOutcome { MODE_CHANGE, ADDRESS_ACCEPTED, ADDRESS_REJECTED, VALUE_ACCEPTED, VALUE_REJECTED };
 
     /**
-     * @brief Structure used for passing ModuleInterfaceHandlers into the
+     * @brief Construct a new ModuleInterface object.
      * 
+     * @param modeHandlers   - ModeHandler array specifying 
+     * @param revertInterval 
      */
-    typedef struct { unsigned int mode; ModuleInterfaceHandler *handler; } ModeHandler;
-
-    ModuleInterface(ModeHandler *modeHandlers, unsigned long revertInterval = 30000);
+    ModuleInterface(ModuleInterfaceHandler **modeHandlers, unsigned long revertInterval = 30000);
 
     /**
      * @brief Get the current operating mode.
@@ -52,7 +52,7 @@ class ModuleInterface {
     void revertModeMaybe();
     
   private:
-    ModeHandler *modeHandlers;
+    ModuleInterfaceHandler **modeHandlers;
     unsigned int currentMode;
     int currentAddress;
     unsigned long buttonPressedAt;
