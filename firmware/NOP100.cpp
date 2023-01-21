@@ -234,22 +234,40 @@ enum OperatingMode { normal, extended } OPERATING_MODE = normal;
  * @brief Declarations of local functions.
  */
 void messageHandler(const tN2kMsg&);
-unsigned long prgButtonHandler(OperatingMode mode, bool state, int value);
 bool configurationValidator(unsigned int index, unsigned char value);
 unsigned char* configurationInitialiser(int& size, unsigned int eepromAddress);
-int extendedInteract(unsigned int value, bool longPress);
-void cancelExtendedOperatingModeMaybe();
-bool clearEEPROM(unsigned char functionCode, unsigned char value);
 
 /**
  * @brief Create a ModuleConfiguration object for managing all module
  *        configuration data.
+ * 
+ * ModuleConfiguration implements the ModuleInterfaceHandler interface
+ * and can be managed by the user-interaction manager.
 */
 ModuleConfiguration MODULE_CONFIGURATION(configurationInitialiser, configurationValidator, MODULE_CONFIGURATION_EEPROM_ADDRESS);
 
+/**
+ * @brief Create a FunctionHandler object for managing all extended
+ *        configuration functions.
+ * 
+ * FunctionHandler implements the ModuleInterfaceHandler interface
+ * and can be managed by the user-interaction manager. We'all add
+ * functions later in setup().
+ */
 FunctionHandler FUNCTION_HANDLER;
 
-ModuleInterface MODULE_INTERFACE(&MODULE_CONFIGURATION, 2);
+/**
+ * @brief Create a ModuleInterface supporting ModuleConfiguration and
+ *        FunctionHandler objects.
+ */
+typedef struct { unsigned char mode; ModuleInterfaceHandler *handler; } tModeHandler;
+ModuleInterface::ModeHandler ModeHandlers[] = { { 0, &MODULE_CONFIGURATION }, { 1, &FUNCTION_HANDLER }, { 0, 0 } };
+ModuleInterface MODULE_INTERFACE(ModeHandlers);
+
+/**
+ * @brief 
+ * 
+ */
 /**
  * @brief Create and initialise an array of transmitted PGNs.
  * 
@@ -329,7 +347,6 @@ void setup() {
   // Initialise module configuration (see configurationInitialiser())
   MODULE_CONFIGURATION.setup();
   FUNCTION_HANDLER.addHandler(0xff, [](unsigned char i, unsigned char v) { MODULE_CONFIGURATION.erase(); return(true); });
-  MODULE_INTERFACE.addHandler(&FUNCTION_HANDLER);
 
   // Run a startup sequence in the LED display: all LEDs on to confirm
   // function.

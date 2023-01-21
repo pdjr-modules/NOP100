@@ -6,27 +6,18 @@
 class ModuleInterface {
 
   public:
+    /**
+     * @brief Result codes for the handleButtonEvent() method.
+     */
     enum EventOutcome { MODE_CHANGE, ADDRESS_ACCEPTED, ADDRESS_REJECTED, VALUE_ACCEPTED, VALUE_REJECTED };
 
     /**
-     * @brief Construct a new ModuleInterface object.
+     * @brief Structure used for passing ModuleInterfaceHandlers into the
      * 
-     * @param defaultHandler - the ModuleInterfaceHandler object for mode 0.
-     * @param numberOfModes  - the number of modes that are supported by this ModuleInterface.
-     * @param revertInterval - the number of milliseconds a non-default mode can exist without
-     *                         a call to handleButtonEvent() before the current mode will be
-     *                         reset to the default mode.
      */
-    ModuleInterface(ModuleInterfaceHandler *defaultHandler, int numberOfModes = 1, unsigned long revertInterval = 30000);
+    typedef struct { unsigned int mode; ModuleInterfaceHandler *handler; } ModeHandler;
 
-    /**
-     * @brief Add a non-default ModuleInterfaceHandler object.
-     * 
-     * @param handler - the ModuleInterfaceHandler object.
-     * @return int    - the mode number assigned to the new handler or
-     *                  zero if the handler could not be assigned.
-     */
-    int addHandler(ModuleInterfaceHandler *handler);
+    ModuleInterface(ModeHandler *modeHandlers, unsigned long revertInterval = 30000);
 
     /**
      * @brief Get the current operating mode.
@@ -61,8 +52,7 @@ class ModuleInterface {
     void revertModeMaybe();
     
   private:
-    unsigned int numberOfModes;
-    ModuleInterfaceHandler **handlers;
+    ModeHandler *modeHandlers;
     unsigned int currentMode;
     int currentAddress;
     unsigned long buttonPressedAt;

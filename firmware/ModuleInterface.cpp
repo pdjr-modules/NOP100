@@ -2,25 +2,12 @@
 #include <Button.h>
 #include "ModuleInterface.h"
   
-ModuleInterface::ModuleInterface(ModuleInterfaceHandler *defaultHandler, int numberOfModes, unsigned long revertInterval) {
-  this->numberOfModes = numberOfModes;
-  this->handlers = new ModuleInterfaceHandler*[this->numberOfModes];
-  for (unsigned int i = 0; i < this->numberOfModes; i++) this->handlers[i] = (i == 0)?defaultHandler:0;
+ModuleInterface::ModuleInterface(ModeHandler *modeHandlers, unsigned long revertInterval) {
+  this->modeHandlers = modeHandlers;
   this->revertInterval = revertInterval;
   this->currentMode = 0;
+  this->currentAddress = -1;
   this->buttonPressedAt = 0UL;
-}
-
-int ModuleInterface::addHandler(ModuleInterfaceHandler *handler) {
-  unsigned int mode;
-
-  for (mode = 0; mode < this->numberOfModes; mode++) {
-    if (this->handlers[mode] == 0) {
-      this->handlers[mode] = handler;
-      break;
-    }
-  }
-  return(mode);
 }
 
 int ModuleInterface::getCurrentMode() {
@@ -47,14 +34,15 @@ ModuleInterface::EventOutcome ModuleInterface::handleButtonEvent(bool buttonStat
   } else {
     if ((this->buttonPressedAt) && (now < (this->buttonPressedAt + 1000))) {
       if (this->currentAddress != -1) {
-        retval = (this->handlers[this->currentMode]->process((unsigned char) this->currentAddress, value))?VALUE_ACCEPTED:VALUE_REJECTED;
+        retval = (this->modeHandlers[this->currentMode].handler->process((unsigned char) this->currentAddress, value))?VALUE_ACCEPTED:VALUE_REJECTED;
         this->currentAddress = -1;
       } else {
-        this->currentMode = ((this->currentMode + 1) % this->numberOfModes);
+        this->currentMode++;
+        if (this->modeHandlers[this->currentMode].handler == 0) this->currentMode = 0;
         retval = MODE_CHANGE;
       }
     } else {
-      if (this->handlers[this->currentMode]->validate(value)) {
+      if (this->modeHandlers[this->currentMode].handler->validate(value)) {
         this->currentAddress = value;
         retval = ADDRESS_ACCEPTED;
       } else {
