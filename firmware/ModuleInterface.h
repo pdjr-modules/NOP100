@@ -14,8 +14,15 @@ class ModuleInterface {
     /**
      * @brief Construct a new ModuleInterface object.
      * 
-     * @param modeHandlers   - ModeHandler array specifying 
-     * @param revertInterval 
+     * @param modeHandlers   - Array of pointers to objects which
+     *                         implement the ModuleInterfaceHandler
+     *                         interface in order of the mode which
+     *                         they support. The last element in the
+     *                         array must be the value 0. 
+     * @param revertInterval - Number of milliseconds that must elapse
+     *                         without a call to handleButtonEvent()
+     *                         before the current operating mode
+     *                         reverts to mode zero.
      */
     ModuleInterface(ModuleInterfaceHandler **modeHandlers, unsigned long revertInterval = 30000);
 

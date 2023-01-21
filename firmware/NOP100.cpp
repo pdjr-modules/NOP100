@@ -254,13 +254,16 @@ ModuleConfiguration MODULE_CONFIGURATION(configurationInitialiser, configuration
  * and can be managed by the user-interaction manager. We'all add
  * functions later in setup().
  */
-FunctionHandler FUNCTION_HANDLER;
+FunctionHandler::FunctionMap functionMapArray[] = {
+  { 255, [](unsigned char i, unsigned char v) -> bool { MODULE_CONFIGURATION.erase(); return(true); } },
+  { 0, 0 }
+};
+FunctionHandler FUNCTION_HANDLER(functionMapArray);
 
 /**
  * @brief Create a ModuleInterface supporting ModuleConfiguration and
  *        FunctionHandler objects.
  */
-typedef struct { unsigned char mode; ModuleInterfaceHandler *handler; } tModeHandler;
 ModuleInterfaceHandler  *ModeHandlers[] = { &MODULE_CONFIGURATION, &FUNCTION_HANDLER, 0 };
 ModuleInterface MODULE_INTERFACE(ModeHandlers);
 
@@ -346,7 +349,6 @@ void setup() {
 
   // Initialise module configuration (see configurationInitialiser())
   MODULE_CONFIGURATION.setup();
-  FUNCTION_HANDLER.addHandler(0xff, [](unsigned char i, unsigned char v) { MODULE_CONFIGURATION.erase(); return(true); });
 
   // Run a startup sequence in the LED display: all LEDs on to confirm
   // function.
