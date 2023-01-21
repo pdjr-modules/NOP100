@@ -37,7 +37,9 @@ class FunctionHandler: public ModuleInterfaceHandler {
      * 
      * @param functionMapArray - array of FunctionMap structures. 
      */
-    FunctionHandler(FunctionMap *functionMapArray);
+    FunctionHandler(FunctionMap *functionMapArray, unsigned int size = 0);
+
+    bool addHandler(unsigned char functionCode, bool (*handler)(unsigned char, unsigned char));
 
     /**
      * @brief Check that a function code is mapped to a function.
@@ -59,6 +61,7 @@ class FunctionHandler: public ModuleInterfaceHandler {
     bool process(unsigned char functionCode, unsigned char value);
 
   private:
+    unsigned int arraySize;
     FunctionMap *functionMapArray;
 
 };

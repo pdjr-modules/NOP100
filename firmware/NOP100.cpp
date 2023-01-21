@@ -199,6 +199,8 @@
  */
 #define CM_EXTENDED_OPERATING_MODE_INACTIVITY_TIMEOUT 60000UL // 60 seconds
 
+#define FUNCTION_HANDLER_SIZE 0
+
 /**
  * @brief Number of milliseconds between updates of the transmit LED.
  * 
@@ -258,7 +260,7 @@ FunctionHandler::FunctionMap functionMapArray[] = {
   { 255, [](unsigned char i, unsigned char v) -> bool { MODULE_CONFIGURATION.erase(); return(true); } },
   { 0, 0 }
 };
-FunctionHandler FUNCTION_HANDLER(functionMapArray);
+FunctionHandler FUNCTION_HANDLER(functionMapArray, FUNCTION_HANDLER_SIZE);
 
 /**
  * @brief Create a ModuleInterface supporting ModuleConfiguration and

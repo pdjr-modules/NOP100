@@ -1,7 +1,28 @@
 #include "FunctionHandler.h"
 
-FunctionHandler::FunctionHandler(FunctionMap *functionMapArray) {
-  this->functionMapArray = functionMapArray;
+FunctionHandler::FunctionHandler(FunctionMap *functionMapArray, unsigned int size) {
+  unsigned int fmaSize;
+  for (fmaSize = 0; functionMapArray[fmaSize].handler != 0; fmaSize++);
+
+  this->arraySize = (size == 0)?fmaSize:size;
+  this->functionMapArray = new FunctionMap[this->arraySize + 1];
+
+  for (unsigned int i = 0; i < (this->arraySize + 1); i++) {
+    this->functionMapArray[i].functionCode = (i < fmaSize)?functionMapArray[i].functionCode:0;
+    this->functionMapArray[i].handler = (i < fmaSize)?functionMapArray[i].handler:0;
+  }
+}
+
+bool FunctionHandler::addHandler(unsigned char functionCode, bool (*handler)(unsigned char, unsigned char)) {
+  int slot = -1;
+  for (unsigned int i = 0; i < this->arraySize; i++) {
+    if (this->functionMapArray[i].handler == 0) slot = i;
+  }
+  if (slot != -1) {
+    this->functionMapArray[slot].functionCode = functionCode;
+    this->functionMapArray[slot].handler = handler;
+  }
+  return(slot != -1);
 }
 
 bool FunctionHandler::validate(unsigned char functionCode) {
