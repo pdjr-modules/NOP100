@@ -4,7 +4,7 @@
 #include "ModuleInterfaceHandler.h"
 
 /**
- * @brief Object providing a mapping between integer function codes and
+ * @brief Class providing a mapping between integer function codes and
  *        associated functions which support the requirements of
  *        ModuleInterfaceHandler.
  */
@@ -21,18 +21,18 @@ class FunctionHandler: public ModuleInterfaceHandler {
     /**
      * @brief Construct a new Function Handler object.
      * 
-     * @example The following example maps function code 0 onto the identity
-     * function and function code 1 onto double.
+     * @example The following example maps function code 0 onto the even
+     * function and function code 1 onto odd.
      * ```
      * FunctionMap myFunctionMap[] = {
-     *   { 0, [](unsigned char functionCode, unsigned char value){ return(value); } },
-     *   { 1, [](unsigned char functionCode, unsigned char value){ return(value + value); } },
+     *   { 0, [](unsigned char functionCode, unsigned char value)->bool{ return((value % 2) == 0); } },
+     *   { 1, [](unsigned char functionCode, unsigned char value)->bool{ return((value % 2) == 1); } },
      *   { 0, 0 }
      * }
      * FunctionHandler myFunctionHandler(myFunctionMap);
      * 
-     * int ident = myFunctionHandler.process(0, 10);
-     * int double = myFunctionHandler.process(1, 5);
+     * bool isEven = myFunctionHandler.process(0, 10);
+     * bool isOdd = myFunctionHandler.process(1, 10);
      * ```
      * 
      * @param functionMapArray - array of FunctionMap structures. 
@@ -42,8 +42,8 @@ class FunctionHandler: public ModuleInterfaceHandler {
     /**
      * @brief Check that a function code is mapped to a function.
      * 
-     * @param functionCode - the code to be checked.
-     * @return true        - if FunctionMap exists with the specified function code.
+     * @param functionCode - the functiom code to be checked.
+     * @return true        - if a FunctionMap exists with the specified function code.
      * @return false       - if there is no FunctionMap with the specified function code.
      */
     bool validate(unsigned char functionCode);
@@ -51,10 +51,10 @@ class FunctionHandler: public ModuleInterfaceHandler {
     /**
      * @brief 
      * 
-     * @param functionCode 
-     * @param value 
-     * @return true 
-     * @return false 
+     * @param functionCode - the code of the function to be called.
+     * @param value        - a value to be passed to the function.
+     * @return true        - the function returned true (whatever that means).
+     * @return false       - the function returned false (whatever that means).
      */
     bool process(unsigned char functionCode, unsigned char value);
 

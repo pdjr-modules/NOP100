@@ -371,8 +371,6 @@ void setup() {
   Serial.println("Starting:");
   Serial.print("  N2K Source address is "); Serial.println(NMEA2000.GetN2kSource());
   #endif
-
-  MODULE_INTERFACE.revertModeMaybe();
 }
 
 /**********************************************************************
@@ -412,7 +410,7 @@ void loop() {
     STATUS_LEDS.update(false, true);
   }
 
-  //cancelExtendedOperatingModeMaybe();
+  MODULE_INTERFACE.revertModeMaybe();
 }
 
 void messageHandler(const tN2kMsg &N2kMsg) {
