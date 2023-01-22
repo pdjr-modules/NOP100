@@ -199,6 +199,7 @@
  */
 #define CM_EXTENDED_OPERATING_MODE_INACTIVITY_TIMEOUT 60000UL // 60 seconds
 
+#define FUNCTION_MAP_ARRAY { { 255, [](unsigned char i, unsigned char v) -> bool { MODULE_CONFIGURATION.erase(); return(true); } }, { 0, 0 } };
 #define FUNCTION_HANDLER_SIZE 0
 
 /**
@@ -256,10 +257,7 @@ ModuleConfiguration MODULE_CONFIGURATION(configurationInitialiser, configuration
  * and can be managed by the user-interaction manager. We'all add
  * functions later in setup().
  */
-FunctionHandler::FunctionMap functionMapArray[] = {
-  { 255, [](unsigned char i, unsigned char v) -> bool { MODULE_CONFIGURATION.erase(); return(true); } },
-  { 0, 0 }
-};
+FunctionHandler::FunctionMap functionMapArray[] = FUNCTION_MAP_ARRAY;
 FunctionHandler FUNCTION_HANDLER(functionMapArray, FUNCTION_HANDLER_SIZE);
 
 /**
