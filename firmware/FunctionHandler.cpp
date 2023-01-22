@@ -27,7 +27,7 @@ bool FunctionHandler::addHandler(unsigned char functionCode, bool (*handler)(uns
   return(slot != -1);
 }
 
-bool FunctionHandler::validate(unsigned char functionCode) {
+bool FunctionHandler::validateAddress(unsigned char functionCode) {
   bool retval = false;
 
   for (unsigned int i = 0; this->functionMapArray[i].handler != 0; i++) {
@@ -39,7 +39,7 @@ bool FunctionHandler::validate(unsigned char functionCode) {
   return(retval);
 }
 
-bool FunctionHandler::process(unsigned char functionCode, unsigned char value) {
+bool FunctionHandler::processValue(unsigned char functionCode, unsigned char value) {
   bool retval = false;
 
   for (unsigned int i = 0; this->functionMapArray[i].handler != 0; i++) {

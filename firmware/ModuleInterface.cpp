@@ -34,7 +34,7 @@ ModuleInterface::EventOutcome ModuleInterface::handleButtonEvent(bool buttonStat
   } else {
     if ((this->buttonPressedAt) && (now < (this->buttonPressedAt + 1000))) {
       if (this->currentAddress != -1) {
-        retval = (this->modeHandlers[this->currentMode]->process((unsigned char) this->currentAddress, value))?VALUE_ACCEPTED:VALUE_REJECTED;
+        retval = (this->modeHandlers[this->currentMode]->processValue((unsigned char) this->currentAddress, value))?VALUE_ACCEPTED:VALUE_REJECTED;
         this->currentAddress = -1;
       } else {
         this->currentMode++;
@@ -42,7 +42,7 @@ ModuleInterface::EventOutcome ModuleInterface::handleButtonEvent(bool buttonStat
         retval = MODE_CHANGE;
       }
     } else {
-      if (this->modeHandlers[this->currentMode]->validate(value)) {
+      if (this->modeHandlers[this->currentMode]->validateAddress(value)) {
         this->currentAddress = value;
         retval = ADDRESS_ACCEPTED;
       } else {

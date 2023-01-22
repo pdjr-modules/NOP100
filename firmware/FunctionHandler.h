@@ -75,7 +75,7 @@ class FunctionHandler: public ModuleInterfaceHandler {
      * @return true        - if a FunctionMap exists with the specified function code.
      * @return false       - if there is no FunctionMap with the specified function code.
      */
-    bool validate(unsigned char functionCode);
+    bool validateAddress(unsigned char functionCode);
 
     /**
      * @brief 
@@ -85,7 +85,7 @@ class FunctionHandler: public ModuleInterfaceHandler {
      * @return true        - the function returned true (whatever that means).
      * @return false       - the function returned false (whatever that means).
      */
-    bool process(unsigned char functionCode, unsigned char value);
+    bool processValue(unsigned char functionCode, unsigned char value);
 
   private:
     unsigned int arraySize;

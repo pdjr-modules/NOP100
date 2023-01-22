@@ -59,8 +59,8 @@ class ModuleConfiguration: public ModuleInterfaceHandler {
      */
     unsigned char getByte(unsigned int index);
 
-    bool validate(unsigned char index);
-    bool process(unsigned char address, unsigned char value);
+    bool validateAddress(unsigned char index);
+    bool processValue(unsigned char address, unsigned char value);
 
     /******************************************************************
      * @brief Save a configuration byte to EEPROM using EEPROM.update().

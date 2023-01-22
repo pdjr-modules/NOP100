@@ -29,11 +29,11 @@ unsigned char ModuleConfiguration::getByte(unsigned int index) {
   return(0xff);
 }
 
-bool ModuleConfiguration::validate(unsigned char index) {
+bool ModuleConfiguration::validateAddress(unsigned char index) {
   return(index < this->size);
 }
 
-bool ModuleConfiguration::process(unsigned char index, unsigned char value) {
+bool ModuleConfiguration::processValue(unsigned char index, unsigned char value) {
   return(this->setByte(index, value));
 }
 
@@ -50,7 +50,7 @@ void ModuleConfiguration::load() {
 }
 
 void ModuleConfiguration::erase() {
-  for (int i = 0; i < this->size; i++) {
+  for (unsigned int i = 0; i < this->size; i++) {
     EEPROM.update((this->eepromAddress + i), 0xff);
   }
 }
