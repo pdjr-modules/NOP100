@@ -398,6 +398,19 @@ void loop() {
   if (PRG_BUTTON.toggled()) {
     switch (MODULE_INTERFACE.handleButtonEvent(PRG_BUTTON.read(), DIL_SWITCH.readByte())) {
       case ModuleInterface::MODE_CHANGE:
+        TRANSMIT_LED.setLedState(0, StatusLeds::once);
+        break;
+      case ModuleInterface::ADDRESS_ACCEPTED:
+        TRANSMIT_LED.setLedState(0, StatusLeds::once);
+        break;
+      case ModuleInterface::ADDRESS_REJECTED:
+        TRANSMIT_LED.setLedState(0, StatusLeds::thrice);
+        break;
+      case ModuleInterface::VALUE_ACCEPTED:
+        TRANSMIT_LED.setLedState(0, StatusLeds::once);
+        break;
+      case ModuleInterface::VALUE_REJECTED:
+        TRANSMIT_LED.setLedState(0, StatusLeds::thrice);
         break;
       default:
         break;
