@@ -32,9 +32,9 @@
 #include <IC74HC165.h>
 #include <IC74HC595.h>
 #include <StatusLeds.h>
-#include "ModuleOperatorInterface.h"
-#include "ModuleConfiguration.h"
-#include "FunctionMapper.h"
+#include <ModuleOperatorInterface.h>
+#include <ModuleConfiguration.h>
+#include <FunctionMapper.h>
 #include <arraymacros.h>
 
 #include "includes.h"
