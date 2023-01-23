@@ -56,6 +56,11 @@ class ModuleInterface {
      */
     EventOutcome handleButtonEvent(bool buttonState, unsigned char value = 0);
 
+    /**
+     * @brief
+     * Revert operating mode to 0 if the revert iterval has been
+     * exceeded since the last button press.
+     */
     void revertModeMaybe();
     
   private:
