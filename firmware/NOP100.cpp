@@ -31,7 +31,7 @@
 #include <N2kMessages.h>
 #include <IC74HC165.h>
 #include <IC74HC595.h>
-#include <StatusLeds.h>
+#include <LedManager.h>
 #include <ModuleOperatorInterface.h>
 #include <ModuleConfiguration.h>
 #include <FunctionMapper.h>
@@ -39,7 +39,13 @@
 
 #include "includes.h"
 
-/**
+/**********************************************************************
+ * @brief Configure debug output to Teensy serial port.
+ */
+#define DEBUG_SERIAL
+#define DEBUG_SERIAL_START_DELAY 4000
+
+/**********************************************************************
  * @brief Device information required by the NMEA2000 library.
  * 
  * Most specialisations of NOP100 will want to override DEVICE_CLASS,
@@ -62,7 +68,7 @@
 #define DEVICE_MANUFACTURER_CODE 2046   // Currently not allocated.
 #define DEVICE_UNIQUE_NUMBER 849        // Bump me?
 
-/**
+/**********************************************************************
  * @brief Product information required by the NMEA2000 library.
  * 
  * Specialisations of NOP100 will want to override most of these.
@@ -91,49 +97,28 @@
 #define PRODUCT_TYPE "SIM108"           // The product name?
 #define PRODUCT_VERSION "1.0 (Mar 2022)"
 
-/**
- * @brief Zero terminated list of PGNs transmitted by this firmware.
+/**********************************************************************
+ * @brief Transmit and receive PGNs required by the NMEA2000 library.
  * 
- * @note Required by the NMEA2000 library.
- * @attention Specialisations of NOP100 may need to override this.
- */
-#define NMEA_TRANSMIT_MESSAGE_PGNS { 0L }
-
-/**
- * @brief Vector of PGNs handled by this application and the callback
- * functions that process them.  
+ * NMEA_TRANSMITTED_PGNS is a zero terminated array initialiser that
+ * lists all the PGNs we transmit.
  * 
- * Each entry is a pair { *pgn*, *callback* }, for example
- * { 127501L, handlerForPgn127501 }, and the list must terminate with
- * the special flag value { 0L, 0 }.
- * 
- * @note Required by the NMEA2000 library).
- * @attention Specialisations of NOP100 may need to override this.
+ * NMEA_RECEIVED_PGNS is a an array initialiser consisting of pairs
+ * which associate the PGN of a message we will accept to a callback
+ * which will accept a received message. For example,
+ * { 127501L, handlerForPgn127501 }. The list must terminate with the
+ * special flag value { 0L, 0 }.
  */
-#define NMEA_PGN_HANDLERS  { { 0L, 0 } }
+#define NMEA_TRANSMITTED_PGNS { 0L }
+#define NMEA_RECEIVED_PGNS  { { 0L, 0 } }
 
-/**
- * @brief Enable or disable process messaging on the Arduino serial
- * output.
+
+/**********************************************************************
+ * @brief Microcontroller EEPROM storage addresses for Teensy.
  */
-#define DEBUG_SERIAL
+#define EEPROM_CONFIGURATION_STORAGE_ADDRESS 0
 
-/**
- * @brief Delay start of firmware execution after boot. 
- *
- * When the Teensy reboots it switches its USB port to serial emulation
- * and it can take a few seconds for a connected host computer to
- * recognise the switch. This millisecond delay can be used to prevent
- * loss of early debug output.
- */
-#define DEBUG_SERIAL_START_DELAY 4000
-
-/**
- * @brief EEPROM address at which to persist module configuration data. 
- */
-#define MODULE_CONFIGURATION_EEPROM_ADDRESS 0
-
-/**
+/**********************************************************************
  * @brief Microcontroller pin definitions for the Teensy 3.2/4.0.
  */
 #define GPIO_SIPO_DATA 0
@@ -151,7 +136,7 @@
 #define GPIO_PISO_CLOCK 12
 #define GPIO_POWER_LED 13
 #define GPIO_PRG 14
-#define GPIO_TRANSMIT_LED 15
+#define GPIO_LED_MANAGER 15
 #define GPIO_D16 16
 #define GPIO_D17 17
 #define GPIO_D18 18
@@ -161,44 +146,36 @@
 #define GPIO_D22 22
 #define GPIO_D23 23
 
-// MODULE CONFIGURATION ///////////////////////////////////////////////
-//
+/**********************************************************************
+ * @brief ModuleConfiguration library stuff.
+ */
 #define MODULE_CONFIGURATION_SIZE 1
-
 #define MODULE_CONFIGURATION_CAN_SOURCE_INDEX 0
-
 #define MODULE_CONFIGURATION_CAN_SOURCE_DEFAULT 22
 
-#define MODULE_CONFIGURATION_LONG_BUTTON_PRESS_INTERVAL 1000UL
-#define MODULE_CONFIGURATION_DIALOG_INACTIVITY_TIMEOUT 30000UL
-
-// FUNCTION_MAPPER CONFIGURATION //////////////////////////////////////
-
-/**
- * @brief Basic map for the NOP100 function mapper.
+/**********************************************************************
+ * @brief FunctionMapper library stuff.
  * 
- * This provides just one function that wipes configuration EEPROM.
+ * This provides just one function that wipes configuration data from
+ * EEPROM.
  */
-
 #define FUNCTION_MAP_ARRAY { { 255, [](unsigned char i, unsigned char v) -> bool { MODULE_CONFIGURATION.erase(); return(true); } }, { 0, 0 } };
-
-/**
- * @brief Number of maps that can be stored in the function mapper.
- * 
- * Zero says no more than are defined in FUNCTION_MAP_ARRAY.
- * 
- * @attention Specialisations of NOP100 may need to override this.
- */
 #define FUNCTION_MAPPER_SIZE 0
 
-// LED CONFIGURATION //////////////////////////////////////////////////
-//
-// NOP100 supports two LED systems: a single TRANSMIT_LED used by core
-// processes and up to 16 STATUS_LEDS available for use by
-// specialisations.
+/**********************************************************************
+ * @brief ModuleOperatorInterface library stuff.
+ */
+#define MODULE_OPERATOR_INTERFACE_LONG_BUTTON_PRESS_INTERVAL 1000UL
+#define MODULE_OPERATOR_INTERFACE_DIALOG_INACTIVITY_TIMEOUT 30000UL
 
-#define TRANSMIT_LED_UPDATE_INTERVAL 100UL
-
+/**********************************************************************
+ * @brief LedManager library stuff.
+ *
+ * NOP100 supports two LED systems: a single LED_MANAGER used by core
+ * processes and up to 16 STATUS_LEDS available for use by
+ * specialisations.
+ */
+#define LED_MANAGER_UPDATE_INTERVAL 100UL
 #define STATUS_LEDS_NUMBER_OF_STATUS_LEDS 8
 #define STATUS_LEDS_STATUS_LEDS_UPDATE_INTERVAL 100UL
 
@@ -218,7 +195,7 @@ unsigned char* configurationInitialiser(int& size, unsigned int eepromAddress);
  * ModuleConfiguration implements the ModuleOperatorInterfaceHandler interface
  * and can be managed by the user-interaction manager.
 */
-ModuleConfiguration MODULE_CONFIGURATION(configurationInitialiser, configurationValidator, MODULE_CONFIGURATION_EEPROM_ADDRESS);
+ModuleConfiguration MODULE_CONFIGURATION(configurationInitialiser, configurationValidator, EEPROM_CONFIGURATION_STORAGE_ADDRESS);
 
 /**
  * @brief Create a FunctionHandler object for managing all extended
@@ -248,7 +225,7 @@ ModuleOperatorInterface MODULE_OPERATOR_INTERFACE(ModeHandlers);
  * Array initialiser is specified in defined.h. Required by NMEA2000
  * library. 
  */
-const unsigned long TransmitMessages[] = NMEA_TRANSMIT_MESSAGE_PGNS;
+const unsigned long TransmitMessages[] = NMEA_TRANSMITTED_PGNS;
 
 /**
  * @brief Create and initialise a vector of received PGNs and their
@@ -258,7 +235,7 @@ const unsigned long TransmitMessages[] = NMEA_TRANSMIT_MESSAGE_PGNS;
  * library. 
  */
 typedef struct { unsigned long PGN; void (*Handler)(const tN2kMsg &N2kMsg); } tNMEA2000Handler;
-tNMEA2000Handler NMEA2000Handlers[] = NMEA_PGN_HANDLERS;
+tNMEA2000Handler NMEA2000Handlers[] = NMEA_RECEIVED_PGNS;
 
 /**
  * @brief Create a Button object for debouncing the module's PRG
@@ -290,7 +267,7 @@ IC74HC595 STATUS_LEDS_SIPO(GPIO_SIPO_CLOCK, GPIO_SIPO_DATA, GPIO_SIPO_LATCH);
  * The transmit LED is connected directly to a GPIO pin, so the lambda
  * callback just uses a digital write operation to drive the output.
  */
-StatusLeds TRANSMIT_LED(1, TRANSMIT_LED_UPDATE_INTERVAL, [](unsigned char status){ digitalWrite(GPIO_TRANSMIT_LED, (status & 0x01)); });
+LedManager LED_MANAGER(1, LED_MANAGER_UPDATE_INTERVAL, [](unsigned char status){ digitalWrite(GPIO_LED_MANAGER, (status & 0x01)); });
 
 /**
  * @brief StatusLed object for operating the status LEDs.
@@ -298,7 +275,7 @@ StatusLeds TRANSMIT_LED(1, TRANSMIT_LED_UPDATE_INTERVAL, [](unsigned char status
  * The status LEDs are connected through a SIPO IC, so the lambda
  * callback can operate all eight LEDs in a single operation.
  */
-StatusLeds STATUS_LEDS(STATUS_LEDS_NUMBER_OF_STATUS_LEDS, STATUS_LEDS_STATUS_LEDS_UPDATE_INTERVAL, [](unsigned char status){ STATUS_LEDS_SIPO.writeByte(status); });
+LedManager STATUS_LEDS(STATUS_LEDS_NUMBER_OF_STATUS_LEDS, STATUS_LEDS_STATUS_LEDS_UPDATE_INTERVAL, [](unsigned char status){ STATUS_LEDS_SIPO.writeByte(status); });
 
 #include "definitions.h"
 
@@ -313,7 +290,7 @@ void setup() {
 
   // Initialise all core GPIO pins.
   pinMode(GPIO_POWER_LED, OUTPUT);
-  pinMode(GPIO_TRANSMIT_LED, OUTPUT);
+  pinMode(GPIO_LED_MANAGER, OUTPUT);
   PRG_BUTTON.begin();
   DIL_SWITCH.begin();
   STATUS_LEDS_SIPO.begin();
@@ -323,8 +300,8 @@ void setup() {
 
   // Run a startup sequence in the LED display: all LEDs on to confirm
   // function.
-  TRANSMIT_LED.setStatus(0xff); STATUS_LEDS.setStatus(0xff); delay(100);
-  TRANSMIT_LED.setStatus(0x00); STATUS_LEDS.setStatus(0x00);
+  LED_MANAGER.setStatus(0xff); STATUS_LEDS.setStatus(0xff); delay(100);
+  LED_MANAGER.setStatus(0x00); STATUS_LEDS.setStatus(0x00);
 
   #include "setup.h"
 
@@ -369,19 +346,19 @@ void loop() {
   if (PRG_BUTTON.toggled()) {
     switch (MODULE_OPERATOR_INTERFACE.handleButtonEvent(PRG_BUTTON.read(), DIL_SWITCH.readByte())) {
       case ModuleOperatorInterface::MODE_CHANGE:
-        TRANSMIT_LED.setLedState(0, StatusLeds::once);
+        LED_MANAGER.setLedState(0, LedManager::once);
         break;
       case ModuleOperatorInterface::ADDRESS_ACCEPTED:
-        TRANSMIT_LED.setLedState(0, StatusLeds::once);
+        LED_MANAGER.setLedState(0, LedManager::once);
         break;
       case ModuleOperatorInterface::ADDRESS_REJECTED:
-        TRANSMIT_LED.setLedState(0, StatusLeds::thrice);
+        LED_MANAGER.setLedState(0, LedManager::thrice);
         break;
       case ModuleOperatorInterface::VALUE_ACCEPTED:
-        TRANSMIT_LED.setLedState(0, StatusLeds::once);
+        LED_MANAGER.setLedState(0, LedManager::once);
         break;
       case ModuleOperatorInterface::VALUE_REJECTED:
-        TRANSMIT_LED.setLedState(0, StatusLeds::thrice);
+        LED_MANAGER.setLedState(0, LedManager::thrice);
         break;
       default:
         break;
@@ -390,7 +367,7 @@ void loop() {
 
   if (!MODULE_OPERATOR_INTERFACE.getCurrentMode()) {
     // Maybe update the transmit and status LEDs.
-    TRANSMIT_LED.update(false, true);
+    LED_MANAGER.update(false, true);
     STATUS_LEDS.update(false, true);
   }
 
