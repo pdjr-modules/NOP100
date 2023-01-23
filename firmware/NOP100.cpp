@@ -92,29 +92,29 @@
 #define PRODUCT_VERSION "1.0 (Mar 2022)"
 
 /**
- * @brief Zero terminated list of PGNs transmitted by this firmware
- *        (required by the NMEA2000 library).
- *
- * Specialisations of NOP100 will probably need to override this.
+ * @brief Zero terminated list of PGNs transmitted by this firmware.
+ * 
+ * @note Required by the NMEA2000 library.
+ * @attention Specialisations of NOP100 may need to override this.
  */
 #define NMEA_TRANSMIT_MESSAGE_PGNS { 0L }
 
 /**
  * @brief Vector of PGNs handled by this application and the callback
- *        functions that process them (required by the NMEA2000
- *        library). 
- * 
- * Specialisations of NOP100 may need to override this.
+ * functions that process them.  
  * 
  * Each entry is a pair { *pgn*, *callback* }, for example
  * { 127501L, handlerForPgn127501 }, and the list must terminate with
  * the special flag value { 0L, 0 }.
+ * 
+ * @note Required by the NMEA2000 library).
+ * @attention Specialisations of NOP100 may need to override this.
  */
 #define NMEA_PGN_HANDLERS  { { 0L, 0 } }
 
 /**
  * @brief Enable or disable process messaging on the Arduino serial
- *        output.
+ * output.
  */
 #define DEBUG_SERIAL
 
@@ -161,70 +161,46 @@
 #define GPIO_D22 22
 #define GPIO_D23 23
 
+// MODULE CONFIGURATION ///////////////////////////////////////////////
+//
+#define MODULE_CONFIGURATION_SIZE 1
+
+#define MODULE_CONFIGURATION_CAN_SOURCE_INDEX 0
+
+#define MODULE_CONFIGURATION_CAN_SOURCE_DEFAULT 22
+
+#define MODULE_CONFIGURATION_LONG_BUTTON_PRESS_INTERVAL 1000UL
+#define MODULE_CONFIGURATION_DIALOG_INACTIVITY_TIMEOUT 30000UL
+
+// FUNCTION_MAPPER CONFIGURATION //////////////////////////////////////
+
 /**
- * @brief Size of the module configuration array. 
+ * @brief Basic map for the NOP100 function mapper.
  * 
- * A specialization will almost always need to override this definition
- * (in definitions.h) to suit its own configuration needs.
+ * This provides just one function that wipes configuration EEPROM.
  */
-#define CM_SIZE 1
-
-/**
- * @brief List of named locations in the configuration array. 
- */
-#define CM_CAN_SOURCE_INDEX 0
-
-/**
- * @brief List of default (initialisation) values for each location in
- *        the configuration array. 
- */
-#define CM_CAN_SOURCE_DEFAULT 22
-
-/**
- * @brief Number of milliseconds that the PRG button must be held
- *        closed to constitute a 'long' button press. 
- */
-#define CM_LONG_BUTTON_PRESS_INTERVAL 1000UL
-
-/**
- * @brief Number of milliseconds of inactivity that must elapse within
- *        a dialog before the dialog times out. 
- * 
- */
-#define CM_DIALOG_INACTIVITY_TIMEOUT 30000UL
-
-/**
- * @brief Number of milliseconds of inactivity that must elapse before
- *        extended operating mode reverts to normal mode.
- */
-#define CM_EXTENDED_OPERATING_MODE_INACTIVITY_TIMEOUT 60000UL // 60 seconds
 
 #define FUNCTION_MAP_ARRAY { { 255, [](unsigned char i, unsigned char v) -> bool { MODULE_CONFIGURATION.erase(); return(true); } }, { 0, 0 } };
+
+/**
+ * @brief Number of maps that can be stored in the function mapper.
+ * 
+ * Zero says no more than are defined in FUNCTION_MAP_ARRAY.
+ * 
+ * @attention Specialisations of NOP100 may need to override this.
+ */
 #define FUNCTION_MAPPER_SIZE 0
 
-/**
- * @brief Number of milliseconds between updates of the transmit LED.
- * 
- * This value implicitly sets the ON-period and OFF-period of a
- * flashing LED. 
- */
-#define SL_TRANSMIT_LED_UPDATE_INTERVAL 100UL
+// LED CONFIGURATION //////////////////////////////////////////////////
+//
+// NOP100 supports two LED systems: a single TRANSMIT_LED used by core
+// processes and up to 16 STATUS_LEDS available for use by
+// specialisations.
 
-/**
- * @brief The number of status LEDS supported by the firmware.
- * 
- * The NOP100 hardware supports a maximum of 16 LEDs. Most applications
- * will be happy with a maximum of eight. 
- */
-#define SL_NUMBER_OF_STATUS_LEDS 8
+#define TRANSMIT_LED_UPDATE_INTERVAL 100UL
 
-/**
- * @brief Number of milliseconds between updates of the status LEDs.
- * 
- * This value implicitly sets the ON-period and OFF-period of all
- * status LEDs. 
- */
-#define SL_STATUS_LEDS_UPDATE_INTERVAL 100UL
+#define STATUS_LEDS_NUMBER_OF_STATUS_LEDS 8
+#define STATUS_LEDS_STATUS_LEDS_UPDATE_INTERVAL 100UL
 
 #include "defines.h"
 
@@ -314,7 +290,7 @@ IC74HC595 STATUS_LEDS_SIPO(GPIO_SIPO_CLOCK, GPIO_SIPO_DATA, GPIO_SIPO_LATCH);
  * The transmit LED is connected directly to a GPIO pin, so the lambda
  * callback just uses a digital write operation to drive the output.
  */
-StatusLeds TRANSMIT_LED(1, SL_TRANSMIT_LED_UPDATE_INTERVAL, [](unsigned char status){ digitalWrite(GPIO_TRANSMIT_LED, (status & 0x01)); });
+StatusLeds TRANSMIT_LED(1, TRANSMIT_LED_UPDATE_INTERVAL, [](unsigned char status){ digitalWrite(GPIO_TRANSMIT_LED, (status & 0x01)); });
 
 /**
  * @brief StatusLed object for operating the status LEDs.
@@ -322,7 +298,7 @@ StatusLeds TRANSMIT_LED(1, SL_TRANSMIT_LED_UPDATE_INTERVAL, [](unsigned char sta
  * The status LEDs are connected through a SIPO IC, so the lambda
  * callback can operate all eight LEDs in a single operation.
  */
-StatusLeds STATUS_LEDS(SL_NUMBER_OF_STATUS_LEDS, SL_STATUS_LEDS_UPDATE_INTERVAL, [](unsigned char status){ STATUS_LEDS_SIPO.writeByte(status); });
+StatusLeds STATUS_LEDS(STATUS_LEDS_NUMBER_OF_STATUS_LEDS, STATUS_LEDS_STATUS_LEDS_UPDATE_INTERVAL, [](unsigned char status){ STATUS_LEDS_SIPO.writeByte(status); });
 
 #include "definitions.h"
 
@@ -355,7 +331,7 @@ void setup() {
   // Initialise and start N2K services.
   NMEA2000.SetProductInformation(PRODUCT_SERIAL_CODE, PRODUCT_CODE, PRODUCT_TYPE, PRODUCT_FIRMWARE_VERSION, PRODUCT_VERSION);
   NMEA2000.SetDeviceInformation(DEVICE_UNIQUE_NUMBER, DEVICE_FUNCTION, DEVICE_CLASS, DEVICE_MANUFACTURER_CODE);
-  NMEA2000.SetMode(tNMEA2000::N2km_ListenAndNode, MODULE_CONFIGURATION.getByte(CM_CAN_SOURCE_INDEX)); // Configure for sending and receiving.
+  NMEA2000.SetMode(tNMEA2000::N2km_ListenAndNode, MODULE_CONFIGURATION.getByte(MODULE_CONFIGURATION_CAN_SOURCE_INDEX)); // Configure for sending and receiving.
   NMEA2000.EnableForward(false); // Disable all msg forwarding to USB (=Serial)
   NMEA2000.ExtendTransmitMessages(TransmitMessages); // Tell library which PGNs we transmit
   NMEA2000.SetMsgHandler(messageHandler);
@@ -384,7 +360,7 @@ void loop() {
   // change and if so save the new address to EEPROM for future re-use.
   NMEA2000.ParseMessages();
   if (NMEA2000.ReadResetAddressChanged()) {
-    MODULE_CONFIGURATION.setByte(CM_CAN_SOURCE_INDEX, NMEA2000.GetN2kSource());
+    MODULE_CONFIGURATION.setByte(MODULE_CONFIGURATION_CAN_SOURCE_INDEX, NMEA2000.GetN2kSource());
   }
 
   #include "loop.h"
@@ -440,10 +416,10 @@ void messageHandler(const tN2kMsg &N2kMsg) {
  * and return the whole thing.
 */
 unsigned char* configurationInitialiser(int& size, unsigned int eepromAddress) {
-  static unsigned char *buffer = new unsigned char[size = CM_SIZE];
+  static unsigned char *buffer = new unsigned char[size = MODULE_CONFIGURATION_SIZE];
   EEPROM.get(eepromAddress, buffer);
-  if (buffer[CM_CAN_SOURCE_INDEX] == 0xff) {
-    buffer[CM_CAN_SOURCE_INDEX] = CM_CAN_SOURCE_DEFAULT;
+  if (buffer[MODULE_CONFIGURATION_CAN_SOURCE_INDEX] == 0xff) {
+    buffer[MODULE_CONFIGURATION_CAN_SOURCE_INDEX] = MODULE_CONFIGURATION_CAN_SOURCE_DEFAULT;
     EEPROM.put(eepromAddress, buffer);
   }
   return(buffer);
