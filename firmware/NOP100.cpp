@@ -32,9 +32,9 @@
 #include <IC74HC165.h>
 #include <IC74HC595.h>
 #include <StatusLeds.h>
-#include "ModuleInterface.h"
+#include "ModuleOperatorInterface.h"
 #include "ModuleConfiguration.h"
-#include "FunctionHandler.h"
+#include "FunctionMapper.h"
 #include <arraymacros.h>
 
 #include "includes.h"
@@ -200,7 +200,7 @@
 #define CM_EXTENDED_OPERATING_MODE_INACTIVITY_TIMEOUT 60000UL // 60 seconds
 
 #define FUNCTION_MAP_ARRAY { { 255, [](unsigned char i, unsigned char v) -> bool { MODULE_CONFIGURATION.erase(); return(true); } }, { 0, 0 } };
-#define FUNCTION_HANDLER_SIZE 0
+#define FUNCTION_MAPPER_SIZE 0
 
 /**
  * @brief Number of milliseconds between updates of the transmit LED.
@@ -229,11 +229,6 @@
 #include "defines.h"
 
 /**
- * @brief Variable capturing the firmware's current operating mode.
- */
-enum OperatingMode { normal, extended } OPERATING_MODE = normal;
-
-/**
  * @brief Declarations of local functions.
  */
 void messageHandler(const tN2kMsg&);
@@ -244,7 +239,7 @@ unsigned char* configurationInitialiser(int& size, unsigned int eepromAddress);
  * @brief Create a ModuleConfiguration object for managing all module
  *        configuration data.
  * 
- * ModuleConfiguration implements the ModuleInterfaceHandler interface
+ * ModuleConfiguration implements the ModuleOperatorInterfaceHandler interface
  * and can be managed by the user-interaction manager.
 */
 ModuleConfiguration MODULE_CONFIGURATION(configurationInitialiser, configurationValidator, MODULE_CONFIGURATION_EEPROM_ADDRESS);
@@ -253,19 +248,19 @@ ModuleConfiguration MODULE_CONFIGURATION(configurationInitialiser, configuration
  * @brief Create a FunctionHandler object for managing all extended
  *        configuration functions.
  * 
- * FunctionHandler implements the ModuleInterfaceHandler interface
+ * FunctionHandler implements the ModuleOperatorInterfaceHandler interface
  * and can be managed by the user-interaction manager. We'all add
  * functions later in setup().
  */
-FunctionHandler::FunctionMap functionMapArray[] = FUNCTION_MAP_ARRAY;
-FunctionHandler FUNCTION_HANDLER(functionMapArray, FUNCTION_HANDLER_SIZE);
+FunctionMapper::FunctionMap functionMapArray[] = FUNCTION_MAP_ARRAY;
+FunctionMapper FUNCTION_MAPPER(functionMapArray, FUNCTION_MAPPER_SIZE);
 
 /**
- * @brief Create a ModuleInterface supporting ModuleConfiguration and
+ * @brief Create a ModuleOperatorInterface supporting ModuleConfiguration and
  *        FunctionHandler objects.
  */
-ModuleInterfaceHandler  *ModeHandlers[] = { &MODULE_CONFIGURATION, &FUNCTION_HANDLER, 0 };
-ModuleInterface MODULE_INTERFACE(ModeHandlers);
+ModuleOperatorInterfaceClient *ModeHandlers[] = { &MODULE_CONFIGURATION, &FUNCTION_MAPPER, 0 };
+ModuleOperatorInterface MODULE_OPERATOR_INTERFACE(ModeHandlers);
 
 /**
  * @brief 
@@ -396,20 +391,20 @@ void loop() {
 
   // If the PRG button has been operated, then call the button handler.
   if (PRG_BUTTON.toggled()) {
-    switch (MODULE_INTERFACE.handleButtonEvent(PRG_BUTTON.read(), DIL_SWITCH.readByte())) {
-      case ModuleInterface::MODE_CHANGE:
+    switch (MODULE_OPERATOR_INTERFACE.handleButtonEvent(PRG_BUTTON.read(), DIL_SWITCH.readByte())) {
+      case ModuleOperatorInterface::MODE_CHANGE:
         TRANSMIT_LED.setLedState(0, StatusLeds::once);
         break;
-      case ModuleInterface::ADDRESS_ACCEPTED:
+      case ModuleOperatorInterface::ADDRESS_ACCEPTED:
         TRANSMIT_LED.setLedState(0, StatusLeds::once);
         break;
-      case ModuleInterface::ADDRESS_REJECTED:
+      case ModuleOperatorInterface::ADDRESS_REJECTED:
         TRANSMIT_LED.setLedState(0, StatusLeds::thrice);
         break;
-      case ModuleInterface::VALUE_ACCEPTED:
+      case ModuleOperatorInterface::VALUE_ACCEPTED:
         TRANSMIT_LED.setLedState(0, StatusLeds::once);
         break;
-      case ModuleInterface::VALUE_REJECTED:
+      case ModuleOperatorInterface::VALUE_REJECTED:
         TRANSMIT_LED.setLedState(0, StatusLeds::thrice);
         break;
       default:
@@ -417,13 +412,13 @@ void loop() {
     }
   }
 
-  if (!MODULE_INTERFACE.getCurrentMode()) {
+  if (!MODULE_OPERATOR_INTERFACE.getCurrentMode()) {
     // Maybe update the transmit and status LEDs.
     TRANSMIT_LED.update(false, true);
     STATUS_LEDS.update(false, true);
   }
 
-  MODULE_INTERFACE.revertModeMaybe();
+  MODULE_OPERATOR_INTERFACE.revertModeMaybe();
 }
 
 void messageHandler(const tN2kMsg &N2kMsg) {
