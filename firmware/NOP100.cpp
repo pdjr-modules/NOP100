@@ -15,12 +15,13 @@
  * into a variant that can perform most things required of an NMEA 2000
  * module.
  * 
- * The firmware implements basic bus connectivity and the normal
- * housekeeping required by NMEA through use of the
- * [NMEA2000](https://github.com/ttlappalainen/NMEA2000) library.
- * It also relieves any derived application of much of the hard work
- * associated with module configuration using the switch inputs of the
- * NOP100 hardware.
+ * Support for NMEA 2000 networking is provided by Timo Lappalainen's
+ * [NMEA2000](https://github.com/ttlappalainen/NMEA2000)
+ * library.
+ * 
+ * Support for configuration management and operator interaction
+ * is provided by a number of bespoke libraries that relieve derived
+ * applications of much of the heavy lifting.
  */
 
 #include <Arduino.h>
@@ -44,6 +45,34 @@
  */
 #define DEBUG_SERIAL
 #define DEBUG_SERIAL_START_DELAY 4000
+
+/**********************************************************************
+ * @brief Microcontroller pin definitions for the Teensy 3.2/4.0.
+ */
+#define GPIO_SIPO_DATA 0
+#define GPIO_SIPO_LATCH 1
+#define GPIO_SIPO_CLOCK 2
+#define GPIO_CAN_TX 3
+#define GPIO_CAN_RX 4
+#define GPIO_D5 5
+#define GPIO_D6 6
+#define GPIO_D7 7
+#define GPIO_D8 8
+#define GPIO_D9 9
+#define GPIO_PISO_DATA 10
+#define GPIO_PISO_LATCH 11
+#define GPIO_PISO_CLOCK 12
+#define GPIO_POWER_LED 13
+#define GPIO_PRG 14
+#define GPIO_LED_MANAGER 15
+#define GPIO_D16 16
+#define GPIO_D17 17
+#define GPIO_D18 18
+#define GPIO_D19 19
+#define GPIO_D20 20
+#define GPIO_D21 21
+#define GPIO_D22 22
+#define GPIO_D23 23
 
 /**********************************************************************
  * @brief Device information required by the NMEA2000 library.
@@ -112,45 +141,14 @@
 #define NMEA_TRANSMITTED_PGNS { 0L }
 #define NMEA_RECEIVED_PGNS  { { 0L, 0 } }
 
-
-/**********************************************************************
- * @brief Microcontroller EEPROM storage addresses for Teensy.
- */
-#define EEPROM_CONFIGURATION_STORAGE_ADDRESS 0
-
-/**********************************************************************
- * @brief Microcontroller pin definitions for the Teensy 3.2/4.0.
- */
-#define GPIO_SIPO_DATA 0
-#define GPIO_SIPO_LATCH 1
-#define GPIO_SIPO_CLOCK 2
-#define GPIO_CAN_TX 3
-#define GPIO_CAN_RX 4
-#define GPIO_D5 5
-#define GPIO_D6 6
-#define GPIO_D7 7
-#define GPIO_D8 8
-#define GPIO_D9 9
-#define GPIO_PISO_DATA 10
-#define GPIO_PISO_LATCH 11
-#define GPIO_PISO_CLOCK 12
-#define GPIO_POWER_LED 13
-#define GPIO_PRG 14
-#define GPIO_LED_MANAGER 15
-#define GPIO_D16 16
-#define GPIO_D17 17
-#define GPIO_D18 18
-#define GPIO_D19 19
-#define GPIO_D20 20
-#define GPIO_D21 21
-#define GPIO_D22 22
-#define GPIO_D23 23
-
 /**********************************************************************
  * @brief ModuleConfiguration library stuff.
  */
 #define MODULE_CONFIGURATION_SIZE 1
+#define MODULE_CONFIGURATION_EEPROM_STORAGE_ADDRESS 0
+
 #define MODULE_CONFIGURATION_CAN_SOURCE_INDEX 0
+
 #define MODULE_CONFIGURATION_CAN_SOURCE_DEFAULT 22
 
 /**********************************************************************
@@ -195,7 +193,7 @@ unsigned char* configurationInitialiser(int& size, unsigned int eepromAddress);
  * ModuleConfiguration implements the ModuleOperatorInterfaceHandler interface
  * and can be managed by the user-interaction manager.
 */
-ModuleConfiguration MODULE_CONFIGURATION(configurationInitialiser, configurationValidator, EEPROM_CONFIGURATION_STORAGE_ADDRESS);
+ModuleConfiguration MODULE_CONFIGURATION(configurationInitialiser, configurationValidator, MODULE_CONFIGURATION_EEPROM_STORAGE_ADDRESS);
 
 /**
  * @brief Create a FunctionHandler object for managing all extended
@@ -382,7 +380,6 @@ void messageHandler(const tN2kMsg &N2kMsg) {
   }
 }
 
-
 #ifndef CONFIGURATION_INITIALISER
 /**********************************************************************
  * NOP100's configuration consists of just one byte holding the CAN
@@ -412,17 +409,5 @@ unsigned char* configurationInitialiser(int& size, unsigned int eepromAddress) {
  */
 bool configurationValidator(unsigned int index, unsigned char value) {
   return(true);
-}
-#endif
-
-/**********************************************************************
- * This function is called when value has been entered through the
- * configuration dialogue (i.e. by a short button press) without any
- * prior entry of a configuration address. This means that the user has
- * requested a special function, but NOP100 doesn't support any!
-*/
-#ifndef EXTENDED_INTERACT
-int extendedInteract(unsigned int value, bool longPress) {
-  return(0);
 }
 #endif
