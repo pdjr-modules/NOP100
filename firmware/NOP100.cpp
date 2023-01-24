@@ -308,6 +308,7 @@ void setup() {
   NMEA2000.EnableForward(false); // Disable all msg forwarding to USB (=Serial)
   NMEA2000.ExtendTransmitMessages(TransmitMessages); // Tell library which PGNs we transmit
   NMEA2000.SetMsgHandler(messageHandler);
+  NMEA2000.SetOnOpen(onN2kOpen);
   NMEA2000.Open();
 
   #ifdef DEBUG_SERIAL
@@ -377,6 +378,12 @@ void messageHandler(const tN2kMsg &N2kMsg) {
     NMEA2000Handlers[iHandler].Handler(N2kMsg); 
   }
 }
+
+#ifndef ON_N2K_OPEN
+void onN2kOpen() {
+  
+}
+#endif
 
 #ifndef CONFIGURATION_INITIALISER
 /**********************************************************************
