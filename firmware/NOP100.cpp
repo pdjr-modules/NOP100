@@ -64,7 +64,7 @@
 #define GPIO_PISO_CLOCK 12
 #define GPIO_POWER_LED 13
 #define GPIO_PRG 14
-#define GPIO_LED_MANAGER 15
+#define GPIO_TRANSMIT_LED 15
 #define GPIO_D16 16
 #define GPIO_D17 17
 #define GPIO_D18 18
@@ -148,8 +148,11 @@
 #define MODULE_CONFIGURATION_EEPROM_STORAGE_ADDRESS 0
 
 #define MODULE_CONFIGURATION_CAN_SOURCE_INDEX 0
-
 #define MODULE_CONFIGURATION_CAN_SOURCE_DEFAULT 22
+
+#define MODULE_CONFIGURATION_DEFAULT { \
+  MODULE_CONFIGURATION_CAN_SOURCE_DEFAULT \
+}
 
 /**********************************************************************
  * @brief FunctionMapper library stuff.
@@ -187,13 +190,32 @@ bool configurationValidator(unsigned int index, unsigned char value);
 unsigned char* configurationInitialiser(int& size, unsigned int eepromAddress);
 
 /**
+ * @brief Create and initialise an array of transmitted PGNs.
+ * 
+ * Array initialiser is specified in defined.h. Required by NMEA2000
+ * library. 
+ */
+const unsigned long TransmitMessages[] = NMEA_TRANSMITTED_PGNS;
+
+/**
+ * @brief Create and initialise a vector of received PGNs and their
+ *        handlers.
+ * 
+ * Array initialiser is specified in defined.h. Required by NMEA2000
+ * library. 
+ */
+typedef struct { unsigned long PGN; void (*Handler)(const tN2kMsg &N2kMsg); } tNMEA2000Handler;
+tNMEA2000Handler NMEA2000Handlers[] = NMEA_RECEIVED_PGNS;
+
+/**
  * @brief Create a ModuleConfiguration object for managing all module
  *        configuration data.
  * 
  * ModuleConfiguration implements the ModuleOperatorInterfaceHandler interface
  * and can be managed by the user-interaction manager.
 */
-ModuleConfiguration MODULE_CONFIGURATION(configurationInitialiser, configurationValidator, MODULE_CONFIGURATION_EEPROM_STORAGE_ADDRESS);
+unsigned char DefaultConfiguration[] = MODULE_CONFIGURATION_DEFAULT;
+ModuleConfiguration MODULE_CONFIGURATION(DefaultConfiguration, MODULE_CONFIGURATION_SIZE, MODULE_CONFIGURATION_EEPROM_STORAGE_ADDRESS, configurationValidator);
 
 /**
  * @brief Create a FunctionHandler object for managing all extended
@@ -213,27 +235,6 @@ FunctionMapper FUNCTION_MAPPER(functionMapArray, FUNCTION_MAPPER_SIZE);
 ModuleOperatorInterfaceClient *ModeHandlers[] = { &MODULE_CONFIGURATION, &FUNCTION_MAPPER, 0 };
 ModuleOperatorInterface MODULE_OPERATOR_INTERFACE(ModeHandlers);
 
-/**
- * @brief 
- * 
- */
-/**
- * @brief Create and initialise an array of transmitted PGNs.
- * 
- * Array initialiser is specified in defined.h. Required by NMEA2000
- * library. 
- */
-const unsigned long TransmitMessages[] = NMEA_TRANSMITTED_PGNS;
-
-/**
- * @brief Create and initialise a vector of received PGNs and their
- *        handlers.
- * 
- * Array initialiser is specified in defined.h. Required by NMEA2000
- * library. 
- */
-typedef struct { unsigned long PGN; void (*Handler)(const tN2kMsg &N2kMsg); } tNMEA2000Handler;
-tNMEA2000Handler NMEA2000Handlers[] = NMEA_RECEIVED_PGNS;
 
 /**
  * @brief Create a Button object for debouncing the module's PRG
@@ -265,7 +266,7 @@ IC74HC595 STATUS_LEDS_SIPO(GPIO_SIPO_CLOCK, GPIO_SIPO_DATA, GPIO_SIPO_LATCH);
  * The transmit LED is connected directly to a GPIO pin, so the lambda
  * callback just uses a digital write operation to drive the output.
  */
-LedManager LED_MANAGER(1, LED_MANAGER_UPDATE_INTERVAL, [](unsigned char status){ digitalWrite(GPIO_LED_MANAGER, (status & 0x01)); });
+LedManager TRANSMIT_LED(1, LED_MANAGER_UPDATE_INTERVAL, [](unsigned char status){ digitalWrite(GPIO_TRANSMIT_LED, (status & 0x01)); });
 
 /**
  * @brief StatusLed object for operating the status LEDs.
@@ -288,18 +289,15 @@ void setup() {
 
   // Initialise all core GPIO pins.
   pinMode(GPIO_POWER_LED, OUTPUT);
-  pinMode(GPIO_LED_MANAGER, OUTPUT);
+  pinMode(GPIO_TRANSMIT_LED, OUTPUT);
   PRG_BUTTON.begin();
   DIL_SWITCH.begin();
   STATUS_LEDS_SIPO.begin();
 
-  // Initialise module configuration (see configurationInitialiser())
-  MODULE_CONFIGURATION.setup();
-
   // Run a startup sequence in the LED display: all LEDs on to confirm
   // function.
-  LED_MANAGER.setStatus(0xff); STATUS_LEDS.setStatus(0xff); delay(100);
-  LED_MANAGER.setStatus(0x00); STATUS_LEDS.setStatus(0x00);
+  TRANSMIT_LED.setStatus(0xff); STATUS_LEDS.setStatus(0xff); delay(100);
+  TRANSMIT_LED.setStatus(0x00); STATUS_LEDS.setStatus(0x00);
 
   #include "setup.h"
 
@@ -344,19 +342,19 @@ void loop() {
   if (PRG_BUTTON.toggled()) {
     switch (MODULE_OPERATOR_INTERFACE.handleButtonEvent(PRG_BUTTON.read(), DIL_SWITCH.readByte())) {
       case ModuleOperatorInterface::MODE_CHANGE:
-        LED_MANAGER.setLedState(0, LedManager::once);
+        TRANSMIT_LED.setLedState(0, LedManager::once);
         break;
       case ModuleOperatorInterface::ADDRESS_ACCEPTED:
-        LED_MANAGER.setLedState(0, LedManager::once);
+        TRANSMIT_LED.setLedState(0, LedManager::once);
         break;
       case ModuleOperatorInterface::ADDRESS_REJECTED:
-        LED_MANAGER.setLedState(0, LedManager::thrice);
+        TRANSMIT_LED.setLedState(0, LedManager::thrice);
         break;
       case ModuleOperatorInterface::VALUE_ACCEPTED:
-        LED_MANAGER.setLedState(0, LedManager::once);
+        TRANSMIT_LED.setLedState(0, LedManager::once);
         break;
       case ModuleOperatorInterface::VALUE_REJECTED:
-        LED_MANAGER.setLedState(0, LedManager::thrice);
+        TRANSMIT_LED.setLedState(0, LedManager::thrice);
         break;
       default:
         break;
@@ -365,7 +363,7 @@ void loop() {
 
   if (!MODULE_OPERATOR_INTERFACE.getCurrentMode()) {
     // Maybe update the transmit and status LEDs.
-    LED_MANAGER.update(false, true);
+    TRANSMIT_LED.update(false, true);
     STATUS_LEDS.update(false, true);
   }
 
