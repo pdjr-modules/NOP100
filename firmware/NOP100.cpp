@@ -187,7 +187,6 @@
  */
 void messageHandler(const tN2kMsg&);
 bool configurationValidator(unsigned int index, unsigned char value);
-unsigned char* configurationInitialiser(int& size, unsigned int eepromAddress);
 
 /**
  * @brief Create and initialise an array of transmitted PGNs.
