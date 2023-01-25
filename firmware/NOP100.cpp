@@ -158,7 +158,9 @@
  * @brief FunctionMapper library stuff.
  * 
  * This provides just one function that wipes configuration data from
- * EEPROM.
+ * EEPROM. A specialisation of NOP100 that needs to add functions to
+ * the function mapper will need to increase FUNCTION_MAPPER_SIZE
+ * appropriately.
  */
 #define FUNCTION_MAP_ARRAY { { 255, [](unsigned char i, unsigned char v) -> bool { MODULE_CONFIGURATION.erase(); return(true); } }, { 0, 0 } };
 #define FUNCTION_MAPPER_SIZE 0
