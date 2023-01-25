@@ -384,26 +384,6 @@ void onN2kOpen() {
 }
 #endif
 
-#ifndef CONFIGURATION_INITIALISER
-/**********************************************************************
- * NOP100's configuration consists of just one byte holding the CAN
- * interface source address. We create a one-element array to hold this
- * value and attempt to load any previously saved buffer from EEPROM.
- * If there is no previous value (i.e. this is the first time the
- * firmware has been used) the we write a default value into the buffer
- * and return the whole thing.
-*/
-unsigned char* configurationInitialiser(int& size, unsigned int eepromAddress) {
-  static unsigned char *buffer = new unsigned char[size = MODULE_CONFIGURATION_SIZE];
-  EEPROM.get(eepromAddress, buffer);
-  if (buffer[MODULE_CONFIGURATION_CAN_SOURCE_INDEX] == 0xff) {
-    buffer[MODULE_CONFIGURATION_CAN_SOURCE_INDEX] = MODULE_CONFIGURATION_CAN_SOURCE_DEFAULT;
-    EEPROM.put(eepromAddress, buffer);
-  }
-  return(buffer);
-}
-#endif
-
 #ifndef CONFIGURATION_VALIDATOR
 /**********************************************************************
  * NOP100's configuration consists of just one byte holding the CAN
