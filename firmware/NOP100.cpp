@@ -364,9 +364,7 @@ void loop() {
   }
 
   if (!MODULE_OPERATOR_INTERFACE.getCurrentMode()) {
-    // Maybe update the transmit and status LEDs.
-    TRANSMIT_LED.update(false, true);
-    STATUS_LEDS.update(false, true);
+    TRANSMIT_LED.update(); STATUS_LEDS.update();
   }
 
   MODULE_OPERATOR_INTERFACE.revertModeMaybe();
