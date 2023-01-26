@@ -48,7 +48,7 @@
 #define DEBUG_SERIAL_START_DELAY 4000
 
 /**********************************************************************
- * @brief Microcontroller pin definitions for the Teensy 3.2/4.0.
+ * @brief GPIO pin definitions.
  */
 #define GPIO_SIPO_DATA 0
 #define GPIO_SIPO_LATCH 1
@@ -76,7 +76,7 @@
 #define GPIO_D23 23
 
 /**********************************************************************
- * @brief Device information required by the NMEA2000 library.
+ * @brief NMEA2000 device information.
  * 
  * Most specialisations of NOP100 will want to override DEVICE_CLASS,
  * DEVICE_FUNCTION and perhaps DEVICE_UNIQUE_NUMBER.
@@ -99,7 +99,7 @@
 #define DEVICE_UNIQUE_NUMBER 849        // Bump me?
 
 /**********************************************************************
- * @brief Product information required by the NMEA2000 library.
+ * @brief NMEA2000 product information.
  * 
  * Specialisations of NOP100 will want to override most of these.
  * 
@@ -128,7 +128,7 @@
 #define PRODUCT_VERSION "1.0 (Mar 2022)"
 
 /**********************************************************************
- * @brief Transmit and receive PGNs required by the NMEA2000 library.
+ * @brief NMEA2000 transmit and receive PGNs.
  * 
  * NMEA_TRANSMITTED_PGNS is a zero terminated array initialiser that
  * lists all the PGNs we transmit.
