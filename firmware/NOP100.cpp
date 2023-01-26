@@ -44,6 +44,7 @@
  * @brief Configure debug output to Teensy serial port.
  */
 #define DEBUG_SERIAL
+#define DEBUG_SERIAL_PORT_SPEED 9600
 #define DEBUG_SERIAL_START_DELAY 4000
 
 /**********************************************************************
@@ -284,7 +285,7 @@ LedManager STATUS_LEDS(STATUS_LEDS_STATUS_LEDS_UPDATE_INTERVAL, [](uint32_t stat
  */
 void setup() {
   #ifdef DEBUG_SERIAL
-  Serial.begin(9600);
+  Serial.begin(DEBUG_SERIAL_PORT_SPEED);
   delay(DEBUG_SERIAL_START_DELAY);
   #endif
 
@@ -363,10 +364,10 @@ void loop() {
     }
   }
 
-  if (!MODULE_OPERATOR_INTERFACE.getCurrentMode()) {
-    TRANSMIT_LED.update(); STATUS_LEDS.update();
-  }
-
+  // Update LED outputs.
+  TRANSMIT_LED.update(); STATUS_LEDS.update();
+  
+  // Make sure that we always eventually revert to normal operation.
   MODULE_OPERATOR_INTERFACE.revertModeMaybe();
 }
 
@@ -378,20 +379,41 @@ void messageHandler(const tN2kMsg &N2kMsg) {
   }
 }
 
-#ifndef ON_N2K_OPEN
-void onN2kOpen() {
-  
+#ifndef CONFIGURATION_VALIDATOR
+/**
+ * @brief ModuleConfiguration validation callback.
+ * 
+ * ModuleConfiguration uses this callback to validate update values
+ * before they are written into the configuration.
+ * 
+ * @attention Specialisations will probably need to override this
+ * function and therefore must define CONFIGURATION_VALIDATOR.
+ * 
+ * @param index - the configuration address where value will be stored
+ * if validation is successful.
+ * @param value - the proposed configuration value.
+ * @return true - the proposed value is acceptable.
+ * @return false - the proposed value is not acceptable.
+ */
+bool configurationValidator(unsigned char index, unsigned char value) {
+  switch (index) {
+    case MODULE_CONFIGURATION_CAN_SOURCE_INDEX:
+      return(true);
+    default:
+      return(false);
+  }
 }
 #endif
 
-#ifndef CONFIGURATION_VALIDATOR
-/**********************************************************************
- * NOP100's configuration consists of just one byte holding the CAN
- * interface source address, so <index> will only ever be 0. We accept
- * any value and there is no need to advise any other software
- * components of an update.
+#ifndef ON_N2K_OPEN
+/**
+ * @brief Function called by the NMEA2000 library once the CAN bus is
+ * active.
+ * 
+ * @attention Specialisations will probably need to override this
+ * function and therefore must define ON_N2K_OPEN.
  */
-bool configurationValidator(unsigned int index, unsigned char value) {
-  return(true);
+void onN2kOpen() {
 }
 #endif
+
