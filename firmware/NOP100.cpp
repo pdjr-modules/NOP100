@@ -237,18 +237,11 @@ tFunctionMapper FunctionMapper(functionMapArray, FUNCTION_MAPPER_SIZE);
 tModuleOperatorInterfaceClient *modeHandlers[] = { &ModuleConfiguration, &FunctionMapper, 0 };
 tModuleOperatorInterface ModuleOperatorInterface(modeHandlers);
 
-
 /**
  * @brief Create a Button object for debouncing the module's PRG
  *        button.
  */
-Button PRG_BUTTON(GPIO_PRG);
-
-/**
- * @brief Register for remembering the time of the most recent PRG
- *        button press. 
- */
-unsigned long PRG_PRESSED_AT = 0UL;
+Button PRGButton(GPIO_PRG);
 
 /**
  * @brief Interface to the IC74HC165 PISO IC that connects the eight 
@@ -292,7 +285,7 @@ void setup() {
   // Initialise all core GPIO pins.
   pinMode(GPIO_POWER_LED, OUTPUT);
   pinMode(GPIO_TransmitLed, OUTPUT);
-  PRG_BUTTON.begin();
+  PRGButton.begin();
   DilSwitchPISO.begin();
   StatusLedsSIPO.begin();
 
@@ -342,8 +335,8 @@ void loop() {
   #include "loop.h"
 
   // If the PRG button has been operated, then call the button handler.
-  if (PRG_BUTTON.toggled()) {
-    switch (ModuleOperatorInterface.handleButtonEvent(PRG_BUTTON.read(), DilSwitchPISO.readByte())) {
+  if (PRGButton.toggled()) {
+    switch (ModuleOperatorInterface.handleButtonEvent(PRGButton.read(), DilSwitchPISO.readByte())) {
       case tModuleOperatorInterface::MODE_CHANGE:
         TransmitLed.setLedState(0, tLedManager::once);
         break;
