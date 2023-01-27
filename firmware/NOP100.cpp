@@ -65,7 +65,7 @@
 #define GPIO_PISO_CLOCK 12
 #define GPIO_POWER_LED 13
 #define GPIO_PRG 14
-#define GPIO_TRANSMIT_LED 15
+#define GPIO_TransmitLed 15
 #define GPIO_D16 16
 #define GPIO_D17 17
 #define GPIO_D18 18
@@ -163,7 +163,7 @@
  * the function mapper will need to increase FUNCTION_MAPPER_SIZE
  * appropriately.
  */
-#define FUNCTION_MAP_ARRAY { { 255, [](unsigned char i, unsigned char v) -> bool { MODULE_CONFIGURATION.erase(); return(true); } }, { 0, 0 } };
+#define FUNCTION_MAP_ARRAY { { 255, [](unsigned char i, unsigned char v) -> bool { ModuleConfiguration.erase(); return(true); } }, { 0, 0 } };
 #define FUNCTION_MAPPER_SIZE 0
 
 /**********************************************************************
@@ -175,12 +175,12 @@
 /**********************************************************************
  * @brief LedManager library stuff.
  *
- * NOP100 supports two LED systems: a single LED_MANAGER used by core
- * processes and up to 16 STATUS_LEDS available for use by
+ * NOP100 supports two LED systems: a single TransmitLed used by core
+ * processes and up to 32 StatusLeds available for use by
  * specialisations.
  */
-#define TRANSMIT_LED_UPDATE_INTERVAL 100UL
-#define STATUS_LEDS_UPDATE_INTERVAL 100UL
+#define TransmitLed_UPDATE_INTERVAL 100UL
+#define StatusLeds_UPDATE_INTERVAL 100UL
 
 #include "defines.h"
 
@@ -217,7 +217,7 @@ tNMEA2000Handler NMEA2000Handlers[] = NMEA_RECEIVED_PGNS;
  * and can be managed by the user-interaction manager.
 */
 unsigned char DefaultConfiguration[] = MODULE_CONFIGURATION_DEFAULT;
-ModuleConfiguration MODULE_CONFIGURATION(DefaultConfiguration, MODULE_CONFIGURATION_SIZE, MODULE_CONFIGURATION_EEPROM_STORAGE_ADDRESS, configurationValidator);
+tModuleConfiguration ModuleConfiguration(DefaultConfiguration, MODULE_CONFIGURATION_SIZE, MODULE_CONFIGURATION_EEPROM_STORAGE_ADDRESS, configurationValidator);
 
 /**
  * @brief Create a FunctionHandler object for managing all extended
@@ -227,15 +227,15 @@ ModuleConfiguration MODULE_CONFIGURATION(DefaultConfiguration, MODULE_CONFIGURAT
  * and can be managed by the user-interaction manager. We'all add
  * functions later in setup().
  */
-FunctionMapper::FunctionMap functionMapArray[] = FUNCTION_MAP_ARRAY;
-FunctionMapper FUNCTION_MAPPER(functionMapArray, FUNCTION_MAPPER_SIZE);
+tFunctionMapper::FunctionMap functionMapArray[] = FUNCTION_MAP_ARRAY;
+tFunctionMapper FunctionMapper(functionMapArray, FUNCTION_MAPPER_SIZE);
 
 /**
  * @brief Create a ModuleOperatorInterface supporting ModuleConfiguration and
  *        FunctionHandler objects.
  */
-ModuleOperatorInterfaceClient *ModeHandlers[] = { &MODULE_CONFIGURATION, &FUNCTION_MAPPER, 0 };
-ModuleOperatorInterface MODULE_OPERATOR_INTERFACE(ModeHandlers);
+tModuleOperatorInterfaceClient *ModeHandlers[] = { &ModuleConfiguration, &FunctionMapper, 0 };
+tModuleOperatorInterface ModuleOperatorInterface(ModeHandlers);
 
 
 /**
@@ -260,7 +260,7 @@ IC74HC165 DIL_SWITCH (GPIO_PISO_CLOCK, GPIO_PISO_DATA, GPIO_PISO_LATCH);
  * @brief Interface to the IC74HC595 SIPO IC that operates the eight
  *        status LEDs. 
  */
-IC74HC595 STATUS_LEDS_SIPO(GPIO_SIPO_CLOCK, GPIO_SIPO_DATA, GPIO_SIPO_LATCH);
+IC74HC595 StatusLeds_SIPO(GPIO_SIPO_CLOCK, GPIO_SIPO_DATA, GPIO_SIPO_LATCH);
 
 /**
  * @brief StatusLed object for operating the transmit LED.
@@ -268,7 +268,7 @@ IC74HC595 STATUS_LEDS_SIPO(GPIO_SIPO_CLOCK, GPIO_SIPO_DATA, GPIO_SIPO_LATCH);
  * The transmit LED is connected directly to a GPIO pin, so the lambda
  * callback just uses a digital write operation to drive the output.
  */
-LedManager TRANSMIT_LED(TRANSMIT_LED_UPDATE_INTERVAL, [](uint32_t status){ digitalWrite(GPIO_TRANSMIT_LED, (status & 0x01)); });
+tLedManager TransmitLed(TransmitLed_UPDATE_INTERVAL, [](uint32_t status){ digitalWrite(GPIO_TransmitLed, (status & 0x01)); });
 
 /**
  * @brief StatusLed object for operating the status LEDs.
@@ -276,7 +276,7 @@ LedManager TRANSMIT_LED(TRANSMIT_LED_UPDATE_INTERVAL, [](uint32_t status){ digit
  * The status LEDs are connected through a SIPO IC, so the lambda
  * callback can operate all eight LEDs in a single operation.
  */
-LedManager STATUS_LEDS(STATUS_LEDS_UPDATE_INTERVAL, [](uint32_t status){ STATUS_LEDS_SIPO.writeByte((uint8_t) status); });
+tLedManager StatusLeds(StatusLeds_UPDATE_INTERVAL, [](uint32_t status){ StatusLeds_SIPO.writeByte((uint8_t) status); });
 
 #include "definitions.h"
 
@@ -291,22 +291,22 @@ void setup() {
 
   // Initialise all core GPIO pins.
   pinMode(GPIO_POWER_LED, OUTPUT);
-  pinMode(GPIO_TRANSMIT_LED, OUTPUT);
+  pinMode(GPIO_TransmitLed, OUTPUT);
   PRG_BUTTON.begin();
   DIL_SWITCH.begin();
-  STATUS_LEDS_SIPO.begin();
+  StatusLeds_SIPO.begin();
 
   // Run a startup sequence in the LED display: all LEDs on to confirm
   // function.
-  TRANSMIT_LED.setStatus(0xff); STATUS_LEDS.setStatus(0xff); delay(100);
-  TRANSMIT_LED.setStatus(0x00); STATUS_LEDS.setStatus(0x00);
+  TransmitLed.setStatus(0xff); StatusLeds.setStatus(0xff); delay(100);
+  TransmitLed.setStatus(0x00); StatusLeds.setStatus(0x00);
 
   #include "setup.h"
 
   // Initialise and start N2K services.
   NMEA2000.SetProductInformation(PRODUCT_SERIAL_CODE, PRODUCT_CODE, PRODUCT_TYPE, PRODUCT_FIRMWARE_VERSION, PRODUCT_VERSION);
   NMEA2000.SetDeviceInformation(DEVICE_UNIQUE_NUMBER, DEVICE_FUNCTION, DEVICE_CLASS, DEVICE_MANUFACTURER_CODE);
-  NMEA2000.SetMode(tNMEA2000::N2km_ListenAndNode, MODULE_CONFIGURATION.getByte(MODULE_CONFIGURATION_CAN_SOURCE_INDEX)); // Configure for sending and receiving.
+  NMEA2000.SetMode(tNMEA2000::N2km_ListenAndNode, ModuleConfiguration.getByte(MODULE_CONFIGURATION_CAN_SOURCE_INDEX)); // Configure for sending and receiving.
   NMEA2000.EnableForward(false); // Disable all msg forwarding to USB (=Serial)
   NMEA2000.ExtendTransmitMessages(TransmitMessages); // Tell library which PGNs we transmit
   NMEA2000.SetMsgHandler(messageHandler);
@@ -336,28 +336,28 @@ void loop() {
   // change and if so save the new address to EEPROM for future re-use.
   NMEA2000.ParseMessages();
   if (NMEA2000.ReadResetAddressChanged()) {
-    MODULE_CONFIGURATION.setByte(MODULE_CONFIGURATION_CAN_SOURCE_INDEX, NMEA2000.GetN2kSource());
+    ModuleConfiguration.setByte(MODULE_CONFIGURATION_CAN_SOURCE_INDEX, NMEA2000.GetN2kSource());
   }
 
   #include "loop.h"
 
   // If the PRG button has been operated, then call the button handler.
   if (PRG_BUTTON.toggled()) {
-    switch (MODULE_OPERATOR_INTERFACE.handleButtonEvent(PRG_BUTTON.read(), DIL_SWITCH.readByte())) {
-      case ModuleOperatorInterface::MODE_CHANGE:
-        TRANSMIT_LED.setLedState(0, LedManager::once);
+    switch (ModuleOperatorInterface.handleButtonEvent(PRG_BUTTON.read(), DIL_SWITCH.readByte())) {
+      case tModuleOperatorInterface::MODE_CHANGE:
+        TransmitLed.setLedState(0, tLedManager::once);
         break;
-      case ModuleOperatorInterface::ADDRESS_ACCEPTED:
-        TRANSMIT_LED.setLedState(0, LedManager::once);
+      case tModuleOperatorInterface::ADDRESS_ACCEPTED:
+        TransmitLed.setLedState(0, tLedManager::once);
         break;
-      case ModuleOperatorInterface::ADDRESS_REJECTED:
-        TRANSMIT_LED.setLedState(0, LedManager::thrice);
+      case tModuleOperatorInterface::ADDRESS_REJECTED:
+        TransmitLed.setLedState(0, tLedManager::thrice);
         break;
-      case ModuleOperatorInterface::VALUE_ACCEPTED:
-        TRANSMIT_LED.setLedState(0, LedManager::once);
+      case tModuleOperatorInterface::VALUE_ACCEPTED:
+        TransmitLed.setLedState(0, tLedManager::once);
         break;
-      case ModuleOperatorInterface::VALUE_REJECTED:
-        TRANSMIT_LED.setLedState(0, LedManager::thrice);
+      case tModuleOperatorInterface::VALUE_REJECTED:
+        TransmitLed.setLedState(0, tLedManager::thrice);
         break;
       default:
         break;
@@ -365,10 +365,10 @@ void loop() {
   }
 
   // Update LED outputs.
-  TRANSMIT_LED.update(); STATUS_LEDS.update();
+  TransmitLed.update(); StatusLeds.update();
   
   // Make sure that we always eventually revert to normal operation.
-  MODULE_OPERATOR_INTERFACE.revertModeMaybe();
+  ModuleOperatorInterface.revertModeMaybe();
 }
 
 void messageHandler(const tN2kMsg &N2kMsg) {
@@ -395,7 +395,7 @@ void messageHandler(const tN2kMsg &N2kMsg) {
  * @return true - the proposed value is acceptable.
  * @return false - the proposed value is not acceptable.
  */
-bool configurationValidator(unsigned char index, unsigned char value) {
+bool configurationValidator(unsigned int index, unsigned char value) {
   switch (index) {
     case MODULE_CONFIGURATION_CAN_SOURCE_INDEX:
       return(true);
