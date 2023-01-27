@@ -216,8 +216,8 @@ tNMEA2000Handler NMEA2000Handlers[] = NMEA_RECEIVED_PGNS;
  * ModuleConfiguration implements the ModuleOperatorInterfaceHandler interface
  * and can be managed by the user-interaction manager.
 */
-unsigned char DefaultConfiguration[] = MODULE_CONFIGURATION_DEFAULT;
-tModuleConfiguration ModuleConfiguration(DefaultConfiguration, MODULE_CONFIGURATION_SIZE, MODULE_CONFIGURATION_EEPROM_STORAGE_ADDRESS, configurationValidator);
+unsigned char defaultConfiguration[] = MODULE_CONFIGURATION_DEFAULT;
+tModuleConfiguration ModuleConfiguration(defaultConfiguration, MODULE_CONFIGURATION_SIZE, MODULE_CONFIGURATION_EEPROM_STORAGE_ADDRESS, configurationValidator);
 
 /**
  * @brief Create a FunctionHandler object for managing all extended
@@ -234,8 +234,8 @@ tFunctionMapper FunctionMapper(functionMapArray, FUNCTION_MAPPER_SIZE);
  * @brief Create a ModuleOperatorInterface supporting ModuleConfiguration and
  *        FunctionHandler objects.
  */
-tModuleOperatorInterfaceClient *ModeHandlers[] = { &ModuleConfiguration, &FunctionMapper, 0 };
-tModuleOperatorInterface ModuleOperatorInterface(ModeHandlers);
+tModuleOperatorInterfaceClient *modeHandlers[] = { &ModuleConfiguration, &FunctionMapper, 0 };
+tModuleOperatorInterface ModuleOperatorInterface(modeHandlers);
 
 
 /**
@@ -254,13 +254,13 @@ unsigned long PRG_PRESSED_AT = 0UL;
  * @brief Interface to the IC74HC165 PISO IC that connects the eight 
  *        DIL switch parallel inputs.
  */
-IC74HC165 DIL_SWITCH (GPIO_PISO_CLOCK, GPIO_PISO_DATA, GPIO_PISO_LATCH);
+IC74HC165 DilSwitchPISO (GPIO_PISO_CLOCK, GPIO_PISO_DATA, GPIO_PISO_LATCH);
 
 /**
  * @brief Interface to the IC74HC595 SIPO IC that operates the eight
  *        status LEDs. 
  */
-IC74HC595 StatusLeds_SIPO(GPIO_SIPO_CLOCK, GPIO_SIPO_DATA, GPIO_SIPO_LATCH);
+IC74HC595 StatusLedsSIPO(GPIO_SIPO_CLOCK, GPIO_SIPO_DATA, GPIO_SIPO_LATCH);
 
 /**
  * @brief StatusLed object for operating the transmit LED.
@@ -276,7 +276,7 @@ tLedManager TransmitLed(TransmitLed_UPDATE_INTERVAL, [](uint32_t status){ digita
  * The status LEDs are connected through a SIPO IC, so the lambda
  * callback can operate all eight LEDs in a single operation.
  */
-tLedManager StatusLeds(StatusLeds_UPDATE_INTERVAL, [](uint32_t status){ StatusLeds_SIPO.writeByte((uint8_t) status); });
+tLedManager StatusLeds(StatusLeds_UPDATE_INTERVAL, [](uint32_t status){ StatusLedsSIPO.writeByte((uint8_t) status); });
 
 #include "definitions.h"
 
@@ -293,8 +293,8 @@ void setup() {
   pinMode(GPIO_POWER_LED, OUTPUT);
   pinMode(GPIO_TransmitLed, OUTPUT);
   PRG_BUTTON.begin();
-  DIL_SWITCH.begin();
-  StatusLeds_SIPO.begin();
+  DilSwitchPISO.begin();
+  StatusLedsSIPO.begin();
 
   // Run a startup sequence in the LED display: all LEDs on to confirm
   // function.
@@ -343,7 +343,7 @@ void loop() {
 
   // If the PRG button has been operated, then call the button handler.
   if (PRG_BUTTON.toggled()) {
-    switch (ModuleOperatorInterface.handleButtonEvent(PRG_BUTTON.read(), DIL_SWITCH.readByte())) {
+    switch (ModuleOperatorInterface.handleButtonEvent(PRG_BUTTON.read(), DilSwitchPISO.readByte())) {
       case tModuleOperatorInterface::MODE_CHANGE:
         TransmitLed.setLedState(0, tLedManager::once);
         break;
