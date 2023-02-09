@@ -124,7 +124,7 @@
 #define PRODUCT_LEN 1                   // This device's LEN
 #define PRODUCT_N2K_VERSION 2100        // N2K specification version 2.1
 #define PRODUCT_SERIAL_CODE "002-849"   // PRODUCT_CODE + DEVICE_UNIQUE_NUMBER
-#define PRODUCT_TYPE "SIM108"           // The product name?
+#define PRODUCT_TYPE "PDJRSIM"           // The product name?
 #define PRODUCT_VERSION "1.0 (Mar 2022)"
 
 /**********************************************************************
