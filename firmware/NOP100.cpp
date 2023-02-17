@@ -238,8 +238,7 @@ tModuleOperatorInterfaceClient *modeHandlers[] = { &ModuleConfiguration, &Functi
 tModuleOperatorInterface ModuleOperatorInterface(modeHandlers);
 
 /**
- * @brief Create a Button object for debouncing the module's PRG
- *        button.
+ * @brief Button object for debouncing the module's PRG button.
  */
 Button PRGButton(GPIO_PRG);
 
@@ -256,7 +255,7 @@ IC74HC165 DilSwitchPISO (GPIO_PISO_CLOCK, GPIO_PISO_DATA, GPIO_PISO_LATCH);
 IC74HC595 StatusLedsSIPO(GPIO_SIPO_CLOCK, GPIO_SIPO_DATA, GPIO_SIPO_LATCH);
 
 /**
- * @brief StatusLed object for operating the transmit LED.
+ * @brief tLedManager object for operating the transmit LED.
  * 
  * The transmit LED is connected directly to a GPIO pin, so the lambda
  * callback just uses a digital write operation to drive the output.
@@ -264,7 +263,7 @@ IC74HC595 StatusLedsSIPO(GPIO_SIPO_CLOCK, GPIO_SIPO_DATA, GPIO_SIPO_LATCH);
 tLedManager TransmitLed(TransmitLed_UPDATE_INTERVAL, [](uint32_t status){ digitalWrite(GPIO_TransmitLed, (status & 0x01)); });
 
 /**
- * @brief StatusLed object for operating the status LEDs.
+ * @brief tLedManager object for operating the status LEDs.
  * 
  * The status LEDs are connected through a SIPO IC, so the lambda
  * callback can operate all eight LEDs in a single operation.
@@ -336,7 +335,7 @@ void loop() {
 
   // If the PRG button has been operated, then call the button handler.
   if (PRGButton.toggled()) {
-    switch (ModuleOperatorInterface.handleButtonEvent(PRGButton.read(), DilSwitchPISO.readByte())) {
+    switch (ModuleOperatorInterface.handleButtonEvent(PRGButton.read(), DilSwitchPISO.read())) {
       case tModuleOperatorInterface::MODE_CHANGE:
         TransmitLed.setLedState(0, tLedManager::once);
         break;
