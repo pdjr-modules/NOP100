@@ -268,7 +268,7 @@ tLedManager TransmitLed(TransmitLed_UPDATE_INTERVAL, [](uint32_t status){ digita
  * The status LEDs are connected through a SIPO IC, so the lambda
  * callback can operate all eight LEDs in a single operation.
  */
-tLedManager StatusLeds(StatusLeds_UPDATE_INTERVAL, [](uint32_t status){ StatusLedsSIPO.writeByte((uint8_t) status); });
+tLedManager StatusLeds(StatusLeds_UPDATE_INTERVAL, [](uint32_t status){ StatusLedsSIPO.write(& (uint8_t) status); });
 
 #include "definitions.h"
 
