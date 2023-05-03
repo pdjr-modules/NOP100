@@ -179,8 +179,8 @@
  * processes and up to 32 StatusLeds available for use by
  * specialisations.
  */
-#define TransmitLed_UPDATE_INTERVAL 100UL
-#define StatusLeds_UPDATE_INTERVAL 100UL
+#define TRANSMIT_LED_UPDATE_INTERVAL 100UL
+#define STATUS_LEDS_UPDATE_INTERVAL 100UL
 
 #include "defines.h"
 
@@ -260,7 +260,7 @@ IC74HC595 StatusLedsSIPO(GPIO_SIPO_CLOCK, GPIO_SIPO_DATA, GPIO_SIPO_LATCH);
  * The transmit LED is connected directly to a GPIO pin, so the lambda
  * callback just uses a digital write operation to drive the output.
  */
-LedManager TransmitLed(TransmitLed_UPDATE_INTERVAL, [](uint32_t status){ digitalWrite(GPIO_TransmitLed, (status & 0x01)); });
+LedManager TransmitLed([](unsigned int status){ digitalWrite(GPIO_TransmitLed, (status & 0x01)); }, TRANSMIT_LED_UPDATE_INTERVAL);
 
 /**
  * @brief tLedManager object for operating the status LEDs.
@@ -268,7 +268,7 @@ LedManager TransmitLed(TransmitLed_UPDATE_INTERVAL, [](uint32_t status){ digital
  * The status LEDs are connected through a SIPO IC, so the lambda
  * callback can operate all eight LEDs in a single operation.
  */
-LedManager StatusLeds(StatusLeds_UPDATE_INTERVAL, [](uint32_t status){ StatusLedsSIPO.write(& status); });
+LedManager StatusLeds([](unsigned int status){ StatusLedsSIPO.write(status); }, STATUS_LEDS_UPDATE_INTERVAL);
 
 #include "definitions.h"
 
@@ -337,19 +337,19 @@ void loop() {
   if (PRGButton.toggled()) {
     switch (ModuleOperatorInterface.handleButtonEvent(PRGButton.read(), DilSwitchPISO.read()[0])) {
       case tModuleOperatorInterface::MODE_CHANGE:
-        TransmitLed.setLedState(0, tLedManager::once);
+        TransmitLed.setLedState(0, LedManager::ONCE);
         break;
       case tModuleOperatorInterface::ADDRESS_ACCEPTED:
-        TransmitLed.setLedState(0, tLedManager::once);
+        TransmitLed.setLedState(0, LedManager::ONCE);
         break;
       case tModuleOperatorInterface::ADDRESS_REJECTED:
-        TransmitLed.setLedState(0, tLedManager::thrice);
+        TransmitLed.setLedState(0, LedManager::THRICE);
         break;
       case tModuleOperatorInterface::VALUE_ACCEPTED:
-        TransmitLed.setLedState(0, tLedManager::once);
+        TransmitLed.setLedState(0, LedManager::ONCE);
         break;
       case tModuleOperatorInterface::VALUE_REJECTED:
-        TransmitLed.setLedState(0, tLedManager::thrice);
+        TransmitLed.setLedState(0, LedManager::THRICE);
         break;
       default:
         break;
