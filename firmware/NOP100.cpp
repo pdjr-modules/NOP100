@@ -260,7 +260,7 @@ IC74HC595 StatusLedsSIPO(GPIO_SIPO_CLOCK, GPIO_SIPO_DATA, GPIO_SIPO_LATCH);
  * The transmit LED is connected directly to a GPIO pin, so the lambda
  * callback just uses a digital write operation to drive the output.
  */
-tLedManager TransmitLed(TransmitLed_UPDATE_INTERVAL, [](uint32_t status){ digitalWrite(GPIO_TransmitLed, (status & 0x01)); });
+LedManager TransmitLed(TransmitLed_UPDATE_INTERVAL, [](uint32_t status){ digitalWrite(GPIO_TransmitLed, (status & 0x01)); });
 
 /**
  * @brief tLedManager object for operating the status LEDs.
@@ -268,7 +268,7 @@ tLedManager TransmitLed(TransmitLed_UPDATE_INTERVAL, [](uint32_t status){ digita
  * The status LEDs are connected through a SIPO IC, so the lambda
  * callback can operate all eight LEDs in a single operation.
  */
-tLedManager StatusLeds(StatusLeds_UPDATE_INTERVAL, [](uint32_t status){ StatusLedsSIPO.write(& (uint8_t) status); });
+LedManager StatusLeds(StatusLeds_UPDATE_INTERVAL, [](uint32_t status){ StatusLedsSIPO.write(& status); });
 
 #include "definitions.h"
 
