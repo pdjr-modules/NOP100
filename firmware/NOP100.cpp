@@ -217,7 +217,7 @@ tNMEA2000Handler NMEA2000Handlers[] = NMEA_RECEIVED_PGNS;
  * and can be managed by the user-interaction manager.
 */
 unsigned char defaultConfiguration[] = MODULE_CONFIGURATION_DEFAULT;
-tModuleConfiguration ModuleConfiguration(defaultConfiguration, MODULE_CONFIGURATION_SIZE, MODULE_CONFIGURATION_EEPROM_STORAGE_ADDRESS, configurationValidator);
+ModuleConfiguration ModuleConfiguration(defaultConfiguration, MODULE_CONFIGURATION_SIZE, MODULE_CONFIGURATION_EEPROM_STORAGE_ADDRESS, configurationValidator);
 
 /**
  * @brief Create a FunctionHandler object for managing all extended
@@ -227,15 +227,15 @@ tModuleConfiguration ModuleConfiguration(defaultConfiguration, MODULE_CONFIGURAT
  * and can be managed by the user-interaction manager. We'all add
  * functions later in setup().
  */
-tFunctionMapper::FunctionMap functionMapArray[] = FUNCTION_MAP_ARRAY;
-tFunctionMapper FunctionMapper(functionMapArray, FUNCTION_MAPPER_SIZE);
+FunctionMapper::FunctionMap functionMapArray[] = FUNCTION_MAP_ARRAY;
+FunctionMapper FunctionMapper(functionMapArray, FUNCTION_MAPPER_SIZE);
 
 /**
  * @brief Create a ModuleOperatorInterface supporting ModuleConfiguration and
  *        FunctionHandler objects.
  */
-tModuleOperatorInterfaceClient *modeHandlers[] = { &ModuleConfiguration, &FunctionMapper, 0 };
-tModuleOperatorInterface ModuleOperatorInterface(modeHandlers);
+ModuleOperatorInterfaceClient *modeHandlers[] = { &ModuleConfiguration, &FunctionMapper, 0 };
+ModuleOperatorInterface ModuleOperatorInterface(modeHandlers);
 
 /**
  * @brief Button object for debouncing the module's PRG button.
@@ -260,7 +260,7 @@ IC74HC595 StatusLedsSIPO(GPIO_SIPO_CLOCK, GPIO_SIPO_DATA, GPIO_SIPO_LATCH);
  * The transmit LED is connected directly to a GPIO pin, so the lambda
  * callback just uses a digital write operation to drive the output.
  */
-tLedManager TransmitLed([](unsigned int status){ digitalWrite(GPIO_TransmitLed, (status & 0x01)); }, TRANSMIT_LED_UPDATE_INTERVAL);
+LedManager TransmitLed([](unsigned int status){ digitalWrite(GPIO_TransmitLed, (status & 0x01)); }, TRANSMIT_LED_UPDATE_INTERVAL);
 
 /**
  * @brief tLedManager object for operating the status LEDs.
@@ -268,7 +268,7 @@ tLedManager TransmitLed([](unsigned int status){ digitalWrite(GPIO_TransmitLed, 
  * The status LEDs are connected through a SIPO IC, so the lambda
  * callback can operate all eight LEDs in a single operation.
  */
-tLedManager StatusLeds([](unsigned int status){ StatusLedsSIPO.write(status); }, STATUS_LEDS_UPDATE_INTERVAL);
+LedManager StatusLeds([](unsigned int status){ StatusLedsSIPO.write(status); }, STATUS_LEDS_UPDATE_INTERVAL);
 
 #include "definitions.h"
 
@@ -336,20 +336,20 @@ void loop() {
   // If the PRG button has been operated, then call the button handler.
   if (PRGButton.toggled()) {
     switch (ModuleOperatorInterface.handleButtonEvent(PRGButton.read(), DilSwitchPISO.read()[0])) {
-      case tModuleOperatorInterface::MODE_CHANGE:
-        TransmitLed.setLedState(0, tLedManager::ONCE);
+      case ModuleOperatorInterface::MODE_CHANGE:
+        TransmitLed.setLedState(0, LedManager::ONCE);
         break;
-      case tModuleOperatorInterface::ADDRESS_ACCEPTED:
-        TransmitLed.setLedState(0, tLedManager::ONCE);
+      case ModuleOperatorInterface::ADDRESS_ACCEPTED:
+        TransmitLed.setLedState(0, LedManager::ONCE);
         break;
-      case tModuleOperatorInterface::ADDRESS_REJECTED:
-        TransmitLed.setLedState(0, tLedManager::THRICE);
+      case ModuleOperatorInterface::ADDRESS_REJECTED:
+        TransmitLed.setLedState(0, LedManager::THRICE);
         break;
-      case tModuleOperatorInterface::VALUE_ACCEPTED:
-        TransmitLed.setLedState(0, tLedManager::ONCE);
+      case ModuleOperatorInterface::VALUE_ACCEPTED:
+        TransmitLed.setLedState(0, LedManager::ONCE);
         break;
-      case tModuleOperatorInterface::VALUE_REJECTED:
-        TransmitLed.setLedState(0, tLedManager::THRICE);
+      case ModuleOperatorInterface::VALUE_REJECTED:
+        TransmitLed.setLedState(0, LedManager::THRICE);
         break;
       default:
         break;
