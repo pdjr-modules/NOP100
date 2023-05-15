@@ -335,7 +335,7 @@ void loop() {
 
   // If the PRG button has been operated, then call the button handler.
   if (PRGButton.toggled()) {
-    switch (ModuleOperatorInterface.handleButtonEvent(PRGButton.read(), DilSwitchPISO.read()[0])) {
+    switch (ModuleOperatorInterface.handleButtonEvent(PRGButton.read(), (unsigned char) (DilSwitchPISO.read() & 0xff))) {
       case ModuleOperatorInterface::MODE_CHANGE:
         TransmitLed.setLedState(0, LedManager::ONCE);
         break;
