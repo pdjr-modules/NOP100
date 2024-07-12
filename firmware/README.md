@@ -3,23 +3,37 @@
 ```NOP100.cpp``` implements a runnable, extensible, firmware for
 [NOP100-based hardware](../hardware/README.md).
 
-If compiled and installed on NOP100 hardware the firmware creates
-an NMEA 2000 device with Class Code 10 (System Tools) and Function
-Code 130 (Diagnostic).
+The files defines.h, definitions.h, includes.h, loop.h and setup.h
+allow specialisation of NOP100 to a particular application by
+extending and overriding some core functionality.
+
+If the specialisation files are absent, the firmware creates an NMEA
+2000 device with Class Code 10 (System Tools) and Function Code 130
+(Diagnostic).
 The created device is entirely passive.
 
-The usefulness of ```NOP100.cpp``` is that the firmware can be
-extended or *specialised* by supplying application specificic code
-by editing five C++ source files (```includes.h```, ```defines.h```,
-```definitions.h```, ```setup.h``` and ```loop.h```).
-Firmware for a specialised NMEA application is implemented by
-extending and modifying these  source files to suit the requirements
-of the project in hand.
-```NOP100.cpp``` makes no use of these files.
+Supplying functional content in the specialisation files allows the
+construction of a useful NMEA 2000 application.
+The recommended way of doing this is to create a folder under the
+```modules/``` directory for a planned application and to populate this
+with specialisation files that become the target of symbolic links in
+the NOP100 folder.
 
-Each ```.h``` file includes documentary comments which explain
-how to structure a specialisation.
-The
+By way of illustration, the ```modules/NOP100-SIM``` folders contains
+code which specialises the NOP100 firmware so that it acts as an NMEA
+2000 switch input module.
+The extended firware supports one or two
+[MikroE 5981]()
+modules as the external switch input interface.
+
+
+
+
+
+
+The modules/CLICK5981 folder, for example, 
+Most useful applications will exploit interfaces implemented by
+MikroBus modules which plug into the NOP100 motherboard and it is
 [SIM108 - NMEA 2000 switch input module](https://www.github.com/preeve9534/SIM108/)
 project is based on NOP100 and gives a working example of a real-world
 application.

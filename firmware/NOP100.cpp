@@ -26,12 +26,14 @@
 
 #include <Arduino.h>
 #include <EEPROM.h>
-#include <NMEA2000_CAN.h>
-#include <Button.h>
+#include <NMEA2000.h>
 #include <N2kTypes.h>
 #include <N2kMessages.h>
+#include <NMEA2000_Teensyx.h>
+#include <NMEA2000_CAN.h>
+#include <Button.h>
 #include <IC74HC165.h>
-#include <IC74HC595.h>
+#include <SPI.h>
 #include <LedManager.h>
 #include <ModuleOperatorInterface.h>
 #include <ModuleConfiguration.h>
@@ -48,24 +50,24 @@
 #define DEBUG_SERIAL_START_DELAY 4000
 
 /**********************************************************************
- * @brief GPIO pin definitions.
+ * @brief GPIO pin definitions for Teensy 4.0
  */
-#define GPIO_SIPO_DATA 0
-#define GPIO_SIPO_LATCH 1
-#define GPIO_SIPO_CLOCK 2
-#define GPIO_CAN_TX 3
-#define GPIO_CAN_RX 4
+#define GPIO_D0 0
+#define GPIO_D1 1
+#define GPIO_D2 2
+#define GPIO_D3 3
+#define GPIO_D4 4
 #define GPIO_D5 5
 #define GPIO_D6 6
 #define GPIO_D7 7
 #define GPIO_D8 8
 #define GPIO_D9 9
-#define GPIO_PISO_DATA 10
-#define GPIO_PISO_LATCH 11
-#define GPIO_PISO_CLOCK 12
-#define GPIO_POWER_LED 13
-#define GPIO_PRG 14
-#define GPIO_TransmitLed 15
+#define GPIO_D10 10
+#define GPIO_D11 11
+#define GPIO_D12 12
+#define GPIO_D13 13
+#define GPIO_D14 14
+#define GPIO_D15 15
 #define GPIO_D16 16
 #define GPIO_D17 17
 #define GPIO_D18 18
@@ -74,6 +76,24 @@
 #define GPIO_D21 21
 #define GPIO_D22 22
 #define GPIO_D23 23
+
+#define GPIO_MIKROBUS_EN0 GPIO_D2
+#define GPIO_MIKROBUS_RST0 GPIO_D3
+#define GPIO_MIKROBUS_CS0 GPIO_D4
+#define GPIO_MIKROBUS_EN1 GPIO_D7
+#define GPIO_MIKROBUS_RST1 GPIO_D8
+#define GPIO_MIKROBUS_CS1 GPIO_D9
+#define GPIO_SPI_MOSI GPIO_D11
+#define GPIO_SPI_MISO GPIO_D12
+#define GPIO_SPI_SCK GPIO_D13
+#define GPIO_PISO_DATA GPIO_D15
+#define GPIO_PISO_CLOCK GPIO_D16
+#define GPIO_PISO_LATCH GPIO_D17
+#define GPIO_PRG_LED GPIO_D18
+#define GPIO_PRG_BUTTON GPIO_D19
+#define GPIO_CAN_LED GPIO_D21
+#define GPIO_CAN_TX GPIO_D22
+#define GPIO_CAN_RX GPIO_D23
 
 /**********************************************************************
  * @brief NMEA2000 device information.
@@ -175,12 +195,11 @@
 /**********************************************************************
  * @brief LedManager library stuff.
  *
- * NOP100 supports two LED systems: a single TransmitLed used by core
- * processes and up to 32 StatusLeds available for use by
- * specialisations.
+ * NOP100 supports two LEDs: one used to indicate CAN bus activity and
+ * one to provide feedback in the configuration user-interface.
  */
-#define TRANSMIT_LED_UPDATE_INTERVAL 100UL
-#define STATUS_LEDS_UPDATE_INTERVAL 100UL
+#define CAN_LED_UPDATE_INTERVAL 100UL
+#define PRG_LED_UPDATE_INTERVAL 100UL
 
 #include "defines.h"
 
@@ -240,35 +259,22 @@ ModuleOperatorInterface ModuleOperatorInterface(modeHandlers);
 /**
  * @brief Button object for debouncing the module's PRG button.
  */
-Button PRGButton(GPIO_PRG);
+Button PRGButton(GPIO_PRG_BUTTON);
 
 /**
  * @brief Interface to the IC74HC165 PISO IC that connects the eight 
  *        DIL switch parallel inputs.
  */
-IC74HC165 DilSwitchPISO (GPIO_PISO_CLOCK, GPIO_PISO_DATA, GPIO_PISO_LATCH);
+IC74HC165 CodeSwitchPISO (GPIO_PISO_CLOCK, GPIO_PISO_DATA, GPIO_PISO_LATCH);
 
 /**
- * @brief Interface to the IC74HC595 SIPO IC that operates the eight
- *        status LEDs. 
- */
-IC74HC595 StatusLedsSIPO(GPIO_SIPO_CLOCK, GPIO_SIPO_DATA, GPIO_SIPO_LATCH);
-
-/**
- * @brief tLedManager object for operating the transmit LED.
+ * @brief tLedManager objects for operating the CAN and PRG LEDs.
  * 
- * The transmit LED is connected directly to a GPIO pin, so the lambda
+ * Both LEDs are connected directly to a GPIO pin, so the lambda
  * callback just uses a digital write operation to drive the output.
  */
-LedManager TransmitLed([](unsigned int status){ digitalWrite(GPIO_TransmitLed, (status & 0x01)); }, TRANSMIT_LED_UPDATE_INTERVAL);
-
-/**
- * @brief tLedManager object for operating the status LEDs.
- * 
- * The status LEDs are connected through a SIPO IC, so the lambda
- * callback can operate all eight LEDs in a single operation.
- */
-LedManager StatusLeds([](unsigned int status){ StatusLedsSIPO.write(status); }, STATUS_LEDS_UPDATE_INTERVAL);
+LedManager CanLed([](unsigned int status){ digitalWrite(GPIO_CAN_LED, (status & 0x01)); }, CAN_LED_UPDATE_INTERVAL);
+LedManager PrgLed([](unsigned int status){ digitalWrite(GPIO_PRG_LED, (status & 0x01)); }, PRG_LED_UPDATE_INTERVAL);
 
 #include "definitions.h"
 
@@ -281,17 +287,24 @@ void setup() {
   delay(DEBUG_SERIAL_START_DELAY);
   #endif
 
-  // Initialise all core GPIO pins.
-  pinMode(GPIO_POWER_LED, OUTPUT);
-  pinMode(GPIO_TransmitLed, OUTPUT);
-  PRGButton.begin();
-  DilSwitchPISO.begin();
-  StatusLedsSIPO.begin();
+  // Set the mode of GPIO pins which are not configured by interface
+  // libraries.
+  pinMode(GPIO_MIKROBUS_CS0, OUTPUT);
+  pinMode(GPIO_MIKROBUS_CS1, OUTPUT);
+  pinMode(GPIO_CAN_LED, OUTPUT);
+  pinMode(GPIO_PRG_LED, OUTPUT);
 
+  SPI.begin();
+
+  PRGButton.begin();
+
+  CodeSwitchPISO.begin();
+  
   // Run a startup sequence in the LED display: all LEDs on to confirm
   // function.
-  TransmitLed.setStatus(0xff); StatusLeds.setStatus(0xff); delay(100);
-  TransmitLed.setStatus(0x00); StatusLeds.setStatus(0x00);
+  CanLed.setStatus(0xff); PrgLed.setStatus(0xff);
+  delay(100);
+  CanLed.setStatus(0x00); PrgLed.setStatus(0x00);
 
   #include "setup.h"
 
@@ -335,21 +348,21 @@ void loop() {
 
   // If the PRG button has been operated, then call the button handler.
   if (PRGButton.toggled()) {
-    switch (ModuleOperatorInterface.handleButtonEvent(PRGButton.read(), (unsigned char) (DilSwitchPISO.read() & 0xff))) {
+    switch (ModuleOperatorInterface.handleButtonEvent(PRGButton.read(), (unsigned char) (CodeSwitchPISO.read() & 0xff))) {
       case ModuleOperatorInterface::MODE_CHANGE:
-        TransmitLed.setLedState(0, LedManager::ONCE);
+        PrgLed.setLedState(0, LedManager::ONCE);
         break;
       case ModuleOperatorInterface::ADDRESS_ACCEPTED:
-        TransmitLed.setLedState(0, LedManager::ONCE);
+        PrgLed.setLedState(0, LedManager::ONCE);
         break;
       case ModuleOperatorInterface::ADDRESS_REJECTED:
-        TransmitLed.setLedState(0, LedManager::THRICE);
+        PrgLed.setLedState(0, LedManager::THRICE);
         break;
       case ModuleOperatorInterface::VALUE_ACCEPTED:
-        TransmitLed.setLedState(0, LedManager::ONCE);
+        PrgLed.setLedState(0, LedManager::ONCE);
         break;
       case ModuleOperatorInterface::VALUE_REJECTED:
-        TransmitLed.setLedState(0, LedManager::THRICE);
+        PrgLed.setLedState(0, LedManager::THRICE);
         break;
       default:
         break;
@@ -357,7 +370,7 @@ void loop() {
   }
 
   // Update LED outputs.
-  TransmitLed.update(); StatusLeds.update();
+  CanLed.update(); PrgLed.update();
   
   // Make sure that we always eventually revert to normal operation.
   ModuleOperatorInterface.revertModeMaybe();

@@ -1,0 +1,6 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "pdjr")(type "KiCad")(uri "/Users/preeve/Documents/GitHub/pdjr-kicad-libraries/pdjr/modules/PDJR_Converter_DCDC")(options "")(descr ""))
+  (lib (name "teensy")(type "KiCad")(uri "/Users/preeve/Documents/GitHub/teensy_library")(options "")(descr ""))
+  (lib (name "plop")(type "KiCad")(uri "/Users/preeve/Documents/GitHub/kicad-mikroBUS/modules/mikroBUS.pretty")(options "")(descr ""))
+)
