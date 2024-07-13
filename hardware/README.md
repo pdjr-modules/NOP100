@@ -25,12 +25,13 @@ exploits this hardware design.
 ### PCB
 
 The four-layer PCB is suitable for use in a
-[case]()
+[Hammond 1591GSFLBK case](https://docs.rs-online.com/b790/A700000007521666.pdf)
 and employs both surface-mount and through-hole components.
 
 ### Microcontroller
 
-The project supports the Teensy 4.0 microcontroller module.
+The project employs the
+[Teensy 4.0](https://www.pjrc.com/store/teensy40.html) microcontroller module.
 
 ### Power supplies
 
