@@ -18,6 +18,8 @@ configuration and is easily extended by the addition of firmware
 dedicated to operation of the installed MikroBus cards and the
 integration of their function with NMEA 2000.
 
+## Project organisation
+
 ```
 NOP100/
   + hardware/            # Kicad designs for the NOP100 motherboard
