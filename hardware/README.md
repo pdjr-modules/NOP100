@@ -1,9 +1,15 @@
 # NOP100/hardware
 
-This project thread provides a circuit design and PCB layout for a
-MikroBus extendable NMEA 2000 module based on the Teensy 4.0
-micro-controller supported by a CAN transceiver, parasitic power
-supplies and user configuration interface.
+This project thread provides a circuit design and PCB layout for an
+NMEA 2000 interface module which uses
+[MikroBus](https://www.mikroe.com/mikrobus)
+[Click](https://mikroe.com/click) cards as its real-world interfaces.
+The module is based on the
+[Teensy 4.0]()
+micro-controller supported by a
+[MCP2551]() CAN transceiver,
+[Murata NCS1](power supplies)
+and user configuration interface.
 
 <table border="0">
 <tr>
