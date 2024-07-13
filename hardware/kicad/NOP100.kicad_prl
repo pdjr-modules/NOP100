@@ -67,7 +67,7 @@
       40
     ],
     "visible_layers": "002ffea_00000001",
-    "zone_display_mode": 0
+    "zone_display_mode": 1
   },
   "meta": {
     "filename": "NOP100.kicad_prl",
