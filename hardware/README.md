@@ -1,4 +1,4 @@
-# NOP100/hardware
+# NOP100 hardware
 
 This project thread provides a circuit design and PCB layout for an
 NMEA 2000 interface module which uses
@@ -8,8 +8,8 @@ NMEA 2000 interface module which uses
 The module is based on the
 [Teensy 4.0]()
 micro-controller supported by an
-[MCP2551]() CAN transceiver,
-[Murata NCS1](power supplies)
+[MCP2551](https://www.microchip.com/en-us/product/mcp2551) CAN transceiver,
+[Murata](https://www.murata.com/en-eu/) power supplies
 and user configuration interface.
 
 <table border="0">
@@ -42,9 +42,14 @@ The project employs the
 
 ### Power supplies
 
-Twin DC-DC converters take power from the NMEA bus (NET-S/NET-C) and
-output 5VDC 200mA and 3.3VDC 250mA supplies.
-The Teensy 4.0 on-board 3.3VDC output is not used.
+A DC-DC converter takes power from the NMEA bus (NET-S/NET-C) and
+outputs 5VDC 400mA to the module.
+The Teensy 4.0 on-board 3.3VDC output is available by a solder bridge
+for exteral 3.3V consumers.
+
+If the 3.3VDC 250mA maximum that the Teensy can supply is not adequate,
+then an additional 3.3VDC 300mA DC-DC converter can be installed on the
+module PCB and the solder-bridge to the Teensy supply removed. 
 
 ### CAN interface
 
