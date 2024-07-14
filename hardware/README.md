@@ -44,12 +44,13 @@ The project employs the
 
 A DC-DC converter takes power from the NMEA bus (NET-S/NET-C) and
 outputs 5VDC 400mA to the module.
-The Teensy 4.0 on-board 3.3VDC output is available by a solder bridge
-for exteral 3.3V consumers.
 
-If the 3.3VDC 250mA maximum that the Teensy can supply is not adequate,
-then an additional 3.3VDC 300mA DC-DC converter can be installed on the
-module PCB and the solder-bridge to the Teensy supply removed. 
+A solder bridge connection allows the 3.3VDC 250mA output of the
+Teensy 4.0 to be used as the supply for all 3.3VDC consumers.
+
+If the Teensy's 250mA limit is insufficient for **NOP100** consumers,
+then a 3.3VDC 600mA DC-DC converter can be installed on the module PCB
+and the solder-bridge to the Teensy supply removed.
 
 ### CAN interface
 
