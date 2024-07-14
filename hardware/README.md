@@ -4,9 +4,10 @@ This project thread provides a circuit design and PCB layout for an
 NMEA 2000 interface module which uses
 [MikroBus](https://www.mikroe.com/mikrobus)
 [Click](https://mikroe.com/click) cards as its real-world interfaces.
+
 The module is based on the
 [Teensy 4.0]()
-micro-controller supported by a
+micro-controller supported by an
 [MCP2551]() CAN transceiver,
 [Murata NCS1](power supplies)
 and user configuration interface.
@@ -62,10 +63,11 @@ An activity indicator LED shows when the CAN interface is transmitting.
 
 ### Configuration interface
 
-The configuration interface consists of two 4-bit rotary switches which
-are generally used to set the module's NMEA instance.
-The rotary switches can also be used in concert with a momentary tactile
-switch to save module configuration parameters to EEPROM.
+The configuration interface consists of two 4-bit rotary switches, a
+momentary tactile switch and an LED.
+The rotary switches are used to set the module's NMEA instance but can
+also be used in concert with the tactile switch to save module
+configuration parameters to EEPROM.
 
 ### MikroBus sockets
 
