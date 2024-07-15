@@ -15,7 +15,7 @@ and user configuration interface.
 <table border="0">
 <tr>
 <td>
-<img src="schematic.svg">
+<img src="NOP100.svg">
 </td>
 <td>
 <img src="pcb.svg">
