@@ -22,21 +22,25 @@ integration of their function with NMEA 2000.
 
 ```
 NOP100/
-  + hardware/            # Kicad designs for the NOP100 motherboard
-  + firmware/            # NOP100 firmware
+  + firmware/            # NOP100 firmware...
+    + modules/           # Folders for module specialisations
+      + NOP100-SIM/        # Specialisation defining an NMEA switch input module
+        + defines.h
+        + definitions.h
+        + includes.h
+        + loop.h
+        + setup.h
+      + another module specialisation/
+      + .../
     + NOP100.cpp         # NOP100 main application 
+    + README.md
     + defines.h          # Symbolic link to a module specialisation
     + definitions.h      #   "       "
     + includes.h         #   "       "
     + loop.h             #   "       "
     + setup.h            #   "       "
-  + modules/             # Collection of folders for particular specialisations
-    + NOP100-SIM/        # Specialisation defining an NMEA switch input module
-      + defines.h
-      + definitions.h
-      + includes.h
-      + loop.h
-      + setup.h
-    + another module specialisation/
-    + ...
+  + hardware/            # NOP100 hardware...
+    + gerber/            # Gerber files for PCB fabrication
+    + kicad/             # Kicad design for the NOP100 motherboard
+    + README.md
 ```
