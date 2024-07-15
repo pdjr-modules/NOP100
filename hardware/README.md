@@ -6,15 +6,16 @@ NMEA 2000 interface module which uses
 [Click](https://mikroe.com/click) cards as its real-world interfaces.
 
 The module is based on the
-[Teensy 4.0]()
+[Teensy 4.0](https://www.pjrc.com/teensy_40)
 micro-controller supported by an
-[MCP2551](https://www.microchip.com/en-us/product/mcp2551) CAN transceiver,
-[Murata](https://www.murata.com/en-eu/) power supplies
-and user configuration interface.
+[MCP2551](https://www.microchip.com/en-us/product/mcp2551)
+CAN transceiver, and single or twin
+[Murata](https://www.murata.com/en-eu/)
+power supplies.
 
 <table border="0">
 <tr>
-<td>
+<td width="50%">
 <img src="NOP100.svg">
 </td>
 <td>
@@ -29,41 +30,43 @@ exploits this hardware design.
 
 ## Design elements
 
-### PCB
+### PCB and enclosure
 
 The four-layer PCB is suitable for use in a
 [Hammond 1591GSFLBK case](https://docs.rs-online.com/b790/A700000007521666.pdf)
-and employs both surface-mount and through-hole components.
+and uses both surface-mount and through-hole components.
 
 ### Microcontroller
 
-The project employs the
-[Teensy 4.0](https://www.pjrc.com/store/teensy40.html) microcontroller module.
+[Teensy 4.0](https://www.pjrc.com/store/teensy40.html).
 
 ### Power supplies
 
-A DC-DC converter takes power from the NMEA bus (NET-S/NET-C) and
-outputs 5VDC 400mA to the module.
+The module is a dual-voltage (5VDC/3.3VDC) design and is powered from
+the host NMEA bus 12VDC supply.
 
-A solder bridge connection allows the 3.3VDC 250mA output of the
-Teensy 4.0 to be used as the supply for all 3.3VDC consumers.
+A DC-DC converter outputs 5VDC 400mA to the microcontroller and CAN
+transceiver.
+In situations where the installed MikroBus modules have a current draw
+of less that 250mA the Teensy's on-board 3.3VDC voltage regulator can
+be used as the supply for all 3.3VDC consumers by making a solder
+bridge connection at JP1.
 
-If the Teensy's 250mA limit is insufficient for **NOP100** consumers,
+If the Teensy's 250mA limit is insufficient for MikroBus consumers,
 then a 3.3VDC 600mA DC-DC converter can be installed on the module PCB
-and the solder-bridge to the Teensy supply removed.
+(in which case the solder-bridge connection must not be made).
 
 ### CAN interface
 
 An MCP-2551/IP CAN transceiver converts data on the NMEA bus
 (CAN-H/CAN-L) to signals suitable for use by the microcontroller CAN
 interface.
-The signals are level-shifted to 3.3VDC for compatability with the
-Teensy 4.0.
+Input and output signals are level-shifted to 3.3VDC for compatability
+with the Teensy 4.0.
 
-A switch switch-selectable 120 Ohm bus termination resistor allows
-the module to be used as either an NMEA drop or terminal node.
-A second switch allows the NMEA bus shield to be connected to the
-module GND.
+A switch switch-selectable 120 Ohm bus termination resistor allows the
+module to be used as either an NMEA drop or terminal node and a second
+switch allows the NMEA bus shield to be connected to the module GND.
 
 An activity indicator LED shows when the CAN interface is transmitting.
 
