@@ -51,7 +51,7 @@
     )
     (pad_to_mask_clearance 0)
     (pcbplotparams
-      (layerselection 0x00090e0_fffffff9)
+      (layerselection 0x00090e0_ffffffff)
       (plot_on_all_layers_selection 0x0000000_00000000)
       (disableapertmacros false)
       (usegerberextensions true)
@@ -78,11 +78,11 @@
       (plotinvisibletext false)
       (sketchpadsonfab false)
       (subtractmaskfromsilk false)
-      (outputformat 5)
+      (outputformat 1)
       (mirror false)
       (drillshape 0)
       (scaleselection 1)
-      (outputdirectory "/Users/preeve/Documents/GitHub/NOP100/hardware/")
+      (outputdirectory "/Users/preeve/Documents/GitHub/NOP100/hardware/gerber")
     )
   )
 
