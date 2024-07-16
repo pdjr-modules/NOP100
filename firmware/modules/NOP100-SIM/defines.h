@@ -40,19 +40,16 @@
 /**********************************************************************
  * @brief ModuleConfiguration library stuff.
  */
-#define MODULE_CONFIGURATION_SIZE 4                               // Total configuration size in bytes
+#define MODULE_CONFIGURATION_SIZE 3                               // Total configuration size in bytes
 
-#define MODULE_CONFIGURATION_INSTANCE_INDEX 1                     // Index of module instance number
-#define MODULE_CONFIGURATION_PGN127501_TRANSMIT_PERIOD_INDEX 2    // Index of PGN 127501 transmit period in seconds
-#define MODULE_CONFIGURATION_PGN127501_TRANSMIT_OFFSET_INDEX 3    // Index of PGN 127501 transmit offset in 10s of milli-seconds
+#define MODULE_CONFIGURATION_PGN127501_TRANSMIT_PERIOD_INDEX 1    // Index of PGN 127501 transmit period in seconds
+#define MODULE_CONFIGURATION_PGN127501_TRANSMIT_OFFSET_INDEX 2    // Index of PGN 127501 transmit offset in 10s of milli-seconds
 
-#define MODULE_CONFIGURATION_INSTANCE_DEFAULT 0xff                // Disabled
 #define MODULE_CONFIGURATION_TRANSMIT_PERIOD_DEFAULT 0x02         // Every two seconds
 #define MODULE_CONFIGURATION_TRANSMIT_OFFSET_DEFAULT 0x00         // Zero times 10 milliseconds
 
 #define MODULE_CONFIGURATION_DEFAULT { \
   MODULE_CONFIGURATION_CAN_SOURCE_DEFAULT, \
-  MODULE_CONFIGURATION_INSTANCE_DEFAULT, \
   MODULE_CONFIGURATION_TRANSMIT_PERIOD_DEFAULT, \
   MODULE_CONFIGURATION_TRANSMIT_OFFSET_DEFAULT \
 }
@@ -78,7 +75,7 @@
 #endif
 
 #ifdef MIKROBUS_SOCKET_LEFT_AND_RIGHT
-#define CLICK5981_CONFIGURATION { CLICK5981_MODULE_1, CLICK5981_MODULE_0, { 0,0,0 } }
+#define CLICK5981_CONFIGURATION { CLICK5981_MODULE_0, CLICK5981_MODULE_1, { 0,0,0 } }
 #endif
 
 /**********************************************************************

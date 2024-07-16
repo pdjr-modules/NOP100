@@ -20,19 +20,23 @@ CLICK5981::tPins Click5981Configuration[3] = CLICK5981_CONFIGURATION;
 CLICK5981 SwitchInput (Click5981Configuration);
 
 /**
- * @brief Buffer for registering input channel states.
+ * @brief Buffer holding current input channel states.
  * 
  * We choose the tN2kBinaryStatus type rather than any alternate
  * representation because this can then be used without further
  * processing in a PGN 127501 message.
+ * 
+ * The buffer is updated directly each time the Click 5981 modules
+ * are polled for their channel states.
  */
 tN2kBinaryStatus SwitchbankStatus;
 
 /**
  * @brief Transmit PGN 127501 and flash transmit LED.
  * 
- * Recover our module instance address from hardware and create an NMEA
- * 2000 message from the current and, if the module has a valid instance number, transmit it. 
+ * Recover module instance address from hardware switch settings and
+ * create and transmit an NMEA 2000 message from the value of
+ * SwitchbankStatus. 
  */
 void transmitPGN127501() {
   #ifdef DEBUG_SERIAL
@@ -118,9 +122,6 @@ bool configurationValidator(unsigned int index, unsigned char value) {
   switch (index) {
     case MODULE_CONFIGURATION_CAN_SOURCE_INDEX:
       return(true);
-    case MODULE_CONFIGURATION_INSTANCE_INDEX:
-      return((value < 253) || (value == 255));
-      break;
     case MODULE_CONFIGURATION_PGN127501_TRANSMIT_PERIOD_INDEX:
       return(true);
       break;
