@@ -7,6 +7,6 @@
  * @copyright Copyright (c) 2023
  */
 
-MikrobusSwitchInputs.callbackMaybe();
+MikrobusRelayOutputs.callbackMaybe();
 
 if (PGN127501Scheduler.IsTime()) { PGN127501Scheduler.UpdateNextTime(); transmitPGN127501(); }

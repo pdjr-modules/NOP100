@@ -7,8 +7,7 @@
  * @copyright Copyright (c) 2023
  */
 
-SPI.begin();
-
-MikrobusSwitchInputs.configureCallback(updateSwitchbankStatus, SWITCHBANK_UPDATE_INTERVAL);
+MikrobusRelayOutputs.configureCallback(updateSwitchbankStatus, SWITCHBANK_UPDATE_INTERVAL);
+MikrobusRelayOutputs.begin();
 
 N2kResetBinaryStatus(SwitchbankStatus);

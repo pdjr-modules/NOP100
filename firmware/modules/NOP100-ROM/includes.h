@@ -8,5 +8,5 @@
  * @copyright Copyright (c) 2023
  */
 
-#include <MIKROE5981S.h>
+#include <MIKROE5675.h>
 

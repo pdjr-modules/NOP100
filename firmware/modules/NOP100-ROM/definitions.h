@@ -1,7 +1,7 @@
 /**
  * @file definitions.h
  * @author Paul Reeve (preeve@pdjr.eu)
- * @brief Everything required to implement PDJRSIM.
+ * @brief Everything required to implement NOP100-ROM.
  * @version 0.1
  * @date 2024-07-16
  * @copyright Copyright (c) 2024
@@ -15,8 +15,9 @@ tN2kSyncScheduler PGN127501Scheduler;
 /**
  * @brief Interface to Click 5981 MikroBus modules
  */
-MIKROE5981::tPins MikroBusConfiguration[3] = MIKROBUS_CONFIGURATION;
-MIKROE5981S MikrobusSwitchInputs (MikroBusConfiguration);
+
+MIKROE5675::tPins MikroBusConfiguration[3] = MIKROBUS_CONFIGURATION;
+MIKROE5675 MikrobusRelayOutputs (MikroBusConfiguration);
 
 /**
  * @brief Buffer holding current input channel states.
@@ -29,6 +30,49 @@ MIKROE5981S MikrobusSwitchInputs (MikroBusConfiguration);
  * are polled for their channel states.
  */
 tN2kBinaryStatus SwitchbankStatus;
+
+/**********************************************************************
+ * Process a received PGN 127502 Switch Bank Control message by
+ * decoding the switchbank status message and comparing the requested
+ * channel state(s) with the current SwitchbankStatus. Any mismatch 
+ * results in a call to update the appropriate MikroE 5675 module to
+ * reflect the state commanded by the received PGN.
+ */
+void handlePGN127502(const tN2kMsg &n2kMsg) {
+  uint8_t instance;
+  uint8_t index;
+  uint8_t statusByte;
+  bool changed;
+  tN2kBinaryStatus commandedSwitchbankStatus;
+  tN2kOnOff commandedChannelStatus;
+
+  // retrieve target instance and switchbank status
+  if (ParseN2kPGN127501(n2kMsg, instance, commandedSwitchbankStatus)) {
+    // if we are the target instance
+    if (instance == (unsigned char) CodeSwitchPISO.read()) {
+      // iterate over configured relay modules
+      for (unsigned int m = 0; m < RelayOutputModule.getModuleCount(); m++) {
+        statusByte = 0; changed = false;
+        // iterate over relay channels
+        for (unsigned int c = 0; c < MIKROE5675::CHANNEL_COUNT; c++) {
+          // compute index into switchbank status structure
+          index = (m * MIKROE5675::CHANNEL_COUNT) + c + 1;
+          // recover commanded state of channel at index
+          commandedChannelStatus = N2kGetStatusOnBinaryStatus(commandedSwitchbankStatus, index);
+          // Make sure commanded state is valid
+          if ((commandedChannelStatus == N2kOnOff_On) || (commandedChannelStatus == N2kOnOff_Off)) { 
+            // Make a status byte equivalent to the commanded status for this relay module
+            statusByte = (statusByte << 1) | ((commandedChannelStatus == N2kOnOff_On)?1:0);
+            // Flag if the commanded state is different to the current state       
+            changed = changed || (commandedChannelStatus != N2kGetStatusOnBinaryStatus(SwitchbankStatus, index));
+          }
+        }
+        // If flagged then update the current module to the commanded state
+        if (changed) RelayOutputModule.setRelayStatus(m, statusByte);
+      }
+    }
+  }
+}
 
 /**
  * @brief Transmit PGN 127501 and flash transmit LED.
@@ -62,7 +106,7 @@ void transmitPGN127501() {
  * over NMEA.
  * 
  * This function is intended to operate as a callback method for
- * MIKROE5981.
+ * IC74HC165.
  * 
  * @param status - current status of modules switch input channels.
  */
@@ -71,10 +115,10 @@ void updateSwitchbankStatus(uint32_t status) {
   int state;
 
   #ifdef DEBUG_SERIAL
-  Serial.print("updateSwitchbankStatus("); Serial.println(")...");
+  Serial.print("processSwitchInputs("); Serial.println(")...");
   #endif
 
-  for (unsigned int i = 0; i < (MIKROE5981::CHANNEL_COUNT * MikrobusSwitchInputs.getModuleCount()); i++) {
+  for (unsigned int i = 0; i < (MIKROE5675::CHANNEL_COUNT * MikrobusRelayOutputs.getModuleCount()); i++) {
     state = (status >> i) && 1;
     if (state != ((N2kGetStatusOnBinaryStatus(SwitchbankStatus, (i + 1)) == N2kOnOff_On)?1:0)) {
       N2kSetStatusBinaryOnStatus(SwitchbankStatus, (state)?N2kOnOff_On:N2kOnOff_Off, (i + 1));

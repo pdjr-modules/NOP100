@@ -1,14 +1,14 @@
 /**
  * @file defines.h
  * @author Paul Reeve (preeve@pdjr.eu)
- * @brief Defines for a switch input module based on Click 5981 modules.
+ * @brief Defines for a relay output module based on Click 5675 modules.
  * @version 0.1
- * @date 2023-01-16
- * @copyright Copyright (c) 2023
+ * @date 2024-07-16
+ * @copyright Copyright (c) 2024
  */
 
 /**********************************************************************
- * @brief Specify the MikroBus sockets occupied by Click 5891 modules.
+ * @brief Specify the MikroBus sockets occupied by Click 5675 modules.
  * 
  * Options are MIKROBUS_SOCKET_LEFT, MIKROBUS_SOCKET_RIGHT or
  * MIKROBUS_SOCKET_LEFT_AND_RIGHT.
@@ -19,23 +19,24 @@
  * @brief NMEA2000 device information overrides.
  */
 #define DEVICE_CLASS 30                 // Electrical Distribution
-#define DEVICE_FUNCTION 130             // Binary Event Monitor
+#define DEVICE_FUNCTION 140             // Load controller
 #define DEVICE_UNIQUE_NUMBER 108        // Bump me?
 
 /**********************************************************************
  * @brief NMEA2000 product information overrides.
  */
 #define PRODUCT_CODE 002
-#define PRODUCT_FIRMWARE_VERSION "230203"
+#define PRODUCT_FIRMWARE_VERSION "240716"
 #define PRODUCT_LEN 1
 #define PRODUCT_SERIAL_CODE "002-108"   // PRODUCT_CODE + DEVICE_UNIQUE_NUMBER
-#define PRODUCT_TYPE "PDJRSIM"           // The product name?
-#define PRODUCT_VERSION "230203 (Feb 2022)"
+#define PRODUCT_TYPE "NOP100-ROM"           // The product name?
+#define PRODUCT_VERSION "240716 (Jul 2024)"
 
 /**********************************************************************
  * @brief NMEA2000 transmit and receive PGN overrides.
  */
 #define NMEA_TRANSMITTED_PGNS { 127501L, 0 }
+#define NMEA_RECEIVED_PGNS  { { 127502L, handlePGN127502 }, { 0L, 0 } }
 
 /**********************************************************************
  * @brief ModuleConfiguration library stuff.
@@ -61,25 +62,25 @@
 #define ON_N2K_OPEN
 
 /**********************************************************************
- * @brief Configuration of attached Click 5981 modules.
+ * @brief Configuration of attached Click 5675 modules.
  */
-#define MIKROE5981_MODULE_0 { GPIO_MIKROBUS_CS0, GPIO_MIKROBUS_EN0, GPIO_MIKROBUS_RST0 }
-#define MIKROE5981_MODULE_1 { GPIO_MIKROBUS_CS1, GPIO_MIKROBUS_EN1, GPIO_MIKROBUS_RST1 }
+#define MIKROE5675_MODULE_0 { 0x70, GPIO_MIKROBUS_RST0 }
+#define MIKROE5675_MODULE_1 { 0x71, GPIO_MIKROBUS_RST1 }
 
 #ifdef MIKROBUS_SOCKET_LEFT
-#define MIKROBUS_CONFIGURATION { MIKROE5981_MODULE_0, { 0,0,0 } }
+#define MIKROBUS_CONFIGURATION { MIKROE5675_MODULE_0, { 0,0 } }
 #endif
 
 #ifdef MIKROBUS_SOCKET_RIGHT
-#define MIKROBUS_CONFIGURATION { MIKROE5981_MODULE_1, { 0,0,0 } }
+#define MIKROBUS_CONFIGURATION { MIKROE5675_MODULE_1, { 0,0 } }
 #endif
 
 #ifdef MIKROBUS_SOCKET_LEFT_AND_RIGHT
-#define MIKROBUS_CONFIGURATION { MIKROE5981_MODULE_1, MIKROE5981_MODULE_0, { 0,0,0 } }
+#define MIKROBUS_CONFIGURATION { MIKROE5675_MODULE_0, MIKROE5675_MODULE_1, { 0,0 } }
 #endif
 
 /**********************************************************************
- * @brief number of milliseconds between checks on switch inputs and
- * consequent update of switchbank state.
+ * @brief number of milliseconds between checks on switch input channel
+ * states.
  */
 #define SWITCHBANK_UPDATE_INTERVAL 100
