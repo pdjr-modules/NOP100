@@ -36,6 +36,7 @@
  * @brief NMEA2000 transmit and receive PGN overrides.
  */
 #define NMEA_TRANSMITTED_PGNS { 127501L, 0 }
+void handlePGN127502(const tN2kMsg &n2kMsg);
 #define NMEA_RECEIVED_PGNS  { { 127502L, handlePGN127502 }, { 0L, 0 } }
 
 /**********************************************************************

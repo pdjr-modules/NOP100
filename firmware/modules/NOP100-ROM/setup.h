@@ -7,7 +7,7 @@
  * @copyright Copyright (c) 2023
  */
 
-MikrobusRelayOutputs.configureCallback(updateSwitchbankStatus, SWITCHBANK_UPDATE_INTERVAL);
-MikrobusRelayOutputs.begin();
+Wire.begin();
 
+MikrobusRelayOutputs.configureCallback(updateSwitchbankStatus, SWITCHBANK_UPDATE_INTERVAL);
 N2kResetBinaryStatus(SwitchbankStatus);

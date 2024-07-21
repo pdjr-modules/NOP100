@@ -1,1 +1,1 @@
-modules/NOP100-SIM/setup.h
+modules/NOP100-ROM/setup.h

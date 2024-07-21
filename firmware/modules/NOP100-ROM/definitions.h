@@ -16,8 +16,8 @@ tN2kSyncScheduler PGN127501Scheduler;
  * @brief Interface to Click 5981 MikroBus modules
  */
 
-MIKROE5675::tPins MikroBusConfiguration[3] = MIKROBUS_CONFIGURATION;
-MIKROE5675 MikrobusRelayOutputs (MikroBusConfiguration);
+MIKROE5675::tConfig MikroBusConfiguration[3] = MIKROBUS_CONFIGURATION;
+MIKROE5675S MikrobusRelayOutputs (MikroBusConfiguration);
 
 /**
  * @brief Buffer holding current input channel states.
@@ -41,8 +41,8 @@ tN2kBinaryStatus SwitchbankStatus;
 void handlePGN127502(const tN2kMsg &n2kMsg) {
   uint8_t instance;
   uint8_t index;
-  uint8_t statusByte;
-  bool changed;
+  uint32_t statusByte;
+  bool changed = false;
   tN2kBinaryStatus commandedSwitchbankStatus;
   tN2kOnOff commandedChannelStatus;
 
@@ -51,8 +51,8 @@ void handlePGN127502(const tN2kMsg &n2kMsg) {
     // if we are the target instance
     if (instance == (unsigned char) CodeSwitchPISO.read()) {
       // iterate over configured relay modules
-      for (unsigned int m = 0; m < RelayOutputModule.getModuleCount(); m++) {
-        statusByte = 0; changed = false;
+      for (unsigned int m = 0; m < MikrobusRelayOutputs.getModuleCount(); m++) {
+        statusByte = 0;
         // iterate over relay channels
         for (unsigned int c = 0; c < MIKROE5675::CHANNEL_COUNT; c++) {
           // compute index into switchbank status structure
@@ -67,9 +67,9 @@ void handlePGN127502(const tN2kMsg &n2kMsg) {
             changed = changed || (commandedChannelStatus != N2kGetStatusOnBinaryStatus(SwitchbankStatus, index));
           }
         }
-        // If flagged then update the current module to the commanded state
-        if (changed) RelayOutputModule.setRelayStatus(m, statusByte);
       }
+      // If flagged then update the current module to the commanded state
+      if (changed) MikrobusRelayOutputs.setStatus(statusByte);
     }
   }
 }
@@ -110,7 +110,7 @@ void transmitPGN127501() {
  * 
  * @param status - current status of modules switch input channels.
  */
-void updateSwitchbankStatus(uint32_t status) {
+void updateSwitchbankStatus(int status) {
   bool updated = false;
   int state;
 
