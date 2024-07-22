@@ -5,11 +5,11 @@ The **NOP100** project implements an
 interface module with twin
 [MikroBUS](https://www.mikroe.com/mikrobus)
 sockets which allow specialisation of function by the addition of
-[Click](https://www.mikroe.com/click) interface cards.
+[Click](https://www.mikroe.com/click) expansion cards.
 
 [**NOP100** hardware](./hardware/README.md)
 is based on the Teensy 4.0 micro-controller supported by a CAN
-transceiver, parasitic power supplies and a user configuration
+transceiver, parasitic power supply and a user configuration
 interface.
 
 [**NOP100** firmware](./firmware/README.md)
