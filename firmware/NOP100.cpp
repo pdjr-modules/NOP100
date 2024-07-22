@@ -77,21 +77,28 @@
 #define GPIO_D22 22
 #define GPIO_D23 23
 
-#define GPIO_MIKROBUS_EN0 GPIO_D2
-#define GPIO_MIKROBUS_RST0 GPIO_D3
-#define GPIO_MIKROBUS_CS0 GPIO_D4
-#define GPIO_MIKROBUS_EN1 GPIO_D7
-#define GPIO_MIKROBUS_RST1 GPIO_D8
-#define GPIO_MIKROBUS_CS1 GPIO_D9
+#define GPIO_SERIAL_RX GPIO_D0
+#define GPIO_SERIAL_TX GPIO_D1
+#define GPIO_MIKROBUS_MODULE0_INT GPIO_D2
+#define GPIO_MIKROBUS_MODULE0_PWM GPIO_D3
+#define GPIO_MIKROBUS_MODULE0_EN GPIO_D4
+#define GPIO_MIKROBUS_RST GPIO_D5
+#define GPIO_MIKROBUS_MODULE0_CS GPIO_D6
+#define GPIO_MIKROBUS_MODULE1_INT GPIO_D7
+#define GPIO_MIKROBUS_MODULE1_EN GPIO_D8
+#define GPIO_MIKROBUS_MODULE1_PWM GPIO_D9
+#define GPIO_MIKROBUS_MODULE1_CS GPIO_D10
 #define GPIO_SPI_MOSI GPIO_D11
 #define GPIO_SPI_MISO GPIO_D12
 #define GPIO_SPI_SCK GPIO_D13
-#define GPIO_PISO_DATA GPIO_D15
+#define GPIO_PISO_DATA GPIO_D14
+#define GPIO_PISO_LATCH GPIO_D15
 #define GPIO_PISO_CLOCK GPIO_D16
-#define GPIO_PISO_LATCH GPIO_D17
-#define GPIO_PRG_LED GPIO_D18
-#define GPIO_PRG_BUTTON GPIO_D19
-#define GPIO_CAN_LED GPIO_D21
+#define GPIO_LED_PRG GPIO_D17
+#define GPIO_I2C_SDA GPIO_D18
+#define GPIO_I2C_SCL GPIO_D19
+#define GPIO_BUTTON_PRG GPIO_D20
+#define GPIO_LED_CAN GPIO_D21
 #define GPIO_CAN_TX GPIO_D22
 #define GPIO_CAN_RX GPIO_D23
 
@@ -259,7 +266,7 @@ ModuleOperatorInterface ModuleOperatorInterface(modeHandlers);
 /**
  * @brief Button object for debouncing the module's PRG button.
  */
-Button PRGButton(GPIO_PRG_BUTTON);
+Button PRGButton(GPIO_BUTTON_PRG);
 
 /**
  * @brief Interface to the IC74HC165 PISO IC that connects the eight 
@@ -273,8 +280,8 @@ IC74HC165 CodeSwitchPISO (GPIO_PISO_CLOCK, GPIO_PISO_DATA, GPIO_PISO_LATCH);
  * Both LEDs are connected directly to a GPIO pin, so the lambda
  * callback just uses a digital write operation to drive the output.
  */
-LedManager CanLed([](unsigned int status){ digitalWrite(GPIO_CAN_LED, (status & 0x01)); }, CAN_LED_UPDATE_INTERVAL);
-LedManager PrgLed([](unsigned int status){ digitalWrite(GPIO_PRG_LED, (status & 0x01)); }, PRG_LED_UPDATE_INTERVAL);
+LedManager CanLed([](unsigned int status){ digitalWrite(GPIO_LED_CAN, (status & 0x01)); }, CAN_LED_UPDATE_INTERVAL);
+LedManager PrgLed([](unsigned int status){ digitalWrite(GPIO_LED_PRG, (status & 0x01)); }, PRG_LED_UPDATE_INTERVAL);
 
 #include "definitions.h"
 
@@ -289,10 +296,10 @@ void setup() {
 
   // Set the mode of GPIO pins which are not configured by interface
   // libraries.
-  pinMode(GPIO_MIKROBUS_CS0, OUTPUT);
-  pinMode(GPIO_MIKROBUS_CS1, OUTPUT);
-  pinMode(GPIO_CAN_LED, OUTPUT);
-  pinMode(GPIO_PRG_LED, OUTPUT);
+  pinMode(GPIO_MIKROBUS_MODULE0_CS, OUTPUT);
+  pinMode(GPIO_MIKROBUS_MODULE1_CS, OUTPUT);
+  pinMode(GPIO_LED_CAN, OUTPUT);
+  pinMode(GPIO_LED_PRG, OUTPUT);
 
   SPI.begin();
 

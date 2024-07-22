@@ -65,8 +65,8 @@ void handlePGN127502(const tN2kMsg &n2kMsg);
 /**********************************************************************
  * @brief Configuration of attached Click 5675 modules.
  */
-#define MIKROE5675_MODULE_0 { 0x70, GPIO_MIKROBUS_RST0 }
-#define MIKROE5675_MODULE_1 { 0x71, GPIO_MIKROBUS_RST1 }
+#define MIKROE5675_MODULE_0 { 0x70, GPIO_MIKROBUS_RST }
+#define MIKROE5675_MODULE_1 { 0x71, GPIO_MIKROBUS_RST }
 
 #ifdef MIKROBUS_SOCKET_LEFT
 #define MIKROBUS_CONFIGURATION { MIKROE5675_MODULE_0, { 0,0 } }

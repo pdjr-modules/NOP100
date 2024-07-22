@@ -1,1 +1,1 @@
-modules/NOP100-ROM/definitions.h
+modules/NOP100-SIM/definitions.h
