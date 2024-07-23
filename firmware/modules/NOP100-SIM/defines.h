@@ -3,8 +3,8 @@
  * @author Paul Reeve (preeve@pdjr.eu)
  * @brief Defines for a switch input module based on Click 5981 modules.
  * @version 0.1
- * @date 2023-01-16
- * @copyright Copyright (c) 2023
+ * @date 2024-07-01
+ * @copyright Copyright (c) 2024
  */
 
 /**********************************************************************
@@ -25,12 +25,12 @@
 /**********************************************************************
  * @brief NMEA2000 product information overrides.
  */
-#define PRODUCT_CODE 002
-#define PRODUCT_FIRMWARE_VERSION "230203"
+#define PRODUCT_CODE 100
+#define PRODUCT_FIRMWARE_VERSION "240701"
 #define PRODUCT_LEN 1
-#define PRODUCT_SERIAL_CODE "002-108"   // PRODUCT_CODE + DEVICE_UNIQUE_NUMBER
-#define PRODUCT_TYPE "PDJRSIM"           // The product name?
-#define PRODUCT_VERSION "230203 (Feb 2022)"
+#define PRODUCT_SERIAL_CODE "100-108"   // PRODUCT_CODE + DEVICE_UNIQUE_NUMBER
+#define PRODUCT_TYPE "NOP100-SIM"           // The product name?
+#define PRODUCT_VERSION "240701 (Jul 2024)"
 
 /**********************************************************************
  * @brief NMEA2000 transmit and receive PGN overrides.
@@ -63,19 +63,19 @@
 /**********************************************************************
  * @brief Configuration of attached Click 5981 modules.
  */
-#define MIKROE5981_MODULE_0 { GPIO_MIKROBUS_MODULE0_CS, GPIO_MIKROBUS_MODULE0_EN, GPIO_MIKROBUS_RST }
-#define MIKROE5981_MODULE_1 { GPIO_MIKROBUS_MODULE1_CS, GPIO_MIKROBUS_MODULE1_EN, GPIO_MIKROBUS_RST }
+#define MIKROE5981_MODULE_0 { GPIO_MIKROBUS_MODULE0_CS, GPIO_MIKROBUS_MODULE0_EN, GPIO_MIKROBUS_MODULE0_INT, GPIO_MIKROBUS_RST, GPIO_MIKROBUS_MODULE0_PWM }
+#define MIKROE5981_MODULE_1 { GPIO_MIKROBUS_MODULE1_CS, GPIO_MIKROBUS_MODULE1_EN, GPIO_MIKROBUS_MODULE1_INT, GPIO_MIKROBUS_RST, GPIO_MIKROBUS_MODULE1_PWM }
 
 #ifdef MIKROBUS_SOCKET_LEFT
-#define MIKROBUS_CONFIGURATION { MIKROE5981_MODULE_0, { 0,0,0 } }
+#define MIKROBUS_CONFIGURATION { MIKROE5981_MODULE_0, { 0,0,0,0,0 } }
 #endif
 
 #ifdef MIKROBUS_SOCKET_RIGHT
-#define MIKROBUS_CONFIGURATION { MIKROE5981_MODULE_1, { 0,0,0 } }
+#define MIKROBUS_CONFIGURATION { MIKROE5981_MODULE_1, { 0,0,0,0,0 } }
 #endif
 
 #ifdef MIKROBUS_SOCKET_LEFT_AND_RIGHT
-#define MIKROBUS_CONFIGURATION { MIKROE5981_MODULE_1, MIKROE5981_MODULE_0, { 0,0,0 } }
+#define MIKROBUS_CONFIGURATION { MIKROE5981_MODULE_0, MIKROE5981_MODULE_1, { 0,0,0,0,0 } }
 #endif
 
 /**********************************************************************

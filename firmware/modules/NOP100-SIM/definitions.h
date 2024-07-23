@@ -3,7 +3,7 @@
  * @author Paul Reeve (preeve@pdjr.eu)
  * @brief Everything required to implement PDJRSIM.
  * @version 0.1
- * @date 2024-07-16
+ * @date 2024-07-01
  * @copyright Copyright (c) 2024
  */
 
@@ -101,6 +101,7 @@ void onN2kOpen() {
   Serial.println("OnN2kOpen()...");
   #endif
 
+  // Initialise and start scheduler...
   PGN127501Scheduler.SetPeriodAndOffset(
     (uint32_t) (ModuleConfiguration.getByte(MODULE_CONFIGURATION_PGN127501_TRANSMIT_PERIOD_INDEX) * 1000),
     (uint32_t) (ModuleConfiguration.getByte(MODULE_CONFIGURATION_PGN127501_TRANSMIT_OFFSET_INDEX) * 10)
