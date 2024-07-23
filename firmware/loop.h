@@ -1,1 +1,1 @@
-modules/NOP100-SIM/loop.h
+modules/NOP100-ROM/loop.h
