@@ -5,14 +5,13 @@ NMEA 2000 switch input module based on the
 [NOP100](https://www.github.com/pdjr-n2k/NOP100)
 architecture.
 
-The required hardware platform consists of a
+The underlying hardware platform must consist of a
 [NOP100 motherboard](https://www.github.com/pdjr-n2k/NOP100/hardware)
-and twin
+with twin
 [MikroE-5981 Digi Isolator 2 Click]()
 expansion modules.
 
-The firmware extends NOP100 firmware with code in this
-folder which can be linked into the NOP100 source code by executing
+This firmware can be linked into the NOP100 source code by executing
 the following command in the ```NOP100/firmware``` folder.
 ```
 $> ./link-module NOP100-SIM
