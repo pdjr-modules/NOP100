@@ -110,7 +110,7 @@ void transmitPGN127501() {
  * 
  * @param status - current status of modules switch input channels.
  */
-void updateSwitchbankStatus(int status) {
+void updateSwitchbankStatus(uint16_t status) {
   bool updated = false;
   int state;
 

@@ -1,1 +1,1 @@
-modules/NOP100-ROM/defines.h
+modules/NOP100-SIM/defines.h
