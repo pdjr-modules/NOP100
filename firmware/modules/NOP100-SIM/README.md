@@ -1,12 +1,17 @@
 # NOP100-SIM - NMEA 2000 switch input module
 
-NOP100-SIM is an NMEA 2000 switch input module which uses the
-[MikroE-5981 Digi Isolator 2 Click]()
-module as its external switch interface.
-One or two 5981 modules can be plugged into the NOP100's MikroBus
-sockets giving either 8 or 16 input channels.
+This project provides the firmware needed to implement a 16-channel
+NMEA 2000 switch input module based on the
+[NOP100](https://www.github.com/pdjr-n2k/NOP100)
+architecture.
 
-NOP100-SIM firmware extends NOP100 firmware with code in this
+The required hardware platform consists of a
+[NOP100 motherboard](https://www.github.com/pdjr-n2k/NOP100/hardware)
+and twin
+[MikroE-5981 Digi Isolator 2 Click]()
+expansion modules.
+
+The firmware extends NOP100 firmware with code in this
 folder which can be linked into the NOP100 source code by executing
 the following command in the ```NOP100/firmware``` folder.
 ```
