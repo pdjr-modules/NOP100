@@ -15,7 +15,7 @@ Building the firmware requires that both
 [firmware-factory]()
 and
 [NOP100](https://www.github.com/pdjr-n2k/NOP100)
-are installed locally in the locations pointed to by ```${FF}`` and
+are installed locally in the locations pointed to by ```${FF}``` and
 ```${NOP100}```.
 
 ```
