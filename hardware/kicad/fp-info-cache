@@ -1,4 +1,4 @@
-23054536915012325
+23057980256514976
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -94402,6 +94402,13 @@ rotary switch bcd
 6
 5
 pdjr
+RS_8971054
+
+
+0
+3
+3
+pdjr
 TCK_059
 
 
@@ -94422,6 +94429,13 @@ TMR_2411
 0
 5
 5
+plop
+CONN2X8_MIKROE-4248_MKE
+
+MIKROE-4248 
+0
+16
+16
 plop
 MIKROBUS_HOST_CONN
 
