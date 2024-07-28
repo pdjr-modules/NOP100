@@ -1,17 +1,21 @@
 # NOP100-SIM
 
-This sub-project provides a firmware extension for
+This firmware extension for
 [NOP100](https://www.github.com/pdjr-n2k/NOP100)
-which implements a 16-channel NMEA 2000 switch input module.
+supports one or two
+[MikroE-5981 Digi Isolator 2 Click]()
+MikroBus expansion cards providing an NMEA interface to a maximum of
+sixteen external switch input channels.
 
-A **NOP100-SIM** module broadcasts a PGN 127501 Binary Switch Status
-message once every two seconds or immediately when a state change is
-detected on any switch input channel.
+Switch input channels are consolidated into a single NMEA switch bank
+whose status is reported by broadcast of a PGN 127501 Binary Switch
+Status message once every two seconds or immediately when a state
+change is detected on any input channel.
 
 ## Hardware requirement
 
 * 1 x NOP100 motherboard;
-* 2 x [MikroE-5981 Digi Isolator 2 Click]() expansion cards.
+* A maximum of two [MikroE-5981 Digi Isolator 2 Click]() expansion cards.
 
 ## Build
 
